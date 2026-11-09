@@ -1,6 +1,11 @@
 # Dépendances PHP (Composer) – à la racine uniquement, js/vendor/ reste suivi
 /vendor/
 
+# Sources de conception (SolidWorks, exports 3D) – non utilisées par le site,
+# conservées sur le disque mais hors du dépôt
+/Modelisation 3d/
+/SVG3d/
+
 # Fichiers système
 .DS_Store
 Thumbs.db
