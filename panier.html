@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panier</title>
+    <meta name="description" content="Votre panier EQUINOX : vérifiez vos barres d'obstacles, modifiez les quantités ou les couleurs, puis générez votre devis.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <style>
         * {
             margin: 0;
@@ -131,6 +133,7 @@
             font-size: 1.3em;
             font-weight: 400;
             color: #2c3e50;
+            overflow-wrap: anywhere;
         }
         
         .item-length {
@@ -253,23 +256,6 @@
             border-top: 1px solid #e0e0e0;
         }
         
-        .pack-header {
-            background: #34495e;
-            color: white;
-            padding: 20px 30px;
-            margin-bottom: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 4px solid #e74c3c;
-        }
-        
-        .pack-title {
-            font-size: 1.2em;
-            font-weight: 300;
-            letter-spacing: 0.5px;
-        }
-        
         .empty-cart {
             text-align: center;
             padding: 80px 20px;
@@ -284,7 +270,7 @@
         
         @media (max-width: 768px) {
             .cart-item {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr);
                 text-align: center;
             }
             .item-actions {
@@ -300,6 +286,23 @@
             header,
             .main-content {
                 padding: 20px 30px;
+            }
+        }
+        
+        /* Sur téléphone, les trois compteurs restent côte à côte sans dépasser de l'écran. */
+        @media (max-width: 520px) {
+            .stats-card {
+                padding: 12px;
+                gap: 8px;
+            }
+            .stat-item {
+                padding: 12px 4px;
+            }
+            .stat-number {
+                font-size: 2.2em;
+            }
+            .stat-label {
+                font-size: 0.8em;
             }
         }
     </style>
@@ -332,11 +335,6 @@
                 <div class="cart-section" id="individualBarsContainer"></div>
             </div>
 
-            <div id="packsSection" style="display: none;">
-                <h2 class="section-title">📦 Packs de Barres</h2>
-                <div class="cart-section" id="packsContainer"></div>
-            </div>
-
             <div id="emptyCart" class="cart-section empty-cart" style="display: none;">
                 <div class="empty-cart-icon">🛒</div>
                 <h3>Votre panier est vide</h3>
@@ -345,62 +343,27 @@
 
             <div class="bottom-actions">
                 <a href="index.html" class="btn btn-secondary">← Retour à l'accueil</a>
-                <a href="devis.html" class="btn btn-success">Envoyer le devis →</a>
+                <button class="btn btn-danger" id="clearCartBtn" onclick="if (clearCart()) loadCart()">Vider le panier</button>
+                <a href="devis.html" class="btn btn-success">Générer le devis →</a>
             </div>
         </div>
     </div>
 
+    <script src="js/ral.js"></script>
+    <script src="js/cart.js"></script>
     <script>
-        const hexToRal = {
-            "#d0b084": "RAL 1001",
-            "#ddc49a": "RAL 1014",
-            "#e6d2b5": "RAL 1015",
-            "#f1dd38": "RAL 1016",
-            "#da6e00": "RAL 2000",
-            "#c73f4a": "RAL 3018",
-            "#bb1e10": "RAL 3020",
-            "#8d3c4b": "RAL 4002",
-            "#193153": "RAL 5013",
-            "#637d96": "RAL 5014",
-            "#222d5a": "RAL 5022",
-            "#114232": "RAL 6005",
-            "#61993b": "RAL 6018",
-            "#b9ceac": "RAL 6019",
-            "#8a9977": "RAL 6021",
-            "#575d5e": "RAL 7012",
-            "#4f5358": "RAL 7015",
-            "#383e42": "RAL 7016",
-            "#2f3234": "RAL 7021",
-            "#4c4a44": "RAL 7022",
-            "#c5c7c4": "RAL 7035",
-            "#7a7b7a": "RAL 7037",
-            "#8e9291": "RAL 7042",
-            "#8d9295": "RAL 7045",
-            "#66332b": "RAL 8012",
-            "#4a3526": "RAL 8014",
-            "#e9e0d2": "RAL 9001",
-            "#2b2b2c": "RAL 9004",
-            "#0e0e10": "RAL 9005",
-            "#f1ece1": "RAL 9010",
-            "#f1f0ea": "RAL 9016"
-        };
-
         document.addEventListener("DOMContentLoaded", () => {
-            if (!sessionStorage.getItem("sessionActive")) {
-                sessionStorage.setItem("sessionActive", "true");
-            }
             loadCart();
         });
 
-        function makeColorsHtml(colors, customRal) {
+        function makeColorsHtml(colors, customRals) {
             if (!colors || colors.length === 0) return "";
             return colors.map(c => {
-                        const hex = c.toLowerCase();
-                        const ralLabel = hexToRal[hex] || (customRal || "");
+                        const ralLabel = getColorLabel(c, customRals) || "";
                         return `
                     <div class="color-item">
-                        <div class="color-sample" style="background-color:${c};"></div>
-                        ${ralLabel ? `<div class="color-label">${ralLabel}</div>` : ""}
+                        <div class="color-sample" style="background-color:${escapeHtml(c)};"></div>
+                        ${ralLabel ? `<div class="color-label">${escapeHtml(ralLabel)}</div>` : ""}
                     </div>
                 `;
             }).join("");
@@ -411,17 +374,9 @@
             let count35m = 0;
 
             cart.forEach(item => {
-                if (!item.items) {
-                    const qty = item.quantity || 1;
-                    if (item.length === "3m") count3m += qty;
-                    if (item.length === "3.5m") count35m += qty;
-                } else {
-                    item.items.forEach(bar => {
-                        const qty = bar.quantity || 1;
-                        if (bar.length === "3m") count3m += qty;
-                        if (bar.length === "3.5m") count35m += qty;
-                    });
-                }
+                const qty = item.quantity || 1;
+                if (item.length === "3m") count3m += qty;
+                if (item.length === "3.5m") count35m += qty;
             });
 
             const total = count3m + count35m;
@@ -435,49 +390,25 @@
             console.log("📦 Contenu du panier :", cart);
 
             updateStats(cart);
+            document.getElementById("clearCartBtn").style.display = cart.length === 0 ? "none" : "";
 
             const individualContainer = document.getElementById("individualBarsContainer");
-            const packsContainer = document.getElementById("packsContainer");
             const individualSection = document.getElementById("individualSection");
-            const packsSection = document.getElementById("packsSection");
             const emptyCart = document.getElementById("emptyCart");
 
             individualContainer.innerHTML = "";
-            packsContainer.innerHTML = "";
-
-            const individualItems = cart.filter(item => !item.items);
-            const packItems = cart.filter(item => item.items);
 
             if (cart.length === 0) {
                 emptyCart.style.display = "block";
                 individualSection.style.display = "none";
-                packsSection.style.display = "none";
                 return;
             }
 
             emptyCart.style.display = "none";
-
-            if (individualItems.length > 0) {
-                individualSection.style.display = "block";
-                individualItems.forEach((item, index) => {
-                    const originalIndex = cart.indexOf(item);
-                    const itemHtml = createIndividualItemHtml(item, originalIndex);
-                    individualContainer.innerHTML += itemHtml;
-                });
-            } else {
-                individualSection.style.display = "none";
-            }
-
-            if (packItems.length > 0) {
-                packsSection.style.display = "block";
-                packItems.forEach((pack, index) => {
-                    const originalIndex = cart.indexOf(pack);
-                    const packHtml = createPackHtml(pack, originalIndex);
-                    packsContainer.innerHTML += packHtml;
-                });
-            } else {
-                packsSection.style.display = "none";
-            }
+            individualSection.style.display = "block";
+            cart.forEach((item, index) => {
+                individualContainer.innerHTML += createIndividualItemHtml(item, index);
+            });
 
             console.log("✅ Panier affiché.");
         }
@@ -487,26 +418,26 @@
                 ? `data:image/svg+xml;utf8,${encodeURIComponent(item.svg)}`
                 : "";
 
-            const colorBoxes = makeColorsHtml(item.colors, item.custom_ral || null);
+            const colorBoxes = makeColorsHtml(item.colors, getCustomRals(item));
 
             return `
                 <div class="cart-item">
                     <div>
                         ${svgDataUrl
-                            ? `<img src="${svgDataUrl}" alt="Modèle ${item.model}" class="item-image">`
+                            ? `<img src="${svgDataUrl}" alt="${escapeHtml(getModelLabel(item))}" class="item-image">`
                             : '<div class="item-image" style="display:flex;align-items:center;justify-content:center;background:#f0f0f0;">❌</div>'}
                     </div>
                     <div class="item-details">
-                        <div class="item-model">Modèle ${item.model}</div>
-                        <div class="item-length">📏 Longueur : ${item.length || "Non spécifié"}</div>
-                        ${item.height ? `<div class="item-length">📐 Hauteur : ${item.height}</div>` : ''}
-                        ${item.diameter ? `<div class="item-length">⭕ Diamètre : ${item.diameter}</div>` : ''}
+                        <div class="item-model">${escapeHtml(getModelLabel(item))}</div>
+                        <div class="item-length">📏 Longueur : ${escapeHtml(item.length || "Non spécifié")}</div>
+                        ${item.height ? `<div class="item-length">📐 Hauteur : ${escapeHtml(item.height)}</div>` : ''}
+                        ${item.diameter ? `<div class="item-length">⭕ Diamètre : ${escapeHtml(item.diameter)}</div>` : ''}
                         <div class="color-box">${colorBoxes}</div>
                     </div>
                     <div class="item-actions">
                         <div class="quantity-control">
                             <label>Quantité :</label>
-                            <input type="number" value="${item.quantity}" min="1"
+                            <input type="number" value="${escapeHtml(item.quantity)}" min="1"
                                    id="qty-${index}" class="quantity-input"
                                    onchange="updateQuantity(${index})">
                         </div>
@@ -517,44 +448,6 @@
                     </div>
                 </div>
             `;
-        }
-
-        function createPackHtml(pack, packIndex) {
-            let packHtml = `<div class="pack-header">
-                <span class="pack-title">📦 Pack de ${pack.packSize} barres</span>
-                <button class="btn btn-danger" onclick="removeFromCart(${packIndex})">Supprimer le pack</button>
-            </div>`;
-
-            pack.items.forEach((bar) => {
-                const svgImage = bar.svg
-                    ? `data:image/svg+xml;utf8,${encodeURIComponent(bar.svg)}`
-                    : "";
-
-                const colorBoxes = makeColorsHtml(bar.colors, bar.custom_ral || null);
-
-                packHtml += `
-                    <div class="cart-item">
-                        <div>
-                            ${svgImage
-                                ? `<img src="${svgImage}" alt="Modèle ${bar.model}" class="item-image">`
-                                : '<div class="item-image" style="display:flex;align-items:center;justify-content:center;background:#f0f0f0;">❌</div>'}
-                        </div>
-                        <div class="item-details">
-                            <div class="item-model">Modèle ${bar.model}</div>
-                            <div class="item-length">📏 Longueur : ${bar.length || "Non spécifié"}</div>
-                            ${bar.height ? `<div class="item-length">📐 Hauteur : ${bar.height}</div>` : ''}
-                            <div class="color-box">${colorBoxes}</div>
-                        </div>
-                        <div class="item-actions">
-                            <div class="quantity-control">
-                                <span>Quantité : ${bar.quantity}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            return packHtml;
         }
 
         function updateQuantity(index) {
@@ -581,12 +474,12 @@
 
         function redirectToConfig(index) {
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const item = cart[index];
+            const editUrl = getEditUrl(cart[index], index);
 
-            if (item && item.model && /^\d+$/.test(String(item.model))) {
-                window.location.href = `config.html?model=${item.model}`;
+            if (editUrl) {
+                window.location.href = editUrl;
             } else {
-                alert("Cette barre est personnalisée : modifiez-la depuis sa page de configuration.");
+                alert("Cet article ne peut pas être modifié : son configurateur d'origine est inconnu. Supprimez-le puis recréez-le.");
             }
         }
     </script>

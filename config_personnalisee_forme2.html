@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barre 100% personnalisée – Forme 113</title>
+    <title>Palanque personnalisée</title>
+    <meta name="description" content="Créez une palanque 100% personnalisée EQUINOX : choisissez la hauteur, la longueur et la couleur RAL de chaque rayure.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <style>
         * {
             margin: 0;
@@ -41,9 +43,8 @@
         }
         
         .btn-retour {
-            position: absolute;
-            top: 24px;
-            left: 60px;
+            display: inline-block;
+            margin-bottom: 14px;
             padding: 8px 20px;
             font-size: 0.8em;
             background-color: #95a5a6;
@@ -272,15 +273,28 @@
         .btn-update:hover {
             background: #c0392b;
         }
+
+        /* Sur téléphone, marges latérales réduites : la barre prend toute la largeur utile. */
+        @media (max-width: 768px) {
+            header,
+            .container {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+            #svgContainer {
+                padding-left: 4px;
+                padding-right: 4px;
+            }
+        }
     </style>
 </head>
 
 <body>
     <header>
         <a href="index.html" class="btn-retour">← Retour</a>
-        <h1>🎨 Barre 100% personnalisée – Forme 113</h1>
+        <h1>🎨 Palanque personnalisée</h1>
         <p>
-            Barre en forme 113 composée automatiquement de rayures de 10 cm : 30 rayures pour 3 m, 35 rayures pour 3,50 m. La barre est affichée ci-dessous, cliquez sur les rayures pour les colorer.
+            Palanque composée automatiquement de rayures de 10 cm : 30 rayures pour 3 m, 35 rayures pour 3,50 m. La barre est affichée ci-dessous, cliquez sur les rayures pour les colorer.
         </p>
     </header>
 
@@ -338,68 +352,27 @@
                     </button>
                 </div>
                 <small>
-                    Choisissez la couleur la plus proche de votre RAL. Elle sera ajoutée à la palette pour colorer la barre
-                    et le RAL saisi sera indiqué dans votre panier / devis.
+                    Choisissez la couleur la plus proche de votre RAL. Elle sera ajoutée à la palette pour colorer la barre.
+                    Vous pouvez ajouter plusieurs RAL personnalisés : ceux utilisés sur la barre seront indiqués dans votre panier / devis.
                 </small>
             </div>
         </div>
 
         <div class="button-container">
-            <button class="btn btn-primary" onclick="addToCart()">Ajouter au panier</button>
+            <button class="btn btn-primary" id="addToCartBtn" onclick="addToCart()">Ajouter au panier</button>
             <a href="panier.html" class="btn btn-secondary">Voir le panier</a>
         </div>
     </div>
 
+    <script src="js/ral.js"></script>
+    <script src="js/cart.js"></script>
     <script>
-        const colors = [
-            "#d0b084", "#ddc49a", "#e6d2b5", "#f1dd38", "#da6e00",
-            "#c73f4a", "#bb1e10", "#8d3c4b", "#bb4077", "#00387a",
-            "#193153", "#637d96", "#222d5a", "#114232", "#61993b",
-            "#b9ceac", "#8a9977", "#7aadac", "#575d5e", "#4f5358",
-            "#383e42", "#2f3234", "#4c4a44", "#c5c7c4", "#7a7b7a",
-            "#8e9291", "#8d9295", "#5a3827", "#66332b", "#4a3526",
-            "#e9e0d2", "#2b2b2c", "#0e0e10", "#f1ece1", "#f1f0ea"
-        ];
+        let selectedColor = ralColors[0];
 
-        const hexToRal = {
-            "#d0b084": "RAL 1001",
-            "#ddc49a": "RAL 1014",
-            "#e6d2b5": "RAL 1015",
-            "#f1dd38": "RAL 1016",
-            "#da6e00": "RAL 2000",
-            "#c73f4a": "RAL 3018",
-            "#bb1e10": "RAL 3020",
-            "#8d3c4b": "RAL 4002",
-            "#bb4077": "RAL 4010",
-            "#00387a": "RAL 5002",
-            "#193153": "RAL 5013",
-            "#637d96": "RAL 5014",
-            "#222d5a": "RAL 5022",
-            "#114232": "RAL 6005",
-            "#61993b": "RAL 6018",
-            "#b9ceac": "RAL 6019",
-            "#8a9977": "RAL 6021",
-            "#7aadac": "RAL 6034",
-            "#575d5e": "RAL 7012",
-            "#4f5358": "RAL 7015",
-            "#383e42": "RAL 7016",
-            "#2f3234": "RAL 7021",
-            "#4c4a44": "RAL 7022",
-            "#c5c7c4": "RAL 7035",
-            "#7a7b7a": "RAL 7037",
-            "#8e9291": "RAL 7042",
-            "#8d9295": "RAL 7045",
-            "#5a3827": "RAL 8011",
-            "#66332b": "RAL 8012",
-            "#4a3526": "RAL 8014",
-            "#e9e0d2": "RAL 9001",
-            "#2b2b2c": "RAL 9004",
-            "#0e0e10": "RAL 9005",
-            "#f1ece1": "RAL 9010",
-            "#f1f0ea": "RAL 9016"
-        };
+        // Mode modification (?edit=<index de la ligne du panier>)
+        let editContext = null;
+        let savedWidths = null; // largeurs de rayures de l'article en cours de modification
 
-        let selectedColor = colors[0];
         const SHAPE_X_MIN = 200.3155;
         const SHAPE_WIDTH = 400.522;
         const SHAPE_Y_MIN = 200.3155;
@@ -413,11 +386,15 @@
         function getStripeConfig() {
             const barLengthCm = getBarLengthCm();
             const stripeWidth = 10;
-            const stripeCount = barLengthCm / stripeWidth;
+            let widths = Array(barLengthCm / stripeWidth).fill(stripeWidth);
+
+            // En modification, on garde les rayures enregistrées tant que la longueur ne change pas.
+            if (savedWidths && Math.abs(savedWidths.reduce((a, b) => a + b, 0) - barLengthCm) < 0.01) {
+                widths = savedWidths;
+            }
             return {
-                stripeWidth,
-                stripeCount,
-                widths: Array(stripeCount).fill(stripeWidth),
+                stripeCount: widths.length,
+                widths,
                 total_length_cm: barLengthCm
             };
         }
@@ -426,8 +403,8 @@
             const colorPalette = document.getElementById("colorPalette");
             colorPalette.innerHTML = "";
 
-            colors.forEach(color => {
-                const ral = hexToRal[color.toLowerCase()] || "";
+            ralColors.forEach(color => {
+                const ral = getRal(color) || "";
                 const wrapper = document.createElement("div");
                 wrapper.classList.add("color-item");
                 const swatch = document.createElement("div");
@@ -452,46 +429,64 @@
             if (firstSwatch) firstSwatch.classList.add("selected");
         }
 
-        function addOrUpdateCustomRalSwatch() {
-            const ralTextRaw = document.getElementById("customRalInput").value.trim();
-            const ralColor = document.getElementById("customRalColor").value;
+        // Ajoute un RAL personnalisé à la palette et le sélectionne. On peut en ajouter plusieurs ;
+        // rajouter une couleur déjà ajoutée met simplement à jour son libellé.
+        function addCustomRalSwatch(ralText, ralColor) {
+            const colorPalette = document.getElementById("colorPalette");
+            let swatch = colorPalette.querySelector(`.color-swatch[data-custom-ral][data-color="${ralColor}"]`);
+
+            if (!swatch) {
+                const wrapper = document.createElement("div");
+                wrapper.classList.add("color-item");
+
+                swatch = document.createElement("div");
+                swatch.classList.add("color-swatch");
+                swatch.style.backgroundColor = ralColor;
+                swatch.dataset.color = ralColor;
+
+                const label = document.createElement("div");
+                label.classList.add("color-label");
+
+                wrapper.appendChild(swatch);
+                wrapper.appendChild(label);
+
+                wrapper.addEventListener("click", () => {
+                    document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("selected"));
+                    swatch.classList.add("selected");
+                    selectedColor = ralColor;
+                });
+
+                colorPalette.appendChild(wrapper);
+            }
+
+            swatch.dataset.customRal = ralText;
+            swatch.nextElementSibling.textContent = ralText;
+            swatch.parentElement.click();
+        }
+
+        // Bouton « Ajouter à la palette » : ajoute le RAL saisi, avec la couleur choisie.
+        function addCustomRalFromForm() {
+            const input = document.getElementById("customRalInput");
+            const ralTextRaw = input.value.trim();
+
             if (!ralTextRaw) {
                 alert("Veuillez saisir le numéro de RAL (ex : RAL 3027).");
                 return;
             }
+
             let ralText = ralTextRaw.toUpperCase().replace(/\s+/g, " ").trim();
             if (!ralText.startsWith("RAL")) {
                 ralText = "RAL " + ralText;
             }
-            const colorPalette = document.getElementById("colorPalette");
-            let existing = document.getElementById("custom-ral-swatch-wrapper");
-            if (!existing) {
-                existing = document.createElement("div");
-                existing.id = "custom-ral-swatch-wrapper";
-                existing.classList.add("color-item");
-                colorPalette.appendChild(existing);
-            } else {
-                existing.innerHTML = "";
-            }
-            const swatch = document.createElement("div");
-            swatch.classList.add("color-swatch");
-            swatch.style.backgroundColor = ralColor;
-            swatch.dataset.color = ralColor;
-            swatch.dataset.customRal = ralText;
-            const label = document.createElement("div");
-            label.classList.add("color-label");
-            label.textContent = ralText;
+            const ralColor = document.getElementById("customRalColor").value.toLowerCase();
 
-            existing.appendChild(swatch);
-            existing.appendChild(label);
-            existing.addEventListener("click", () => {
-                document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("selected"));
-                swatch.classList.add("selected");
-                selectedColor = ralColor;
-            });
-            document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("selected"));
-            swatch.classList.add("selected");
-            selectedColor = ralColor;
+            if (getRal(ralColor)) {
+                alert(`Cette couleur est déjà dans la palette (${getRal(ralColor)}). Choisissez-la directement dans la palette.`);
+                return;
+            }
+
+            addCustomRalSwatch(ralText, ralColor);
+            input.value = "";
         }
 
         function generateBar() {
@@ -513,7 +508,7 @@
                 xUnits += stripeUnitsWidth;
             });
 
-            const svgMarkup = `<svg viewBox="${SHAPE_X_MIN} ${SHAPE_Y_MIN} ${SHAPE_WIDTH} ${SHAPE_HEIGHT}" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+            const svgMarkup = `<svg viewBox="${SHAPE_X_MIN} ${SHAPE_Y_MIN} ${SHAPE_WIDTH} ${SHAPE_HEIGHT}" width="100%" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <clipPath id="barShapeClip">
       <path d="m 220.64959,220.49723 360.31916,-0.18284 -3.22536,3.60346 -2.32709,3.98622 -1.33592,3.03815 -1.5083,6.85199 -0.10774,2.6072 -343.77008,-0.0667 -1.02082,-8.15132 -3.18435,-6.65819 z" />
@@ -550,7 +545,6 @@
             const quantity = parseInt(document.getElementById("quantity").value);
             const length = document.getElementById("length").value;
             const height = document.getElementById("height").value;
-            const customRal = document.getElementById("customRalInput").value.trim();
             if (!quantity || quantity <= 0) {
                 alert("Veuillez entrer une quantité valide.");
                 return;
@@ -581,8 +575,10 @@
                 alert("Veuillez colorer au moins une rayure.");
                 return;
             }
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            cart.push({
+            // Ajoute l'article, ou remplace la ligne en cours de modification.
+            // "BARRE 113 PERSONNALISÉE" est l'identifiant historique de la palanque : il n'est plus
+            // affiché (voir getModelLabel, js/cart.js) mais reste celui des articles déjà au panier.
+            const result = saveCartItem({
                 model: "BARRE 113 PERSONNALISÉE",
                 colors: colorsUsed,
                 quantity: quantity,
@@ -592,18 +588,45 @@
                 stripes: stripeCount,
                 widths_cm: widths,
                 total_length_cm: total_length_cm,
-                custom_ral: customRal || null
-            });
-            localStorage.setItem("cart", JSON.stringify(cart));
-            alert("Barre personnalisée ajoutée au panier !");
+                custom_rals: collectCustomRals(colorsUsed),
+                sourcePage: "config_personnalisee_forme2.html"
+            }, editContext);
+
+            if (result === "updated") {
+                window.location.href = "panier.html";
+            } else if (result === "added") {
+                alert("Palanque personnalisée ajoutée au panier !");
+            }
+        }
+
+        // Remet le configurateur dans l'état de l'article en cours de modification.
+        function restoreItem(item) {
+            document.getElementById("quantity").value = item.quantity || 1;
+            setSelectValue("length", item.length);
+            setSelectValue("height", parseInt(item.height)); // "145 mm" → "145"
+
+            savedWidths = validStripeWidths(item.widths_cm);
+            generateBar();
+            restoreStripeColors(item.svg);
+
+            Object.entries(getCustomRals(item)).forEach(([hex, label]) => addCustomRalSwatch(label, hex));
+
+            document.getElementById("addToCartBtn").textContent = "Mettre à jour l'article";
         }
 
         document.addEventListener("DOMContentLoaded", () => {
             generateColorPalette();
-            generateBar();
+            enableFingerStripes(rect => rect.setAttribute("fill", selectedColor));
+
+            editContext = getEditContext("config_personnalisee_forme2.html");
+            if (editContext) {
+                restoreItem(editContext.item);
+            } else {
+                generateBar();
+            }
             document.getElementById("regenerateBtn").addEventListener("click", generateBar);
             document.getElementById("length").addEventListener("change", generateBar);
-            document.getElementById("addCustomRalBtn").addEventListener("click", addOrUpdateCustomRalSwatch);
+            document.getElementById("addCustomRalBtn").addEventListener("click", addCustomRalFromForm);
         });
     </script>
 </body>

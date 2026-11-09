@@ -3,193 +3,329 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configurateur de Barre CSO</title>
+    <meta name="description" content="Configurez votre barre de CSO EQUINOX : choisissez les couleurs RAL de chaque zone du modèle, la longueur et la quantité, puis ajoutez-la au panier.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
-            text-align: center;
-            padding: 20px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #2c3e50;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 24px 60px;
+            border-bottom: 4px solid #e74c3c;
+        }
+
+        h1 {
+            font-size: 2em;
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #ecf0f1;
+            font-size: 0.9em;
+            line-height: 1.5;
+            max-width: 800px;
+        }
+
+        .btn-retour {
+            display: inline-block;
+            margin-bottom: 14px;
+            padding: 8px 20px;
+            font-size: 0.8em;
+            background-color: #95a5a6;
+            color: white;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+
+        .btn-retour:hover {
+            background-color: #7f8c8d;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px 40px 40px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            font-weight: 300;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e74c3c;
+        }
+
+        .controls {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-group label {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 400;
+        }
+
+        .control-group select,
+        .control-group input[type="number"] {
+            padding: 8px 12px;
+            border: 1px solid #bdc3c7;
+            font-size: 1em;
+            background: white;
+            min-height: 40px;
+        }
+
+        .control-group input[type="number"] {
+            width: 80px;
+            text-align: center;
+        }
+
+        #svgContainer {
+            background: white;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            margin: 10px 0 0;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #svgContainer svg {
+            width: 100%;
+            max-width: 760px;
+            height: auto;
+            display: block;
+            touch-action: manipulation;
+        }
+
         .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 12px 6px;
+            padding: 8px;
+            border: 1px solid #ececec;
+            background: #fafafa;
+        }
+
+        .color-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .color-swatch {
+            width: 44px;
+            height: 44px;
+            border: 2px solid #bdc3c7;
+            transition: all 0.15s;
+        }
+
+        .color-item:hover .color-swatch {
+            transform: translateY(-1px);
+        }
+
+        .color-swatch.selected {
+            border: 3px solid #e74c3c;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #e74c3c;
+        }
+
+        .color-label {
+            font-size: 0.7em;
+            color: #7f8c8d;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .button-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 15px;
+            margin-top: 30px;
         }
-        
-        .color-swatch {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid #ccc;
-        }
-        
-        .selected {
-            border: 3px solid black;
-        }
-        
-        #svgContainer svg {
-            max-width: 100%;
-            height: auto;
-            border: 1px solid #f9f9f9;
-            background-color: #f9f9f9;
-            display: block;
-            margin: 20px auto;
-        }
-        
-        .button-container {
-            position: absolute;
-            top: 200px;
-            right: 100px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-        
+
         .btn {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #28a745;
+            padding: 12px 24px;
+            font-size: 0.85em;
+            font-family: inherit;
             color: white;
             border: none;
             cursor: pointer;
-            border-radius: 5px;
-            margin: 5px 0;
             text-decoration: none;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+            font-weight: 400;
+            display: inline-block;
         }
-        
-        .btn-retour {
-            position: absolute;
-            top: 30px;
-            left: 100px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            margin: 5px 0;
-            text-decoration: none;
+
+        .btn-primary {
+            background: #27ae60;
         }
-        
-        .btn:hover {
-            background-color: #218838;
+
+        .btn-primary:hover {
+            background: #229954;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 18px 16px 20px;
+            }
+            h1 {
+                font-size: 1.6em;
+            }
+            .container {
+                padding: 20px 16px 28px;
+            }
+            #svgContainer {
+                padding: 12px 4px;
+                min-height: 0;
+            }
+            .button-container {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1>Configurateur de Barre CSO</h1>
-    <div class="color-palette" id="colorPalette"></div>
-    <div id="svgContainer"></div>
+    <header>
+        <a href="index.html" class="btn-retour">← Retour à l'accueil</a>
+        <h1>Configurateur de Barre CSO</h1>
+        <p>
+            Choisissez une couleur dans la palette, puis cliquez sur les zones de la barre pour les colorer.
+        </p>
+    </header>
 
-    <div class="button-container">
-        <input type="number" id="quantity" min="1" value="1" style="padding: 5px; font-size: 16px; width: 60px; text-align: center;">
-        <button class="btn" onclick="addToCart()">Ajouter au Panier</button>
-        <a href="panier.html" class="btn">Voir le Panier</a>
-        <button class="btn btn-clear" onclick="clearCart()">Vider le Panier</button>
-        <select id="length" style="padding: 5px; font-size: 16px;">
-            <option value="3m">3m</option>
-            <option value="3.5m">3,50m</option>
-        </select>
+    <div class="container">
+        <div class="section">
+            <h2 class="section-title">Configuration de la barre</h2>
 
+            <div class="controls">
+                <div class="control-group">
+                    <label for="length">Longueur</label>
+                    <select id="length">
+                        <option value="3m">3m</option>
+                        <option value="3.5m">3,50m</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="quantity">Quantité</label>
+                    <input type="number" id="quantity" min="1" value="1">
+                </div>
+            </div>
+
+            <div id="svgContainer"></div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Palette de couleurs RAL</h2>
+            <div class="color-palette" id="colorPalette"></div>
+        </div>
+
+        <div class="button-container">
+            <button class="btn btn-primary" id="addToCartBtn" onclick="addToCart()">Ajouter au Panier</button>
+            <a href="panier.html" class="btn btn-secondary">Voir le Panier</a>
+            <button class="btn btn-danger" onclick="if (clearCart()) alert('Le panier a été vidé.')">Vider le Panier</button>
+        </div>
     </div>
 
-    <a href="index.html" class="btn-retour">Retour à l'accueil</a>
-
-
-
+    <script src="js/ral.js"></script>
+    <script src="js/cart.js"></script>
     <script>
-        const hexToRal = {
-            "#d0b084": "RAL 1001",
-            "#ddc49a": "RAL 1014",
-            "#e6d2b5": "RAL 1015",
-            "#f1dd38": "RAL 1016",
-            "#da6e00": "RAL 2000",
-            "#c73f4a": "RAL 3018",
-            "#bb1e10": "RAL 3020",
-            "#8d3c4b": "RAL 4002",
-            "#bb4077": "RAL 4010",
-            "#00387a": "RAL 5002",
-            "#193153": "RAL 5013",
-            "#637d96": "RAL 5014",
-            "#222d5a": "RAL 5022",
-            "#114232": "RAL 6005",
-            "#61993b": "RAL 6018",
-            "#b9ceac": "RAL 6019",
-            "#8a9977": "RAL 6021",
-            "#7aadac": "RAL 6034",
-            "#575d5e": "RAL 7012",
-            "#4f5358": "RAL 7015",
-            "#383e42": "RAL 7016",
-            "#2f3234": "RAL 7021",
-            "#4c4a44": "RAL 7022",
-            "#c5c7c4": "RAL 7035",
-            "#7a7b7a": "RAL 7037",
-            "#8e9291": "RAL 7042",
-            "#8d9295": "RAL 7045",
-            "#5a3827": "RAL 8011",
-            "#66332b": "RAL 8012",
-            "#4a3526": "RAL 8014",
-            "#e9e0d2": "RAL 9001",
-            "#2b2b2c": "RAL 9004",
-            "#0e0e10": "RAL 9005",
-            "#f1ece1": "RAL 9010",
-            "#f1f0ea": "RAL 9016"
-        };
-
-        const colors = [
-            "#d0b084", "#ddc49a", "#e6d2b5", "#f1dd38", "#da6e00",
-            "#c73f4a", "#bb1e10", "#8d3c4b", "#bb4077", "#00387a",
-            "#193153", "#637d96", "#222d5a", "#114232", "#61993b",
-            "#b9ceac", "#8a9977", "#7aadac", "#575d5e", "#4f5358",
-            "#383e42", "#2f3234", "#4c4a44", "#c5c7c4", "#7a7b7a",
-            "#8e9291", "#8d9295", "#5a3827", "#66332b", "#4a3526",
-            "#e9e0d2", "#2b2b2c", "#0e0e10", "#f1ece1", "#f1f0ea"
-        ];
-
-        let selectedColor = colors[0];
+        let selectedColor = ralColors[0];
         const colorPalette = document.getElementById("colorPalette");
 
-        // Pour chaque couleur, on crée un conteneur qui regroupe la pastille et le nom RAL
-        colors.forEach(color => {
+        // Pour chaque couleur, on crée un conteneur cliquable qui regroupe la pastille et le nom RAL
+        ralColors.forEach(color => {
             const swatchContainer = document.createElement("div");
-            swatchContainer.style.display = "inline-block";
-            swatchContainer.style.textAlign = "center";
-            swatchContainer.style.margin = "5px";
+            swatchContainer.classList.add("color-item");
 
             // Création de la pastille de couleur
             const swatch = document.createElement("div");
             swatch.classList.add("color-swatch");
             swatch.style.backgroundColor = color;
-            swatch.addEventListener("click", () => {
+            swatchContainer.appendChild(swatch);
+
+            // Création du label pour afficher le code RAL correspondant
+            const label = document.createElement("div");
+            label.classList.add("color-label");
+            label.innerText = getRal(color) || "RAL inconnu";
+            swatchContainer.appendChild(label);
+
+            swatchContainer.addEventListener("click", () => {
                 // Retirer la classe "selected" à toutes les pastilles
                 document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("selected"));
                 swatch.classList.add("selected");
                 selectedColor = color;
             });
-            swatchContainer.appendChild(swatch);
-
-            // Création du label pour afficher le code RAL correspondant
-            const label = document.createElement("div");
-            label.innerText = hexToRal[color] || "RAL inconnu";
-            label.style.fontSize = "10px";
-            label.style.marginTop = "2px";
-            swatchContainer.appendChild(label);
 
             colorPalette.appendChild(swatchContainer);
         });
+
+        // La première couleur est la couleur active au chargement : on l'affiche comme sélectionnée.
+        colorPalette.querySelector(".color-swatch").classList.add("selected");
 
         const groups = {
             "b1-group1": ["b1-s1"],
@@ -250,8 +386,92 @@
             return null;
         }
 
+        // Applique la couleur sélectionnée à toutes les sections du groupe de la section `sectionId`.
+        function colorGroupOf(sectionId) {
+            console.log("Section cliquée:", sectionId);
+            const groupId = findGroup(sectionId);
+            if (!groupId) {
+                console.warn("Aucun groupe trouvé pour :", sectionId);
+                return;
+            }
+            groups[groupId].forEach(id => {
+                const targetSection = document.getElementById(id);
+                if (targetSection) {
+                    const elements = targetSection.querySelectorAll("path, rect, circle, polygon, line, ellipse");
+                    if (elements.length === 0) {
+                        targetSection.setAttribute("fill", selectedColor);
+                        targetSection.style.fill = selectedColor;
+                    } else {
+                        elements.forEach(element => {
+                            element.setAttribute("fill", selectedColor);
+                            element.style.fill = selectedColor;
+                        });
+                    }
+                }
+            });
+        }
+
+        // Section (zone colorable) à laquelle appartient une pièce du dessin.
+        function sectionOf(shape) {
+            return shape.closest("[id^='b'][id*='-s']");
+        }
+
+        // Convertit une couleur calculée ("rgb(0, 128, 128)") en code hex.
+        // Renvoie null pour tout le reste (dégradé, "none"…).
+        function rgbToHex(color) {
+            const match = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(color);
+            if (!match) return null;
+            return "#" + match.slice(1).map(n => Number(n).toString(16).padStart(2, "0")).join("");
+        }
+
+        // Vrai si une zone colorable affiche encore une couleur hors palette,
+        // c'est-à-dire la couleur par défaut du SVG (#008080, #ff9955…).
+        function hasOffPaletteZone() {
+            const shapes = "path, rect, circle, polygon, line, ellipse";
+            return Object.values(groups).flat().some(sectionId => {
+                const section = document.getElementById(sectionId);
+                if (!section) return false;
+                const elements = section.querySelectorAll(shapes);
+                return Array.from(elements.length ? elements : [section])
+                    .some(element => !getRal(rgbToHex(getComputedStyle(element).fill)));
+            });
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const model = urlParams.get("model");
+
+        // Mode modification : config.html?model=1xx&edit=<index de la ligne du panier>
+        const editContext = model ? getEditContext("config.html", model) : null;
+
+        // Recopie, section par section, les couleurs du SVG enregistré dans l'article.
+        function restoreSectionColors(savedSvg) {
+            const shapes = "path, rect, circle, polygon, line, ellipse";
+            const savedDoc = new DOMParser().parseFromString(savedSvg || "", "text/html");
+            const copyFill = (from, to) => {
+                const fill = from.getAttribute("fill");
+                if (fill !== null) to.setAttribute("fill", fill);
+                if (from.style.fill) to.style.fill = from.style.fill;
+            };
+
+            document.querySelectorAll("#svgContainer [id^='b'][id*='-s']").forEach(section => {
+                const savedSection = savedDoc.getElementById(section.id);
+                if (!savedSection) return;
+                copyFill(savedSection, section);
+
+                const elements = section.querySelectorAll(shapes);
+                const savedElements = savedSection.querySelectorAll(shapes);
+                if (elements.length !== savedElements.length) return;
+                elements.forEach((element, i) => copyFill(savedElements[i], element));
+            });
+        }
+
+        // Remet le configurateur dans l'état de l'article en cours de modification.
+        function restoreItem(item) {
+            document.getElementById("quantity").value = item.quantity || 1;
+            setSelectValue("length", item.length);
+            restoreSectionColors(item.svg);
+            document.getElementById("addToCartBtn").textContent = "Mettre à jour l'article";
+        }
 
         if (model) {
             fetch(`Bar_V${model}.svg`)
@@ -267,29 +487,24 @@
                     sections.forEach(section => {
                         section.style.cursor = "pointer";
                         section.addEventListener("click", function() {
-                            console.log("Section cliquée:", this.id);
-                            const groupId = findGroup(this.id);
-                            if (!groupId) {
-                                console.warn("Aucun groupe trouvé pour :", this.id);
-                                return;
-                            }
-                            groups[groupId].forEach(sectionId => {
-                                const targetSection = document.getElementById(sectionId);
-                                if (targetSection) {
-                                    const elements = targetSection.querySelectorAll("path, rect, circle, polygon, line, ellipse");
-                                    if (elements.length === 0) {
-                                        targetSection.setAttribute("fill", selectedColor);
-                                        targetSection.style.fill = selectedColor;
-                                    } else {
-                                        elements.forEach(element => {
-                                            element.setAttribute("fill", selectedColor);
-                                            element.style.fill = selectedColor;
-                                        });
-                                    }
-                                }
-                            });
+                            colorGroupOf(this.id);
                         });
                     });
+
+                    // Au doigt, c'est la zone la plus proche du point touché qui est colorée (voir shapeAtFinger, js/cart.js).
+                    const sectionShapes = Array.from(sections).flatMap(section => {
+                        const shapes = section.querySelectorAll("path, rect, circle, polygon, line, ellipse");
+                        return Array.from(shapes.length ? shapes : [section]);
+                    });
+                    svgElement.addEventListener("click", event => {
+                        if (!isFingerTap(event)) return;
+                        const shape = shapeAtFinger(sectionShapes, event.clientX, event.clientY);
+                        if (!shape) return;
+                        event.stopPropagation();
+                        colorGroupOf(sectionOf(shape).id);
+                    }, true);
+
+                    if (editContext) restoreItem(editContext.item);
                 })
                 .catch(error => alert("Erreur de chargement du modèle SVG"));
         } else {
@@ -320,7 +535,14 @@
                 return;
             }
 
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+            // Les couleurs par défaut du SVG ne sont pas des RAL : elles resteraient sur l'image
+            // du devis sans figurer dans la liste des couleurs.
+            if (hasOffPaletteZone()) {
+                alert("Certaines zones de la barre ont encore leur couleur d'origine, qui ne fait pas partie de la palette RAL.\n\n" +
+                    "Cliquez sur chacune de ces zones pour lui appliquer une couleur de la palette, puis " +
+                    (editContext ? "mettez à jour l'article." : "ajoutez la barre au panier."));
+                return;
+            }
 
             // Récupérer toutes les couleurs appliquées sur les éléments SVG
             let selectedSections = document.querySelectorAll("#svgContainer svg [fill]");
@@ -345,18 +567,22 @@
                 return;
             }
 
-            // Ajouter un nouvel élément avec SVG enregistré
-            cart.push({
+            // Ajouter l'article (ou remplacer la ligne en cours de modification), avec le SVG enregistré
+            const result = saveCartItem({
                 model: model,
                 colors: colors,
                 quantity: quantity,
                 svg: svgElement,
-                length: length
-            });
+                length: length,
+                sourcePage: "config.html"
+            }, editContext);
 
-            localStorage.setItem("cart", JSON.stringify(cart));
-            console.log("✅ Modèle ajouté au panier avec succès !");
-            alert("Modèle ajouté au panier !");
+            if (result === "updated") {
+                window.location.href = "panier.html";
+            } else if (result === "added") {
+                console.log("✅ Modèle ajouté au panier avec succès !");
+                alert("Modèle ajouté au panier !");
+            }
         }
     </script>
 

@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <title>EQUINOX - Catalogue des barres de CSO</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Catalogue des barres d'obstacles EQUINOX : choisissez un modèle de barre de CSO, personnalisez ses couleurs RAL et préparez votre devis.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <style>
         /* Reset */
         
@@ -214,7 +216,7 @@
         </div>
         <h1>Catalogue des barres de CSO</h1>
         <p>
-            Découvrez nos modèles de barres et personnalisez-les selon vos couleurs RAL. Vous pouvez aussi créer une barre ou une palanque 100% personnalisée, ou configurer directement votre pack complet.
+            Découvrez nos modèles de barres et personnalisez-les selon vos couleurs RAL. Vous pouvez aussi créer une barre ou une palanque 100% personnalisée.
         </p>
     </header>
 
@@ -294,23 +296,21 @@
                 <img src="Bar_V113.svg" alt="Modèle 113">
                 <p>Modèle 113</p>
             </a>
+            <a class="catalog-item" href="config.html?model=114">
+                <img src="Bar_V114.svg" alt="Modèle 114">
+                <p>Modèle 114</p>
+            </a>
         </div>
     </main>
 
     <!-- Pied de page -->
     <footer>
-        © 2025 EQUINOX - Créateur d'espaces équestres
+        © <span id="footerYear">2026</span> EQUINOX - Créateur d'espaces équestres
     </footer>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // Si la session n'est pas encore active, initialiser le panier vide
-            if (!sessionStorage.getItem("sessionActive")) {
-                console.log("Initialisation de la session et création d'un panier vide.");
-                localStorage.setItem("cart", JSON.stringify([])); // Crée un panier vide
-                sessionStorage.setItem("sessionActive", "true"); // Marque la session comme active
-            }
-        });
+        // Année du pied de page : toujours l'année courante.
+        document.getElementById("footerYear").textContent = new Date().getFullYear();
     </script>
 </body>
 

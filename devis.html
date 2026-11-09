@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <title>Devis - EQUINOX</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Générez votre devis EQUINOX en PDF à partir des barres d'obstacles de votre panier.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <style>
         * {
             margin: 0;
@@ -131,12 +133,18 @@
             font-weight: 600;
         }
         
+        /* Sur petit écran, le tableau défile dans son bloc au lieu d'écraser ses colonnes. */
         .order-summary {
             margin-top: 15px;
+            overflow-x: auto;
         }
         
+        /* Largeurs de colonnes fixées (voir <colgroup>) : le tableau ne dépasse jamais sa largeur,
+           donc jamais la largeur utile de la page du PDF, quel que soit le contenu du panier. */
         table {
             width: 100%;
+            min-width: 900px;
+            table-layout: fixed;
             border-collapse: collapse;
             background: white;
             margin-top: 15px;
@@ -149,6 +157,19 @@
             padding: 8px;
             text-align: center;
             vertical-align: middle;
+            overflow-wrap: anywhere;
+        }
+        
+        .col-image {
+            width: 120px;
+        }
+        
+        .col-model {
+            width: 25%;
+        }
+        
+        .col-small {
+            width: 9%;
         }
         
         th {
@@ -158,17 +179,16 @@
         }
         
         .svg-container-td {
-            width: 120px;
-            min-width: 120px;
-            max-width: 120px;
             padding: 0;
         }
         
+        /* La vignette garde les proportions du dessin, bornée par la largeur de la colonne et par
+           une hauteur maximale. Pas d'object-fit : html2canvas l'ignore et étirait l'image dans le PDF. */
         .svg-container-td img {
-            width: 100%;
-            max-height: 20px;
-            object-fit: contain;
+            max-width: 100%;
+            max-height: 40px;
             display: block;
+            margin: 0 auto;
         }
         
         .color-box {
@@ -191,6 +211,7 @@
             height: 18px;
             border: 1px solid #000;
             display: inline-block;
+            flex-shrink: 0;
         }
         
         .color-ref {
@@ -264,7 +285,7 @@
         </div>
         <h1>Devis</h1>
         <p>
-            Renseignez le nom, le prénom et la date de livraison souhaitée. Téléchargez ensuite votre devis en PDF. Le numéro de devis s'incrémente automatiquement à chaque génération.
+            Renseignez le nom, le numéro de commande et la date de livraison souhaitée. Téléchargez ensuite votre devis en PDF. Le numéro de devis est établi à partir de la date et de l'heure de génération.
         </p>
     </header>
 
@@ -273,7 +294,7 @@
             <div class="devis-info">
                 <div>
                     <span class="label">Numéro de devis :</span>
-                    <span class="devis-number">DV-<span id="devisNumber">0001</span></span>
+                    <span class="devis-number" id="devisNumber"></span>
                 </div>
                 <div id="devisDateDisplay"></div>
             </div>
@@ -288,8 +309,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="firstName">Numéro de commande *</label>
-                        <input type="text" id="firstName" name="firstName" required>
+                        <label for="orderNumber">Numéro de commande *</label>
+                        <input type="text" id="orderNumber" name="orderNumber" required>
                     </div>
 
                     <div class="form-group">
@@ -308,6 +329,15 @@
                     <div class="section-title">Votre sélection</div>
 
                     <table>
+                        <colgroup>
+                            <col class="col-image">
+                            <col class="col-model">
+                            <col>
+                            <col class="col-small">
+                            <col class="col-small">
+                            <col class="col-small">
+                            <col class="col-small">
+                        </colgroup>
                         <thead>
                             <tr>
                                 <th>Image</th>
@@ -332,68 +362,30 @@
     </main>
 
     <footer>
-        © 2025 EQUINOX - Créateur d'espaces équestres
+        © <span id="footerYear">2026</span> EQUINOX - Créateur d'espaces équestres
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <!-- html2pdf.js 0.14.0, copie locale du fichier publié sur cdnjs -->
+    <script src="js/vendor/html2pdf.bundle.min.js"></script>
 
+    <script src="js/ral.js"></script>
+    <script src="js/cart.js"></script>
     <script>
-        const hexToRal = {
-            "#d0b084": "RAL 1001",
-            "#ddc49a": "RAL 1014",
-            "#e6d2b5": "RAL 1015",
-            "#f1dd38": "RAL 1016",
-            "#da6e00": "RAL 2000",
-            "#c73f4a": "RAL 3018",
-            "#bb1e10": "RAL 3020",
-            "#8d3c4b": "RAL 4002",
-            "#193153": "RAL 5013",
-            "#637d96": "RAL 5014",
-            "#222d5a": "RAL 5022",
-            "#114232": "RAL 6005",
-            "#61993b": "RAL 6018",
-            "#b9ceac": "RAL 6019",
-            "#8a9977": "RAL 6021",
-            "#575d5e": "RAL 7012",
-            "#4f5358": "RAL 7015",
-            "#383e42": "RAL 7016",
-            "#2f3234": "RAL 7021",
-            "#4c4a44": "RAL 7022",
-            "#c5c7c4": "RAL 7035",
-            "#7a7b7a": "RAL 7037",
-            "#8e9291": "RAL 7042",
-            "#8d9295": "RAL 7045",
-            "#66332b": "RAL 8012",
-            "#4a3526": "RAL 8014",
-            "#e9e0d2": "RAL 9001",
-            "#2b2b2c": "RAL 9004",
-            "#0e0e10": "RAL 9005",
-            "#f1ece1": "RAL 9010",
-            "#f1f0ea": "RAL 9016"
-        };
-
-        let currentDevisNumber = 1;
-
-        function loadDevisNumber() {
-            const stored = localStorage.getItem("devisCounter");
-            currentDevisNumber = stored ? parseInt(stored, 10) : 1;
-            if (isNaN(currentDevisNumber) || currentDevisNumber < 1) currentDevisNumber = 1;
-            updateDevisNumberDisplay();
+        // Sans backend, pas de compteur commun à tous les navigateurs : le numéro de devis
+        // est établi à partir de la date et de l'heure, à la seconde près pour que deux devis
+        // générés dans la même minute n'aient pas le même numéro, par exemple DV-20261109-150742.
+        function formatDevisNumber(date) {
+            const pad = n => String(n).padStart(2, "0");
+            const day = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`;
+            return `DV-${day}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
         }
 
-        function formatDevisNumber(num) {
-            return num.toString().padStart(4, "0");
-        }
-
-        function updateDevisNumberDisplay() {
+        // Affiche le numéro de devis correspondant à `date` et le renvoie.
+        function updateDevisNumber(date) {
+            const devisNumber = formatDevisNumber(date);
             const span = document.getElementById("devisNumber");
-            if (span) span.textContent = formatDevisNumber(currentDevisNumber);
-        }
-
-        function incrementDevisNumber() {
-            currentDevisNumber += 1;
-            localStorage.setItem("devisCounter", currentDevisNumber);
-            updateDevisNumberDisplay();
+            if (span) span.textContent = devisNumber;
+            return devisNumber;
         }
 
         function updateDevisDate() {
@@ -408,15 +400,14 @@
             if (el) el.textContent = "Date du devis : " + frDate;
         }
 
-        function makeColorsHtml(colors, customRal) {
+        function makeColorsHtml(colors, customRals) {
             if (!colors) return "";
             return colors.map(c => {
-                const hex = String(c).toLowerCase();
-                const ralCode = hexToRal[hex] || (customRal || "RAL inconnu");
+                const ralCode = getColorLabel(c, customRals) || "RAL inconnu";
                 return `
                     <div class="color-item">
-                        <span class="color-sample" style="background-color:${c};"></span>
-                        <span class="color-ref">${ralCode}</span>
+                        <span class="color-sample" style="background-color:${escapeHtml(c)};"></span>
+                        <span class="color-ref">${escapeHtml(ralCode)}</span>
                     </div>
                 `;
             }).join("");
@@ -439,10 +430,29 @@
             document.getElementById("countTotal").textContent = total;
         }
 
+        // Les barres personnalisées sont enregistrées avec width="100%" et sans hauteur : l'image
+        // n'a alors pas de taille propre et sort tronquée dans le PDF. On lui donne la taille de
+        // son viewBox. Les modèles du catalogue ont déjà une largeur et une hauteur en unités
+        // absolues (et dessinent au-delà de leur viewBox) : ils sont laissés tels quels.
+        function withExplicitSize(svgString) {
+            const svg = new DOMParser().parseFromString(svgString, "image/svg+xml").documentElement;
+            if (svg.nodeName !== "svg") return svgString;
+
+            const isAbsolute = name => /^\d*\.?\d+(px)?$/.test((svg.getAttribute(name) || "").trim());
+            if (isAbsolute("width") && isAbsolute("height")) return svgString;
+
+            const viewBox = (svg.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
+            if (viewBox.length !== 4 || !(viewBox[2] > 0) || !(viewBox[3] > 0)) return svgString;
+
+            svg.setAttribute("width", viewBox[2]);
+            svg.setAttribute("height", viewBox[3]);
+            return new XMLSerializer().serializeToString(svg);
+        }
+
         function svgToImgHtml(svgString, altText) {
             if (!svgString) return "❌ Erreur SVG";
-            const encoded = encodeURIComponent(svgString);
-            return `<img src="data:image/svg+xml;utf8,${encoded}" alt="${altText}">`;
+            const encoded = encodeURIComponent(withExplicitSize(svgString));
+            return `<img src="data:image/svg+xml;utf8,${encoded}" alt="${escapeHtml(altText)}">`;
         }
 
         function loadOrderSummary() {
@@ -462,20 +472,20 @@
             }
 
             cart.forEach(item => {
-                const imgHtml = svgToImgHtml(item.svg, `Modèle ${item.model}`);
-                const colorsHtml = makeColorsHtml(item.colors, item.custom_ral || null);
+                const imgHtml = svgToImgHtml(item.svg, getModelLabel(item));
+                const colorsHtml = makeColorsHtml(item.colors, getCustomRals(item));
                 const heightDisplay = item.height || "-";
                 const diameterDisplay = item.diameter || "-";
 
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td class="svg-container-td">${imgHtml}</td>
-                    <td>Modèle ${item.model}</td>
+                    <td>${escapeHtml(getModelLabel(item))}</td>
                     <td><div class="color-box">${colorsHtml}</div></td>
-                    <td>${item.length || "Non spécifié"}</td>
-                    <td>${heightDisplay}</td>
-                    <td>${diameterDisplay}</td>
-                    <td>${item.quantity}</td>
+                    <td>${escapeHtml(item.length || "Non spécifié")}</td>
+                    <td>${escapeHtml(heightDisplay)}</td>
+                    <td>${escapeHtml(diameterDisplay)}</td>
+                    <td>${escapeHtml(item.quantity)}</td>
                 `;
                 orderTable.appendChild(row);
             });
@@ -483,16 +493,82 @@
             console.log("✅ Résumé du devis chargé avec succès !");
         }
 
+        // Attend que les images de `root` soient chargées, pour que les hauteurs mesurées soient définitives.
+        function imagesLoaded(root) {
+            return Promise.all(Array.from(root.querySelectorAll("img")).map(img =>
+                img.complete ? null : new Promise(resolve => {
+                    img.addEventListener("load", resolve, { once: true });
+                    img.addEventListener("error", resolve, { once: true });
+                })));
+        }
+
+        // html2pdf dessine tout le devis en une seule image, découpée ensuite en pages : il ne sait
+        // pas répéter l'en-tête d'un tableau. On pagine donc le tableau dans la copie du devis qu'il
+        // s'apprête à dessiner (`container`) : une ligne qui chevaucherait deux pages est repoussée
+        // en haut de la page suivante, précédée d'une copie de l'en-tête.
+        // `pageHeight` est la hauteur utile d'une page, en pixels.
+        function paginateTable(container, pageHeight) {
+            const table = container.querySelector("table");
+            const headRow = table && table.querySelector("thead tr");
+            const body = table && table.tBodies[0];
+            if (!headRow || !body || !body.rows.length || !(pageHeight > 0)) return;
+
+            const origin = container.getBoundingClientRect().top;
+            const top = el => el.getBoundingClientRect().top - origin;
+            const bottom = el => el.getBoundingClientRect().bottom - origin;
+            const pageOf = y => Math.floor(y / pageHeight);
+            // Un élément finissant à moins d'un pixel du bas de page compte comme coupé (sa bordure le serait).
+            const lastPageOf = el => pageOf(bottom(el) + 1);
+            const headHeight = bottom(headRow) - top(headRow);
+
+            // Règle la hauteur de `spacer` pour que `el`, placé après lui, commence à `target`.
+            // La seconde passe corrige l'effet des marges et des bordures fusionnées.
+            const pushTo = (spacer, el, target) => {
+                spacer.style.height = "0px";
+                for (let pass = 0; pass < 2; pass++) {
+                    spacer.style.height = `${Math.max(0, parseFloat(spacer.style.height) + target - top(el))}px`;
+                }
+            };
+
+            // L'en-tête d'origine ne reste pas seul en bas de page : s'il n'est pas sur la même page
+            // que la fin de la première ligne, tout le tableau passe à la page suivante.
+            const firstRow = body.rows[0];
+            if (pageOf(top(headRow)) !== lastPageOf(firstRow) && bottom(firstRow) - top(headRow) + 1 < pageHeight) {
+                const target = (pageOf(top(headRow)) + 1) * pageHeight;
+                const spacer = document.createElement("div");
+                table.parentNode.insertBefore(spacer, table);
+                pushTo(spacer, headRow, target);
+            }
+
+            Array.from(body.rows).forEach(row => {
+                const page = pageOf(top(row));
+                if (lastPageOf(row) === page) return; // la ligne tient sur sa page
+                if (headHeight + bottom(row) - top(row) + 1 >= pageHeight) return; // plus haute qu'une page
+
+                const spacerRow = document.createElement("tr");
+                const spacer = document.createElement("td");
+                spacer.colSpan = headRow.cells.length;
+                spacer.style.padding = "0";
+                spacer.style.border = "none";
+                spacerRow.appendChild(spacer);
+
+                const headCopy = headRow.cloneNode(true);
+                body.insertBefore(spacerRow, row);
+                body.insertBefore(headCopy, row);
+                pushTo(spacer, headCopy, (page + 1) * pageHeight);
+            });
+        }
+
         async function generatePdf() {
             const lastName = document.getElementById("lastName").value.trim();
-            const firstName = document.getElementById("firstName").value.trim();
+            const orderNumber = document.getElementById("orderNumber").value.trim();
             const deliveryDate = document.getElementById("deliveryDate").value.trim();
             const cart = JSON.parse(localStorage.getItem("cart")) || [];
             const downloadBtn = document.getElementById("downloadBtn");
             const loadingText = document.getElementById("loading");
 
-            if (!lastName || !firstName || !deliveryDate) {
-                alert("Veuillez remplir tous les champs obligatoires (nom, prénom, date de livraison).");
+            if (!lastName || !orderNumber || !deliveryDate) {
+                alert("Veuillez remplir tous les champs obligatoires (nom, numéro de commande, date de livraison).");
                 return;
             }
 
@@ -501,21 +577,21 @@
                 return;
             }
 
-            const currentNumberFormatted = formatDevisNumber(currentDevisNumber);
-            const fileName = `Devis_EQX_${currentNumberFormatted}.pdf`;
+            // Le numéro et la date imprimés sont ceux du moment de la génération.
+            const now = new Date();
+            const fileName = `Devis_EQX_${updateDevisNumber(now)}.pdf`;
 
             downloadBtn.disabled = true;
             loadingText.style.display = "block";
 
             const infoBloc = document.getElementById("devisDateDisplay");
             if (infoBloc) {
-                const now = new Date();
                 const frNow = now.toLocaleDateString('fr-FR', {
                     year: 'numeric',
                     month: '2-digit',
                     day: '2-digit'
                 });
-                infoBloc.textContent = `Date du devis : ${frNow} – Client : ${firstName} ${lastName} – Livraison souhaitée : ${deliveryDate}`;
+                infoBloc.textContent = `Date du devis : ${frNow} – Client : ${lastName}, commande n° ${orderNumber} – Livraison souhaitée : ${deliveryDate}`;
             }
 
             const element = document.getElementById('pdfContent');
@@ -529,16 +605,21 @@
                 html2canvas: {
                     scale: 1
                 },
+                // Paysage : les 7 colonnes tiennent dans la largeur utile sans couper les mots.
                 jsPDF: {
                     unit: 'mm',
                     format: 'a4',
-                    orientation: 'portrait'
+                    orientation: 'landscape'
                 }
             };
 
             try {
-                await html2pdf().set(opt).from(element).save();
-                incrementDevisNumber();
+                // Entre la copie du devis (toContainer) et son dessin : aucune ligne du tableau
+                // coupée entre deux pages, et l'en-tête répété en haut de chaque page.
+                await html2pdf().set(opt).from(element).toContainer().then(async function() {
+                    await imagesLoaded(this.prop.container);
+                    paginateTable(this.prop.container, this.prop.pageSize.inner.px.height);
+                }).save();
             } catch (err) {
                 console.error("Erreur lors de la génération du PDF :", err);
                 alert("Une erreur est survenue pendant la génération du PDF.");
@@ -549,7 +630,9 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            loadDevisNumber();
+            // Année du pied de page : toujours l'année courante.
+            document.getElementById("footerYear").textContent = new Date().getFullYear();
+            updateDevisNumber(new Date());
             updateDevisDate();
             loadOrderSummary();
         });
