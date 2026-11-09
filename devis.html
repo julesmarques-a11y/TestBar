@@ -264,7 +264,7 @@
         </div>
         <h1>Devis</h1>
         <p>
-            Renseignez le nom, le prénom et la date de livraison souhaitée. Téléchargez ensuite votre devis en PDF. Le numéro de devis s'incrémente automatiquement à chaque génération.
+            Renseignez le nom, le numéro de commande et la date de livraison souhaitée. Téléchargez ensuite votre devis en PDF. Le numéro de devis s'incrémente automatiquement à chaque génération.
         </p>
     </header>
 
@@ -288,8 +288,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="firstName">Numéro de commande *</label>
-                        <input type="text" id="firstName" name="firstName" required>
+                        <label for="orderNumber">Numéro de commande *</label>
+                        <input type="text" id="orderNumber" name="orderNumber" required>
                     </div>
 
                     <div class="form-group">
@@ -451,14 +451,14 @@
 
         async function generatePdf() {
             const lastName = document.getElementById("lastName").value.trim();
-            const firstName = document.getElementById("firstName").value.trim();
+            const orderNumber = document.getElementById("orderNumber").value.trim();
             const deliveryDate = document.getElementById("deliveryDate").value.trim();
             const cart = JSON.parse(localStorage.getItem("cart")) || [];
             const downloadBtn = document.getElementById("downloadBtn");
             const loadingText = document.getElementById("loading");
 
-            if (!lastName || !firstName || !deliveryDate) {
-                alert("Veuillez remplir tous les champs obligatoires (nom, prénom, date de livraison).");
+            if (!lastName || !orderNumber || !deliveryDate) {
+                alert("Veuillez remplir tous les champs obligatoires (nom, numéro de commande, date de livraison).");
                 return;
             }
 
@@ -481,7 +481,7 @@
                     month: '2-digit',
                     day: '2-digit'
                 });
-                infoBloc.textContent = `Date du devis : ${frNow} – Client : ${firstName} ${lastName} – Livraison souhaitée : ${deliveryDate}`;
+                infoBloc.textContent = `Date du devis : ${frNow} – Client : ${lastName}, commande n° ${orderNumber} – Livraison souhaitée : ${deliveryDate}`;
             }
 
             const element = document.getElementById('pdfContent');
