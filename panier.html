@@ -350,41 +350,8 @@
         </div>
     </div>
 
+    <script src="js/ral.js"></script>
     <script>
-        const hexToRal = {
-            "#d0b084": "RAL 1001",
-            "#ddc49a": "RAL 1014",
-            "#e6d2b5": "RAL 1015",
-            "#f1dd38": "RAL 1016",
-            "#da6e00": "RAL 2000",
-            "#c73f4a": "RAL 3018",
-            "#bb1e10": "RAL 3020",
-            "#8d3c4b": "RAL 4002",
-            "#193153": "RAL 5013",
-            "#637d96": "RAL 5014",
-            "#222d5a": "RAL 5022",
-            "#114232": "RAL 6005",
-            "#61993b": "RAL 6018",
-            "#b9ceac": "RAL 6019",
-            "#8a9977": "RAL 6021",
-            "#575d5e": "RAL 7012",
-            "#4f5358": "RAL 7015",
-            "#383e42": "RAL 7016",
-            "#2f3234": "RAL 7021",
-            "#4c4a44": "RAL 7022",
-            "#c5c7c4": "RAL 7035",
-            "#7a7b7a": "RAL 7037",
-            "#8e9291": "RAL 7042",
-            "#8d9295": "RAL 7045",
-            "#66332b": "RAL 8012",
-            "#4a3526": "RAL 8014",
-            "#e9e0d2": "RAL 9001",
-            "#2b2b2c": "RAL 9004",
-            "#0e0e10": "RAL 9005",
-            "#f1ece1": "RAL 9010",
-            "#f1f0ea": "RAL 9016"
-        };
-
         document.addEventListener("DOMContentLoaded", () => {
             if (!sessionStorage.getItem("sessionActive")) {
                 sessionStorage.setItem("sessionActive", "true");
@@ -395,8 +362,7 @@
         function makeColorsHtml(colors, customRal) {
             if (!colors || colors.length === 0) return "";
             return colors.map(c => {
-                        const hex = c.toLowerCase();
-                        const ralLabel = hexToRal[hex] || (customRal || "");
+                        const ralLabel = getRal(c) || (customRal || "");
                         return `
                     <div class="color-item">
                         <div class="color-sample" style="background-color:${c};"></div>
