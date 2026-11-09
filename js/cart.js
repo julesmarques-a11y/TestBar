@@ -29,11 +29,25 @@ function clearCart() {
     return true;
 }
 
-// Page de configuration d'un article, ou null s'il n'est pas modifiable (pack, modèle inconnu).
+// Les packs de barres n'existent plus. Un navigateur qui les a utilisés peut encore avoir un pack
+// dans son panier (article { packSize, items }) et les clés de travail de l'ancien parcours :
+// on les retire au chargement de la page, avant toute lecture du panier.
+function removeLegacyPacks() {
+    ["tempPack", "selectedPackSize", "selectedBarsCount", "currentPack"]
+        .forEach(key => localStorage.removeItem(key));
+
+    const cart = readCart();
+    if (!Array.isArray(cart)) return;
+    const bars = cart.filter(item => !(item && item.items));
+    if (bars.length !== cart.length) writeCart(bars);
+}
+removeLegacyPacks();
+
+// Page de configuration d'un article, ou null s'il n'est pas modifiable (modèle inconnu).
 // Les articles ajoutés avant l'introduction de sourcePage n'ont pas ce champ :
 // on déduit alors la page à partir du nom de modèle.
 function getConfigPage(item) {
-    if (!item || item.items) return null;
+    if (!item) return null;
     if (CONFIG_PAGES.includes(item.sourcePage)) return item.sourcePage;
 
     const model = String(item.model || "");

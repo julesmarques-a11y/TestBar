@@ -256,23 +256,6 @@
             border-top: 1px solid #e0e0e0;
         }
         
-        .pack-header {
-            background: #34495e;
-            color: white;
-            padding: 20px 30px;
-            margin-bottom: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 4px solid #e74c3c;
-        }
-        
-        .pack-title {
-            font-size: 1.2em;
-            font-weight: 300;
-            letter-spacing: 0.5px;
-        }
-        
         .empty-cart {
             text-align: center;
             padding: 80px 20px;
@@ -352,11 +335,6 @@
                 <div class="cart-section" id="individualBarsContainer"></div>
             </div>
 
-            <div id="packsSection" style="display: none;">
-                <h2 class="section-title">📦 Packs de Barres</h2>
-                <div class="cart-section" id="packsContainer"></div>
-            </div>
-
             <div id="emptyCart" class="cart-section empty-cart" style="display: none;">
                 <div class="empty-cart-icon">🛒</div>
                 <h3>Votre panier est vide</h3>
@@ -396,17 +374,9 @@
             let count35m = 0;
 
             cart.forEach(item => {
-                if (!item.items) {
-                    const qty = item.quantity || 1;
-                    if (item.length === "3m") count3m += qty;
-                    if (item.length === "3.5m") count35m += qty;
-                } else {
-                    item.items.forEach(bar => {
-                        const qty = bar.quantity || 1;
-                        if (bar.length === "3m") count3m += qty;
-                        if (bar.length === "3.5m") count35m += qty;
-                    });
-                }
+                const qty = item.quantity || 1;
+                if (item.length === "3m") count3m += qty;
+                if (item.length === "3.5m") count35m += qty;
             });
 
             const total = count3m + count35m;
@@ -423,47 +393,22 @@
             document.getElementById("clearCartBtn").style.display = cart.length === 0 ? "none" : "";
 
             const individualContainer = document.getElementById("individualBarsContainer");
-            const packsContainer = document.getElementById("packsContainer");
             const individualSection = document.getElementById("individualSection");
-            const packsSection = document.getElementById("packsSection");
             const emptyCart = document.getElementById("emptyCart");
 
             individualContainer.innerHTML = "";
-            packsContainer.innerHTML = "";
-
-            const individualItems = cart.filter(item => !item.items);
-            const packItems = cart.filter(item => item.items);
 
             if (cart.length === 0) {
                 emptyCart.style.display = "block";
                 individualSection.style.display = "none";
-                packsSection.style.display = "none";
                 return;
             }
 
             emptyCart.style.display = "none";
-
-            if (individualItems.length > 0) {
-                individualSection.style.display = "block";
-                individualItems.forEach((item, index) => {
-                    const originalIndex = cart.indexOf(item);
-                    const itemHtml = createIndividualItemHtml(item, originalIndex);
-                    individualContainer.innerHTML += itemHtml;
-                });
-            } else {
-                individualSection.style.display = "none";
-            }
-
-            if (packItems.length > 0) {
-                packsSection.style.display = "block";
-                packItems.forEach((pack, index) => {
-                    const originalIndex = cart.indexOf(pack);
-                    const packHtml = createPackHtml(pack, originalIndex);
-                    packsContainer.innerHTML += packHtml;
-                });
-            } else {
-                packsSection.style.display = "none";
-            }
+            individualSection.style.display = "block";
+            cart.forEach((item, index) => {
+                individualContainer.innerHTML += createIndividualItemHtml(item, index);
+            });
 
             console.log("✅ Panier affiché.");
         }
@@ -503,44 +448,6 @@
                     </div>
                 </div>
             `;
-        }
-
-        function createPackHtml(pack, packIndex) {
-            let packHtml = `<div class="pack-header">
-                <span class="pack-title">📦 Pack de ${escapeHtml(pack.packSize)} barres</span>
-                <button class="btn btn-danger" onclick="removeFromCart(${packIndex})">Supprimer le pack</button>
-            </div>`;
-
-            pack.items.forEach((bar) => {
-                const svgImage = bar.svg
-                    ? `data:image/svg+xml;utf8,${encodeURIComponent(bar.svg)}`
-                    : "";
-
-                const colorBoxes = makeColorsHtml(bar.colors, getCustomRals(bar));
-
-                packHtml += `
-                    <div class="cart-item">
-                        <div>
-                            ${svgImage
-                                ? `<img src="${svgImage}" alt="Modèle ${escapeHtml(bar.model)}" class="item-image">`
-                                : '<div class="item-image" style="display:flex;align-items:center;justify-content:center;background:#f0f0f0;">❌</div>'}
-                        </div>
-                        <div class="item-details">
-                            <div class="item-model">Modèle ${escapeHtml(bar.model)}</div>
-                            <div class="item-length">📏 Longueur : ${escapeHtml(bar.length || "Non spécifié")}</div>
-                            ${bar.height ? `<div class="item-length">📐 Hauteur : ${escapeHtml(bar.height)}</div>` : ''}
-                            <div class="color-box">${colorBoxes}</div>
-                        </div>
-                        <div class="item-actions">
-                            <div class="quantity-control">
-                                <span>Quantité : ${escapeHtml(bar.quantity)}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            return packHtml;
         }
 
         function updateQuantity(index) {
