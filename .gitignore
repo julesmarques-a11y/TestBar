@@ -1,0 +1,16 @@
+# Dépendances PHP (Composer) – à la racine uniquement, js/vendor/ reste suivi
+/vendor/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Fichiers d'éditeur
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
