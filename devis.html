@@ -490,6 +490,72 @@
             console.log("✅ Résumé du devis chargé avec succès !");
         }
 
+        // Attend que les images de `root` soient chargées, pour que les hauteurs mesurées soient définitives.
+        function imagesLoaded(root) {
+            return Promise.all(Array.from(root.querySelectorAll("img")).map(img =>
+                img.complete ? null : new Promise(resolve => {
+                    img.addEventListener("load", resolve, { once: true });
+                    img.addEventListener("error", resolve, { once: true });
+                })));
+        }
+
+        // html2pdf dessine tout le devis en une seule image, découpée ensuite en pages : il ne sait
+        // pas répéter l'en-tête d'un tableau. On pagine donc le tableau dans la copie du devis qu'il
+        // s'apprête à dessiner (`container`) : une ligne qui chevaucherait deux pages est repoussée
+        // en haut de la page suivante, précédée d'une copie de l'en-tête.
+        // `pageHeight` est la hauteur utile d'une page, en pixels.
+        function paginateTable(container, pageHeight) {
+            const table = container.querySelector("table");
+            const headRow = table && table.querySelector("thead tr");
+            const body = table && table.tBodies[0];
+            if (!headRow || !body || !body.rows.length || !(pageHeight > 0)) return;
+
+            const origin = container.getBoundingClientRect().top;
+            const top = el => el.getBoundingClientRect().top - origin;
+            const bottom = el => el.getBoundingClientRect().bottom - origin;
+            const pageOf = y => Math.floor(y / pageHeight);
+            // Un élément finissant à moins d'un pixel du bas de page compte comme coupé (sa bordure le serait).
+            const lastPageOf = el => pageOf(bottom(el) + 1);
+            const headHeight = bottom(headRow) - top(headRow);
+
+            // Règle la hauteur de `spacer` pour que `el`, placé après lui, commence à `target`.
+            // La seconde passe corrige l'effet des marges et des bordures fusionnées.
+            const pushTo = (spacer, el, target) => {
+                spacer.style.height = "0px";
+                for (let pass = 0; pass < 2; pass++) {
+                    spacer.style.height = `${Math.max(0, parseFloat(spacer.style.height) + target - top(el))}px`;
+                }
+            };
+
+            // L'en-tête d'origine ne reste pas seul en bas de page : s'il n'est pas sur la même page
+            // que la fin de la première ligne, tout le tableau passe à la page suivante.
+            const firstRow = body.rows[0];
+            if (pageOf(top(headRow)) !== lastPageOf(firstRow) && bottom(firstRow) - top(headRow) + 1 < pageHeight) {
+                const target = (pageOf(top(headRow)) + 1) * pageHeight;
+                const spacer = document.createElement("div");
+                table.parentNode.insertBefore(spacer, table);
+                pushTo(spacer, headRow, target);
+            }
+
+            Array.from(body.rows).forEach(row => {
+                const page = pageOf(top(row));
+                if (lastPageOf(row) === page) return; // la ligne tient sur sa page
+                if (headHeight + bottom(row) - top(row) + 1 >= pageHeight) return; // plus haute qu'une page
+
+                const spacerRow = document.createElement("tr");
+                const spacer = document.createElement("td");
+                spacer.colSpan = headRow.cells.length;
+                spacer.style.padding = "0";
+                spacer.style.border = "none";
+                spacerRow.appendChild(spacer);
+
+                const headCopy = headRow.cloneNode(true);
+                body.insertBefore(spacerRow, row);
+                body.insertBefore(headCopy, row);
+                pushTo(spacer, headCopy, (page + 1) * pageHeight);
+            });
+        }
+
         async function generatePdf() {
             const lastName = document.getElementById("lastName").value.trim();
             const orderNumber = document.getElementById("orderNumber").value.trim();
@@ -541,16 +607,16 @@
                     unit: 'mm',
                     format: 'a4',
                     orientation: 'landscape'
-                },
-                // Une ligne du tableau n'est jamais coupée entre deux pages.
-                pagebreak: {
-                    mode: 'css',
-                    avoid: 'tr'
                 }
             };
 
             try {
-                await html2pdf().set(opt).from(element).save();
+                // Entre la copie du devis (toContainer) et son dessin : aucune ligne du tableau
+                // coupée entre deux pages, et l'en-tête répété en haut de chaque page.
+                await html2pdf().set(opt).from(element).toContainer().then(async function() {
+                    await imagesLoaded(this.prop.container);
+                    paginateTable(this.prop.container, this.prop.pageSize.inner.px.height);
+                }).save();
             } catch (err) {
                 console.error("Erreur lors de la génération du PDF :", err);
                 alert("Une erreur est survenue pendant la génération du PDF.");
