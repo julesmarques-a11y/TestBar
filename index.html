@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <title>EQUINOX - Catalogue des barres de CSO</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Catalogue des barres d'obstacles EQUINOX : choisissez un modèle de barre de CSO, personnalisez ses couleurs RAL et préparez votre devis.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <style>
         /* Reset */
         
@@ -299,9 +301,13 @@
 
     <!-- Pied de page -->
     <footer>
-        © 2025 EQUINOX - Créateur d'espaces équestres
+        © <span id="footerYear">2026</span> EQUINOX - Créateur d'espaces équestres
     </footer>
 
+    <script>
+        // Année du pied de page : toujours l'année courante.
+        document.getElementById("footerYear").textContent = new Date().getFullYear();
+    </script>
 </body>
 
 </html>

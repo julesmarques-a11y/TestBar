@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <title>Devis - EQUINOX</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Générez votre devis EQUINOX en PDF à partir des barres d'obstacles de votre panier.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <style>
         * {
             margin: 0;
@@ -360,7 +362,7 @@
     </main>
 
     <footer>
-        © 2025 EQUINOX - Créateur d'espaces équestres
+        © <span id="footerYear">2026</span> EQUINOX - Créateur d'espaces équestres
     </footer>
 
     <!-- html2pdf.js 0.14.0, copie locale du fichier publié sur cdnjs -->
@@ -627,6 +629,8 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            // Année du pied de page : toujours l'année courante.
+            document.getElementById("footerYear").textContent = new Date().getFullYear();
             updateDevisNumber(new Date());
             updateDevisDate();
             loadOrderSummary();
