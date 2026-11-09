@@ -547,12 +547,12 @@
 
         function redirectToConfig(index) {
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const item = cart[index];
+            const editUrl = getEditUrl(cart[index], index);
 
-            if (item && item.model && /^\d+$/.test(String(item.model))) {
-                window.location.href = `config.html?model=${item.model}`;
+            if (editUrl) {
+                window.location.href = editUrl;
             } else {
-                alert("Cette barre est personnalisée : modifiez-la depuis sa page de configuration.");
+                alert("Cet article ne peut pas être modifié : son configurateur d'origine est inconnu. Supprimez-le puis recréez-le.");
             }
         }
     </script>

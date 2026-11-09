@@ -96,7 +96,7 @@
 
     <div class="button-container">
         <input type="number" id="quantity" min="1" value="1" style="padding: 5px; font-size: 16px; width: 60px; text-align: center;">
-        <button class="btn" onclick="addToCart()">Ajouter au Panier</button>
+        <button class="btn" id="addToCartBtn" onclick="addToCart()">Ajouter au Panier</button>
         <a href="panier.html" class="btn">Voir le Panier</a>
         <button class="btn btn-clear" onclick="if (clearCart()) alert('Le panier a été vidé.')">Vider le Panier</button>
         <select id="length" style="padding: 5px; font-size: 16px;">
@@ -207,6 +207,39 @@
         const urlParams = new URLSearchParams(window.location.search);
         const model = urlParams.get("model");
 
+        // Mode modification : config.html?model=1xx&edit=<index de la ligne du panier>
+        const editContext = model ? getEditContext("config.html", model) : null;
+
+        // Recopie, section par section, les couleurs du SVG enregistré dans l'article.
+        function restoreSectionColors(savedSvg) {
+            const shapes = "path, rect, circle, polygon, line, ellipse";
+            const savedDoc = new DOMParser().parseFromString(savedSvg || "", "text/html");
+            const copyFill = (from, to) => {
+                const fill = from.getAttribute("fill");
+                if (fill !== null) to.setAttribute("fill", fill);
+                if (from.style.fill) to.style.fill = from.style.fill;
+            };
+
+            document.querySelectorAll("#svgContainer [id^='b'][id*='-s']").forEach(section => {
+                const savedSection = savedDoc.getElementById(section.id);
+                if (!savedSection) return;
+                copyFill(savedSection, section);
+
+                const elements = section.querySelectorAll(shapes);
+                const savedElements = savedSection.querySelectorAll(shapes);
+                if (elements.length !== savedElements.length) return;
+                elements.forEach((element, i) => copyFill(savedElements[i], element));
+            });
+        }
+
+        // Remet le configurateur dans l'état de l'article en cours de modification.
+        function restoreItem(item) {
+            document.getElementById("quantity").value = item.quantity || 1;
+            setSelectValue("length", item.length);
+            restoreSectionColors(item.svg);
+            document.getElementById("addToCartBtn").textContent = "Mettre à jour l'article";
+        }
+
         if (model) {
             fetch(`Bar_V${model}.svg`)
                 .then(response => response.text())
@@ -244,6 +277,8 @@
                             });
                         });
                     });
+
+                    if (editContext) restoreItem(editContext.item);
                 })
                 .catch(error => alert("Erreur de chargement du modèle SVG"));
         } else {
@@ -274,8 +309,6 @@
                 return;
             }
 
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
             // Récupérer toutes les couleurs appliquées sur les éléments SVG
             let selectedSections = document.querySelectorAll("#svgContainer svg [fill]");
             let colors = [...new Set(Array.from(selectedSections).map(el => el.getAttribute("fill")).filter(c => c !== "none"))];
@@ -299,18 +332,22 @@
                 return;
             }
 
-            // Ajouter un nouvel élément avec SVG enregistré
-            cart.push({
+            // Ajouter l'article (ou remplacer la ligne en cours de modification), avec le SVG enregistré
+            const result = saveCartItem({
                 model: model,
                 colors: colors,
                 quantity: quantity,
                 svg: svgElement,
-                length: length
-            });
+                length: length,
+                sourcePage: "config.html"
+            }, editContext);
 
-            localStorage.setItem("cart", JSON.stringify(cart));
-            console.log("✅ Modèle ajouté au panier avec succès !");
-            alert("Modèle ajouté au panier !");
+            if (result === "updated") {
+                window.location.href = "panier.html";
+            } else if (result === "added") {
+                console.log("✅ Modèle ajouté au panier avec succès !");
+                alert("Modèle ajouté au panier !");
+            }
         }
     </script>
 

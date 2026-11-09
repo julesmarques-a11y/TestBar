@@ -345,14 +345,20 @@
         </div>
 
         <div class="button-container">
-            <button class="btn btn-primary" onclick="addToCart()">Ajouter au panier</button>
+            <button class="btn btn-primary" id="addToCartBtn" onclick="addToCart()">Ajouter au panier</button>
             <a href="panier.html" class="btn btn-secondary">Voir le panier</a>
         </div>
     </div>
 
     <script src="js/ral.js"></script>
+    <script src="js/cart.js"></script>
     <script>
         let selectedColor = ralColors[0];
+
+        // Mode modification (?edit=<index de la ligne du panier>)
+        let editContext = null;
+        let savedWidths = null; // largeurs de rayures de l'article en cours de modification
+
         const SHAPE_X_MIN = 200.3155;
         const SHAPE_WIDTH = 400.522;
         const SHAPE_Y_MIN = 200.3155;
@@ -366,11 +372,15 @@
         function getStripeConfig() {
             const barLengthCm = getBarLengthCm();
             const stripeWidth = 10;
-            const stripeCount = barLengthCm / stripeWidth;
+            let widths = Array(barLengthCm / stripeWidth).fill(stripeWidth);
+
+            // En modification, on garde les rayures enregistrées tant que la longueur ne change pas.
+            if (savedWidths && Math.abs(savedWidths.reduce((a, b) => a + b, 0) - barLengthCm) < 0.01) {
+                widths = savedWidths;
+            }
             return {
-                stripeWidth,
-                stripeCount,
-                widths: Array(stripeCount).fill(stripeWidth),
+                stripeCount: widths.length,
+                widths,
                 total_length_cm: barLengthCm
             };
         }
@@ -534,8 +544,10 @@
                 alert("Veuillez colorer au moins une rayure.");
                 return;
             }
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            cart.push({
+            const customSwatch = document.querySelector("#custom-ral-swatch-wrapper .color-swatch");
+
+            // Ajoute l'article, ou remplace la ligne en cours de modification
+            const result = saveCartItem({
                 model: "BARRE 113 PERSONNALISÉE",
                 colors: colorsUsed,
                 quantity: quantity,
@@ -545,15 +557,49 @@
                 stripes: stripeCount,
                 widths_cm: widths,
                 total_length_cm: total_length_cm,
-                custom_ral: customRal || null
-            });
-            localStorage.setItem("cart", JSON.stringify(cart));
-            alert("Barre personnalisée ajoutée au panier !");
+                custom_ral: customRal || null,
+                custom_ral_color: customSwatch ? customSwatch.dataset.color : null,
+                sourcePage: "config_personnalisee_forme2.html"
+            }, editContext);
+
+            if (result === "updated") {
+                window.location.href = "panier.html";
+            } else if (result === "added") {
+                alert("Barre personnalisée ajoutée au panier !");
+            }
+        }
+
+        // Remet le configurateur dans l'état de l'article en cours de modification.
+        function restoreItem(item) {
+            document.getElementById("quantity").value = item.quantity || 1;
+            setSelectValue("length", item.length);
+            setSelectValue("height", parseInt(item.height)); // "145 mm" → "145"
+
+            savedWidths = validStripeWidths(item.widths_cm);
+            generateBar();
+            restoreStripeColors(item.svg);
+
+            if (item.custom_ral) {
+                document.getElementById("customRalInput").value = item.custom_ral;
+                const customColor = getCustomRalColor(item);
+                if (customColor) {
+                    document.getElementById("customRalColor").value = customColor;
+                    addOrUpdateCustomRalSwatch();
+                }
+            }
+
+            document.getElementById("addToCartBtn").textContent = "Mettre à jour l'article";
         }
 
         document.addEventListener("DOMContentLoaded", () => {
             generateColorPalette();
-            generateBar();
+
+            editContext = getEditContext("config_personnalisee_forme2.html");
+            if (editContext) {
+                restoreItem(editContext.item);
+            } else {
+                generateBar();
+            }
             document.getElementById("regenerateBtn").addEventListener("click", generateBar);
             document.getElementById("length").addEventListener("change", generateBar);
             document.getElementById("addCustomRalBtn").addEventListener("click", addOrUpdateCustomRalSwatch);

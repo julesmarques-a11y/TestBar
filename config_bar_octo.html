@@ -354,15 +354,20 @@
         </div>
 
         <div class="button-container">
-            <button class="btn btn-primary" onclick="addToCart()">Ajouter au panier</button>
+            <button class="btn btn-primary" id="addToCartBtn" onclick="addToCart()">Ajouter au panier</button>
             <a href="panier.html" class="btn btn-secondary">Voir le panier</a>
         </div>
     </div>
 
     <script src="js/ral.js"></script>
+    <script src="js/cart.js"></script>
     <script>
         let selectedColor = ralColors[0];
         const BAR_HEIGHT = 18;
+
+        // Mode modification (?edit=<index de la ligne du panier>)
+        let editContext = null;
+        let savedWidths = null; // largeurs de rayures de l'article en cours de modification
 
         function getBarLengthCm() {
             const lengthValue = document.getElementById("length").value;
@@ -372,12 +377,16 @@
         function getStripeConfig() {
             const barLengthCm = getBarLengthCm();
             const stripeWidth = 10;
-            const stripeCount = barLengthCm / stripeWidth;
+            let widths = Array(barLengthCm / stripeWidth).fill(stripeWidth);
+
+            // En modification, on garde les rayures enregistrées tant que la longueur ne change pas.
+            if (savedWidths && Math.abs(savedWidths.reduce((a, b) => a + b, 0) - barLengthCm) < 0.01) {
+                widths = savedWidths;
+            }
 
             return {
-                stripeWidth,
-                stripeCount,
-                widths: Array(stripeCount).fill(stripeWidth),
+                stripeCount: widths.length,
+                widths,
                 total_length_cm: barLengthCm
             };
         }
@@ -468,8 +477,7 @@
 
             const xmlns = "http://www.w3.org/2000/svg";
             const {
-                stripeWidth,
-                stripeCount,
+                widths,
                 total_length_cm
             } = getStripeConfig();
 
@@ -480,7 +488,8 @@
 
             let xPosition = 0;
 
-            for (let i = 0; i < stripeCount; i++) {
+            for (let i = 0; i < widths.length; i++) {
+                const stripeWidth = widths[i];
                 const rect = document.createElementNS(xmlns, "rect");
                 rect.setAttribute("id", `stripe-${i + 1}`);
                 rect.setAttribute("x", xPosition);
@@ -548,9 +557,10 @@
                 return;
             }
 
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+            const customSwatch = document.querySelector("#custom-ral-swatch-wrapper .color-swatch");
 
-            cart.push({
+            // Ajoute l'article, ou remplace la ligne en cours de modification
+            const result = saveCartItem({
                 model: "BARRE_OCTO_PERSONNALISABLE",
                 colors: colorsUsed,
                 quantity: quantity,
@@ -560,16 +570,49 @@
                 stripes: stripeCount,
                 widths_cm: widths,
                 total_length_cm: total_length_cm,
-                custom_ral: customRal || null
-            });
+                custom_ral: customRal || null,
+                custom_ral_color: customSwatch ? customSwatch.dataset.color : null,
+                sourcePage: "config_bar_octo.html"
+            }, editContext);
 
-            localStorage.setItem("cart", JSON.stringify(cart));
-            alert("Barre Octo personnalisée ajoutée au panier !");
+            if (result === "updated") {
+                window.location.href = "panier.html";
+            } else if (result === "added") {
+                alert("Barre Octo personnalisée ajoutée au panier !");
+            }
+        }
+
+        // Remet le configurateur dans l'état de l'article en cours de modification.
+        function restoreItem(item) {
+            document.getElementById("quantity").value = item.quantity || 1;
+            setSelectValue("length", item.length);
+            setSelectValue("diameter", parseInt(item.diameter)); // "8 cm" → "8"
+
+            savedWidths = validStripeWidths(item.widths_cm);
+            generateBar();
+            restoreStripeColors(item.svg);
+
+            if (item.custom_ral) {
+                document.getElementById("customRalInput").value = item.custom_ral;
+                const customColor = getCustomRalColor(item);
+                if (customColor) {
+                    document.getElementById("customRalColor").value = customColor;
+                    addOrUpdateCustomRalSwatch();
+                }
+            }
+
+            document.getElementById("addToCartBtn").textContent = "Mettre à jour l'article";
         }
 
         document.addEventListener("DOMContentLoaded", () => {
             generateColorPalette();
-            generateBar();
+
+            editContext = getEditContext("config_bar_octo.html");
+            if (editContext) {
+                restoreItem(editContext.item);
+            } else {
+                generateBar();
+            }
 
             document.getElementById("regenerateBtn").addEventListener("click", generateBar);
             document.getElementById("length").addEventListener("change", generateBar);

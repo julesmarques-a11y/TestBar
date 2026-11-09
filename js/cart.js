@@ -1,4 +1,14 @@
-// Fonctions partagées du panier (localStorage, clé "cart").
+// Fonctions partagées du panier (localStorage, clé "cart") :
+// lecture / écriture, vidage, et modification d'un article depuis son configurateur.
+// À charger après js/ral.js.
+
+// Configurateurs capables de rouvrir un article du panier (champ sourcePage des articles).
+const CONFIG_PAGES = [
+    "config.html",
+    "config_personnalisee.html",
+    "config_bar_octo.html",
+    "config_personnalisee_forme2.html"
+];
 
 function readCart() {
     return JSON.parse(localStorage.getItem("cart")) || [];
@@ -17,4 +27,116 @@ function clearCart() {
     if (!confirm("Vider le panier ? Tous les articles seront supprimés.")) return false;
     writeCart([]);
     return true;
+}
+
+// Page de configuration d'un article, ou null s'il n'est pas modifiable (pack, modèle inconnu).
+// Les articles ajoutés avant l'introduction de sourcePage n'ont pas ce champ :
+// on déduit alors la page à partir du nom de modèle.
+function getConfigPage(item) {
+    if (!item || item.items) return null;
+    if (CONFIG_PAGES.includes(item.sourcePage)) return item.sourcePage;
+
+    const model = String(item.model || "");
+    if (/^\d+$/.test(model)) return "config.html";
+    if (model === "BARRE PERSONNALISÉE") return "config_personnalisee.html";
+    if (model === "BARRE_OCTO_PERSONNALISABLE") return "config_bar_octo.html";
+    if (model === "BARRE 113 PERSONNALISÉE") return "config_personnalisee_forme2.html";
+    return null;
+}
+
+// Adresse du configurateur en mode modification pour la ligne `index` du panier, ou null.
+function getEditUrl(item, index) {
+    const page = getConfigPage(item);
+    if (!page) return null;
+    if (page === "config.html") {
+        return `config.html?model=${encodeURIComponent(item.model)}&edit=${index}`;
+    }
+    return `${page}?edit=${index}`;
+}
+
+// Lit ?edit=<index> dans l'adresse. Renvoie { index, item, snapshot } si la ligne existe
+// et appartient bien à ce configurateur (et à ce modèle, pour le catalogue) ; sinon null.
+function getEditContext(page, model) {
+    const raw = new URLSearchParams(window.location.search).get("edit");
+    if (raw === null) return null;
+
+    const index = /^\d+$/.test(raw) ? parseInt(raw, 10) : -1;
+    const item = readCart()[index];
+    const matches = item && getConfigPage(item) === page &&
+        (model === undefined || String(item.model) === String(model));
+
+    if (!matches) {
+        alert("L'article à modifier est introuvable dans le panier. Vous pouvez configurer une nouvelle barre.");
+        return null;
+    }
+    return {
+        index,
+        item,
+        snapshot: JSON.stringify(item)
+    };
+}
+
+// Enregistre un article : remplace la ligne en cours de modification (editContext),
+// sinon ajoute une ligne. Renvoie "added", "updated" ou "cancelled".
+function saveCartItem(newItem, editContext) {
+    const cart = readCart();
+
+    if (!editContext) {
+        cart.push(newItem);
+        writeCart(cart);
+        return "added";
+    }
+
+    // Le panier a pu changer dans un autre onglet : on vérifie que la ligne est toujours
+    // la même, et on la recherche ailleurs si elle a été décalée par une suppression.
+    let index = editContext.index;
+    if (JSON.stringify(cart[index]) !== editContext.snapshot) {
+        index = cart.findIndex(item => JSON.stringify(item) === editContext.snapshot);
+    }
+
+    if (index === -1) {
+        if (!confirm("L'article d'origine a été modifié ou supprimé du panier entre-temps. Ajouter cette barre comme nouvel article ?")) {
+            return "cancelled";
+        }
+        cart.push(newItem);
+    } else {
+        cart[index] = newItem;
+    }
+    writeCart(cart);
+    return "updated";
+}
+
+// Sélectionne `value` dans le <select> `id`, seulement si cette option existe.
+function setSelectValue(id, value) {
+    const select = document.getElementById(id);
+    const wanted = String(value);
+    if (Array.from(select.options).some(option => option.value === wanted)) {
+        select.value = wanted;
+    }
+}
+
+// Largeurs de rayures enregistrées dans un article, ou null si elles sont inexploitables.
+function validStripeWidths(widths) {
+    const ok = Array.isArray(widths) && widths.length > 0 &&
+        widths.every(w => typeof w === "number" && w > 0);
+    return ok ? widths : null;
+}
+
+// Recopie sur les rayures affichées les couleurs des rayures du SVG enregistré dans l'article.
+function restoreStripeColors(savedSvg) {
+    const savedRects = new DOMParser()
+        .parseFromString(savedSvg || "", "text/html")
+        .querySelectorAll("svg rect");
+
+    document.querySelectorAll("#svgContainer svg rect").forEach((rect, i) => {
+        const fill = savedRects[i] && savedRects[i].getAttribute("fill");
+        if (fill) rect.setAttribute("fill", fill);
+    });
+}
+
+// Couleur du RAL personnalisé d'un article. Les anciens articles n'ont pas custom_ral_color :
+// c'est alors la couleur utilisée qui ne fait pas partie de la palette.
+function getCustomRalColor(item) {
+    const color = item.custom_ral_color || (item.colors || []).find(c => !getRal(c)) || "";
+    return /^#[0-9a-f]{6}$/i.test(color) ? color.toLowerCase() : null;
 }
