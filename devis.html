@@ -398,9 +398,28 @@
             document.getElementById("countTotal").textContent = total;
         }
 
+        // Les barres personnalisées sont enregistrées avec width="100%" et sans hauteur : l'image
+        // n'a alors pas de taille propre et sort tronquée dans le PDF. On lui donne la taille de
+        // son viewBox. Les modèles du catalogue ont déjà une largeur et une hauteur en unités
+        // absolues (et dessinent au-delà de leur viewBox) : ils sont laissés tels quels.
+        function withExplicitSize(svgString) {
+            const svg = new DOMParser().parseFromString(svgString, "image/svg+xml").documentElement;
+            if (svg.nodeName !== "svg") return svgString;
+
+            const isAbsolute = name => /^\d*\.?\d+(px)?$/.test((svg.getAttribute(name) || "").trim());
+            if (isAbsolute("width") && isAbsolute("height")) return svgString;
+
+            const viewBox = (svg.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
+            if (viewBox.length !== 4 || !(viewBox[2] > 0) || !(viewBox[3] > 0)) return svgString;
+
+            svg.setAttribute("width", viewBox[2]);
+            svg.setAttribute("height", viewBox[3]);
+            return new XMLSerializer().serializeToString(svg);
+        }
+
         function svgToImgHtml(svgString, altText) {
             if (!svgString) return "❌ Erreur SVG";
-            const encoded = encodeURIComponent(svgString);
+            const encoded = encodeURIComponent(withExplicitSize(svgString));
             return `<img src="data:image/svg+xml;utf8,${encoded}" alt="${altText}">`;
         }
 
