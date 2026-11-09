@@ -204,6 +204,27 @@
             return null;
         }
 
+        // Convertit une couleur calculée ("rgb(0, 128, 128)") en code hex.
+        // Renvoie null pour tout le reste (dégradé, "none"…).
+        function rgbToHex(color) {
+            const match = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(color);
+            if (!match) return null;
+            return "#" + match.slice(1).map(n => Number(n).toString(16).padStart(2, "0")).join("");
+        }
+
+        // Vrai si une zone colorable affiche encore une couleur hors palette,
+        // c'est-à-dire la couleur par défaut du SVG (#008080, #ff9955…).
+        function hasOffPaletteZone() {
+            const shapes = "path, rect, circle, polygon, line, ellipse";
+            return Object.values(groups).flat().some(sectionId => {
+                const section = document.getElementById(sectionId);
+                if (!section) return false;
+                const elements = section.querySelectorAll(shapes);
+                return Array.from(elements.length ? elements : [section])
+                    .some(element => !getRal(rgbToHex(getComputedStyle(element).fill)));
+            });
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const model = urlParams.get("model");
 
@@ -306,6 +327,15 @@
             if (quantity <= 0) {
                 alert("Veuillez entrer une quantité valide.");
                 console.error("❌ Erreur : Quantité invalide.");
+                return;
+            }
+
+            // Les couleurs par défaut du SVG ne sont pas des RAL : elles resteraient sur l'image
+            // du devis sans figurer dans la liste des couleurs.
+            if (hasOffPaletteZone()) {
+                alert("Certaines zones de la barre ont encore leur couleur d'origine, qui ne fait pas partie de la palette RAL.\n\n" +
+                    "Cliquez sur chacune de ces zones pour lui appliquer une couleur de la palette, puis " +
+                    (editContext ? "mettez à jour l'article." : "ajoutez la barre au panier."));
                 return;
             }
 
