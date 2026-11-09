@@ -180,11 +180,13 @@
             padding: 0;
         }
         
+        /* La vignette garde les proportions du dessin, bornée par la largeur de la colonne et par
+           une hauteur maximale. Pas d'object-fit : html2canvas l'ignore et étirait l'image dans le PDF. */
         .svg-container-td img {
-            width: 100%;
-            max-height: 20px;
-            object-fit: contain;
+            max-width: 100%;
+            max-height: 40px;
             display: block;
+            margin: 0 auto;
         }
         
         .color-box {
