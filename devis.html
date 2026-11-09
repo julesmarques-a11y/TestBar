@@ -264,7 +264,7 @@
         </div>
         <h1>Devis</h1>
         <p>
-            Renseignez le nom, le numéro de commande et la date de livraison souhaitée. Téléchargez ensuite votre devis en PDF. Le numéro de devis s'incrémente automatiquement à chaque génération.
+            Renseignez le nom, le numéro de commande et la date de livraison souhaitée. Téléchargez ensuite votre devis en PDF. Le numéro de devis est établi à partir de la date et de l'heure de génération.
         </p>
     </header>
 
@@ -273,7 +273,7 @@
             <div class="devis-info">
                 <div>
                     <span class="label">Numéro de devis :</span>
-                    <span class="devis-number">DV-<span id="devisNumber">0001</span></span>
+                    <span class="devis-number" id="devisNumber"></span>
                 </div>
                 <div id="devisDateDisplay"></div>
             </div>
@@ -339,28 +339,20 @@
 
     <script src="js/ral.js"></script>
     <script>
-        let currentDevisNumber = 1;
-
-        function loadDevisNumber() {
-            const stored = localStorage.getItem("devisCounter");
-            currentDevisNumber = stored ? parseInt(stored, 10) : 1;
-            if (isNaN(currentDevisNumber) || currentDevisNumber < 1) currentDevisNumber = 1;
-            updateDevisNumberDisplay();
+        // Sans backend, pas de compteur commun à tous les navigateurs : le numéro de devis
+        // est établi à partir de la date et de l'heure, par exemple DV-20261109-1507.
+        function formatDevisNumber(date) {
+            const pad = n => String(n).padStart(2, "0");
+            const day = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`;
+            return `DV-${day}-${pad(date.getHours())}${pad(date.getMinutes())}`;
         }
 
-        function formatDevisNumber(num) {
-            return num.toString().padStart(4, "0");
-        }
-
-        function updateDevisNumberDisplay() {
+        // Affiche le numéro de devis correspondant à `date` et le renvoie.
+        function updateDevisNumber(date) {
+            const devisNumber = formatDevisNumber(date);
             const span = document.getElementById("devisNumber");
-            if (span) span.textContent = formatDevisNumber(currentDevisNumber);
-        }
-
-        function incrementDevisNumber() {
-            currentDevisNumber += 1;
-            localStorage.setItem("devisCounter", currentDevisNumber);
-            updateDevisNumberDisplay();
+            if (span) span.textContent = devisNumber;
+            return devisNumber;
         }
 
         function updateDevisDate() {
@@ -467,15 +459,15 @@
                 return;
             }
 
-            const currentNumberFormatted = formatDevisNumber(currentDevisNumber);
-            const fileName = `Devis_EQX_${currentNumberFormatted}.pdf`;
+            // Le numéro et la date imprimés sont ceux du moment de la génération.
+            const now = new Date();
+            const fileName = `Devis_EQX_${updateDevisNumber(now)}.pdf`;
 
             downloadBtn.disabled = true;
             loadingText.style.display = "block";
 
             const infoBloc = document.getElementById("devisDateDisplay");
             if (infoBloc) {
-                const now = new Date();
                 const frNow = now.toLocaleDateString('fr-FR', {
                     year: 'numeric',
                     month: '2-digit',
@@ -504,7 +496,6 @@
 
             try {
                 await html2pdf().set(opt).from(element).save();
-                incrementDevisNumber();
             } catch (err) {
                 console.error("Erreur lors de la génération du PDF :", err);
                 alert("Une erreur est survenue pendant la génération du PDF.");
@@ -515,7 +506,7 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            loadDevisNumber();
+            updateDevisNumber(new Date());
             updateDevisDate();
             loadOrderSummary();
         });
