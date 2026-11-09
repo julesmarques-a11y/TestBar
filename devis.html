@@ -341,11 +341,12 @@
     <script src="js/ral.js"></script>
     <script>
         // Sans backend, pas de compteur commun à tous les navigateurs : le numéro de devis
-        // est établi à partir de la date et de l'heure, par exemple DV-20261109-1507.
+        // est établi à partir de la date et de l'heure, à la seconde près pour que deux devis
+        // générés dans la même minute n'aient pas le même numéro, par exemple DV-20261109-150742.
         function formatDevisNumber(date) {
             const pad = n => String(n).padStart(2, "0");
             const day = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`;
-            return `DV-${day}-${pad(date.getHours())}${pad(date.getMinutes())}`;
+            return `DV-${day}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
         }
 
         // Affiche le numéro de devis correspondant à `date` et le renvoie.
