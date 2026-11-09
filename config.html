@@ -3,112 +3,291 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configurateur de Barre CSO</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
-            text-align: center;
-            padding: 20px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #2c3e50;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 24px 60px;
+            border-bottom: 4px solid #e74c3c;
+        }
+
+        h1 {
+            font-size: 2em;
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #ecf0f1;
+            font-size: 0.9em;
+            line-height: 1.5;
+            max-width: 800px;
+        }
+
+        .btn-retour {
+            display: inline-block;
+            margin-bottom: 14px;
+            padding: 8px 20px;
+            font-size: 0.8em;
+            background-color: #95a5a6;
+            color: white;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+
+        .btn-retour:hover {
+            background-color: #7f8c8d;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px 40px 40px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            font-weight: 300;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e74c3c;
+        }
+
+        .controls {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-group label {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 400;
+        }
+
+        .control-group select,
+        .control-group input[type="number"] {
+            padding: 8px 12px;
+            border: 1px solid #bdc3c7;
+            font-size: 1em;
+            background: white;
+            min-height: 40px;
+        }
+
+        .control-group input[type="number"] {
+            width: 80px;
+            text-align: center;
+        }
+
+        #svgContainer {
+            background: white;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            margin: 10px 0 0;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #svgContainer svg {
+            width: 100%;
+            max-width: 760px;
+            height: auto;
+            display: block;
+            touch-action: manipulation;
+        }
+
         .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 12px 6px;
+            padding: 8px;
+            border: 1px solid #ececec;
+            background: #fafafa;
+        }
+
+        .color-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .color-swatch {
+            width: 44px;
+            height: 44px;
+            border: 2px solid #bdc3c7;
+            transition: all 0.15s;
+        }
+
+        .color-item:hover .color-swatch {
+            transform: translateY(-1px);
+        }
+
+        .color-swatch.selected {
+            border: 3px solid #e74c3c;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #e74c3c;
+        }
+
+        .color-label {
+            font-size: 0.7em;
+            color: #7f8c8d;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .button-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 15px;
+            margin-top: 30px;
         }
-        
-        .color-swatch {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid #ccc;
-        }
-        
-        .selected {
-            border: 3px solid black;
-        }
-        
-        #svgContainer svg {
-            max-width: 100%;
-            height: auto;
-            border: 1px solid #f9f9f9;
-            background-color: #f9f9f9;
-            display: block;
-            margin: 20px auto;
-        }
-        
-        .button-container {
-            position: absolute;
-            top: 200px;
-            right: 100px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-        
+
         .btn {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #28a745;
+            padding: 12px 24px;
+            font-size: 0.85em;
+            font-family: inherit;
             color: white;
             border: none;
             cursor: pointer;
-            border-radius: 5px;
-            margin: 5px 0;
             text-decoration: none;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+            font-weight: 400;
+            display: inline-block;
         }
-        
-        .btn-retour {
-            position: absolute;
-            top: 30px;
-            left: 100px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            margin: 5px 0;
-            text-decoration: none;
+
+        .btn-primary {
+            background: #27ae60;
         }
-        
-        .btn:hover {
-            background-color: #218838;
+
+        .btn-primary:hover {
+            background: #229954;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 18px 16px 20px;
+            }
+            h1 {
+                font-size: 1.6em;
+            }
+            .container {
+                padding: 20px 16px 28px;
+            }
+            #svgContainer {
+                padding: 12px 4px;
+                min-height: 0;
+            }
+            .button-container {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1>Configurateur de Barre CSO</h1>
-    <div class="color-palette" id="colorPalette"></div>
-    <div id="svgContainer"></div>
+    <header>
+        <a href="index.html" class="btn-retour">← Retour à l'accueil</a>
+        <h1>Configurateur de Barre CSO</h1>
+        <p>
+            Choisissez une couleur dans la palette, puis cliquez sur les zones de la barre pour les colorer.
+        </p>
+    </header>
 
-    <div class="button-container">
-        <input type="number" id="quantity" min="1" value="1" style="padding: 5px; font-size: 16px; width: 60px; text-align: center;">
-        <button class="btn" id="addToCartBtn" onclick="addToCart()">Ajouter au Panier</button>
-        <a href="panier.html" class="btn">Voir le Panier</a>
-        <button class="btn btn-clear" onclick="if (clearCart()) alert('Le panier a été vidé.')">Vider le Panier</button>
-        <select id="length" style="padding: 5px; font-size: 16px;">
-            <option value="3m">3m</option>
-            <option value="3.5m">3,50m</option>
-        </select>
+    <div class="container">
+        <div class="section">
+            <h2 class="section-title">Configuration de la barre</h2>
 
+            <div class="controls">
+                <div class="control-group">
+                    <label for="length">Longueur</label>
+                    <select id="length">
+                        <option value="3m">3m</option>
+                        <option value="3.5m">3,50m</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="quantity">Quantité</label>
+                    <input type="number" id="quantity" min="1" value="1">
+                </div>
+            </div>
+
+            <div id="svgContainer"></div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Palette de couleurs RAL</h2>
+            <div class="color-palette" id="colorPalette"></div>
+        </div>
+
+        <div class="button-container">
+            <button class="btn btn-primary" id="addToCartBtn" onclick="addToCart()">Ajouter au Panier</button>
+            <a href="panier.html" class="btn btn-secondary">Voir le Panier</a>
+            <button class="btn btn-danger" onclick="if (clearCart()) alert('Le panier a été vidé.')">Vider le Panier</button>
+        </div>
     </div>
-
-    <a href="index.html" class="btn-retour">Retour à l'accueil</a>
-
-
 
     <script src="js/ral.js"></script>
     <script src="js/cart.js"></script>
@@ -116,34 +295,35 @@
         let selectedColor = ralColors[0];
         const colorPalette = document.getElementById("colorPalette");
 
-        // Pour chaque couleur, on crée un conteneur qui regroupe la pastille et le nom RAL
+        // Pour chaque couleur, on crée un conteneur cliquable qui regroupe la pastille et le nom RAL
         ralColors.forEach(color => {
             const swatchContainer = document.createElement("div");
-            swatchContainer.style.display = "inline-block";
-            swatchContainer.style.textAlign = "center";
-            swatchContainer.style.margin = "5px";
+            swatchContainer.classList.add("color-item");
 
             // Création de la pastille de couleur
             const swatch = document.createElement("div");
             swatch.classList.add("color-swatch");
             swatch.style.backgroundColor = color;
-            swatch.addEventListener("click", () => {
+            swatchContainer.appendChild(swatch);
+
+            // Création du label pour afficher le code RAL correspondant
+            const label = document.createElement("div");
+            label.classList.add("color-label");
+            label.innerText = getRal(color) || "RAL inconnu";
+            swatchContainer.appendChild(label);
+
+            swatchContainer.addEventListener("click", () => {
                 // Retirer la classe "selected" à toutes les pastilles
                 document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("selected"));
                 swatch.classList.add("selected");
                 selectedColor = color;
             });
-            swatchContainer.appendChild(swatch);
-
-            // Création du label pour afficher le code RAL correspondant
-            const label = document.createElement("div");
-            label.innerText = getRal(color) || "RAL inconnu";
-            label.style.fontSize = "10px";
-            label.style.marginTop = "2px";
-            swatchContainer.appendChild(label);
 
             colorPalette.appendChild(swatchContainer);
         });
+
+        // La première couleur est la couleur active au chargement : on l'affiche comme sélectionnée.
+        colorPalette.querySelector(".color-swatch").classList.add("selected");
 
         const groups = {
             "b1-group1": ["b1-s1"],
@@ -202,6 +382,67 @@
                 }
             }
             return null;
+        }
+
+        // Applique la couleur sélectionnée à toutes les sections du groupe de la section `sectionId`.
+        function colorGroupOf(sectionId) {
+            console.log("Section cliquée:", sectionId);
+            const groupId = findGroup(sectionId);
+            if (!groupId) {
+                console.warn("Aucun groupe trouvé pour :", sectionId);
+                return;
+            }
+            groups[groupId].forEach(id => {
+                const targetSection = document.getElementById(id);
+                if (targetSection) {
+                    const elements = targetSection.querySelectorAll("path, rect, circle, polygon, line, ellipse");
+                    if (elements.length === 0) {
+                        targetSection.setAttribute("fill", selectedColor);
+                        targetSection.style.fill = selectedColor;
+                    } else {
+                        elements.forEach(element => {
+                            element.setAttribute("fill", selectedColor);
+                            element.style.fill = selectedColor;
+                        });
+                    }
+                }
+            });
+        }
+
+        // Vrai si le clic vient d'un doigt ou d'un stylet plutôt que d'une souris.
+        function isFingerTap(event) {
+            if (event.pointerType) return event.pointerType !== "mouse";
+            return window.matchMedia("(pointer: coarse)").matches;
+        }
+
+        // Sur téléphone, les zones les plus étroites ne font que quelques pixels de large : trop peu
+        // pour un doigt. Chaque pièce reçoit donc une surface tactile d'au moins 28 px de large,
+        // prolongée de 8 px au-dessus et au-dessous, et parmi les pièces dont la surface contient le
+        // point touché, on retient celle dont le centre est le plus proche. Une zone étroite se
+        // touche ainsi en visant à peu près, sans gêner les zones larges qui l'entourent.
+        function sectionAtFinger(sections, x, y) {
+            const MIN_WIDTH = 28;
+            const PAD_Y = 8;
+            let best = null;
+            let bestDistance = Infinity;
+
+            sections.forEach(section => {
+                const shapes = section.querySelectorAll("path, rect, circle, polygon, line, ellipse");
+                Array.from(shapes.length ? shapes : [section]).forEach(shape => {
+                    const rect = shape.getBoundingClientRect();
+                    if (!rect.width || !rect.height) return;
+                    const padX = Math.max(0, (MIN_WIDTH - rect.width) / 2);
+                    if (x < rect.left - padX || x > rect.right + padX) return;
+                    if (y < rect.top - PAD_Y || y > rect.bottom + PAD_Y) return;
+
+                    const distance = Math.abs(x - (rect.left + rect.right) / 2);
+                    if (distance < bestDistance) {
+                        best = section;
+                        bestDistance = distance;
+                    }
+                });
+            });
+            return best;
         }
 
         // Convertit une couleur calculée ("rgb(0, 128, 128)") en code hex.
@@ -275,29 +516,18 @@
                     sections.forEach(section => {
                         section.style.cursor = "pointer";
                         section.addEventListener("click", function() {
-                            console.log("Section cliquée:", this.id);
-                            const groupId = findGroup(this.id);
-                            if (!groupId) {
-                                console.warn("Aucun groupe trouvé pour :", this.id);
-                                return;
-                            }
-                            groups[groupId].forEach(sectionId => {
-                                const targetSection = document.getElementById(sectionId);
-                                if (targetSection) {
-                                    const elements = targetSection.querySelectorAll("path, rect, circle, polygon, line, ellipse");
-                                    if (elements.length === 0) {
-                                        targetSection.setAttribute("fill", selectedColor);
-                                        targetSection.style.fill = selectedColor;
-                                    } else {
-                                        elements.forEach(element => {
-                                            element.setAttribute("fill", selectedColor);
-                                            element.style.fill = selectedColor;
-                                        });
-                                    }
-                                }
-                            });
+                            colorGroupOf(this.id);
                         });
                     });
+
+                    // Au doigt, c'est la zone la plus proche du point touché qui est colorée (voir sectionAtFinger).
+                    svgElement.addEventListener("click", event => {
+                        if (!isFingerTap(event)) return;
+                        const section = sectionAtFinger(sections, event.clientX, event.clientY);
+                        if (!section) return;
+                        event.stopPropagation();
+                        colorGroupOf(section.id);
+                    }, true);
 
                     if (editContext) restoreItem(editContext.item);
                 })
