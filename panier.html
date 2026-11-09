@@ -424,11 +424,11 @@
                 <div class="cart-item">
                     <div>
                         ${svgDataUrl
-                            ? `<img src="${svgDataUrl}" alt="Modèle ${escapeHtml(item.model)}" class="item-image">`
+                            ? `<img src="${svgDataUrl}" alt="${escapeHtml(getModelLabel(item))}" class="item-image">`
                             : '<div class="item-image" style="display:flex;align-items:center;justify-content:center;background:#f0f0f0;">❌</div>'}
                     </div>
                     <div class="item-details">
-                        <div class="item-model">Modèle ${escapeHtml(item.model)}</div>
+                        <div class="item-model">${escapeHtml(getModelLabel(item))}</div>
                         <div class="item-length">📏 Longueur : ${escapeHtml(item.length || "Non spécifié")}</div>
                         ${item.height ? `<div class="item-length">📐 Hauteur : ${escapeHtml(item.height)}</div>` : ''}
                         ${item.diameter ? `<div class="item-length">⭕ Diamètre : ${escapeHtml(item.diameter)}</div>` : ''}

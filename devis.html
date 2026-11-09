@@ -472,7 +472,7 @@
             }
 
             cart.forEach(item => {
-                const imgHtml = svgToImgHtml(item.svg, `Modèle ${item.model}`);
+                const imgHtml = svgToImgHtml(item.svg, getModelLabel(item));
                 const colorsHtml = makeColorsHtml(item.colors, getCustomRals(item));
                 const heightDisplay = item.height || "-";
                 const diameterDisplay = item.diameter || "-";
@@ -480,7 +480,7 @@
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td class="svg-container-td">${imgHtml}</td>
-                    <td>Modèle ${escapeHtml(item.model)}</td>
+                    <td>${escapeHtml(getModelLabel(item))}</td>
                     <td><div class="color-box">${colorsHtml}</div></td>
                     <td>${escapeHtml(item.length || "Non spécifié")}</td>
                     <td>${escapeHtml(heightDisplay)}</td>

@@ -58,6 +58,14 @@ function getConfigPage(item) {
     return null;
 }
 
+// Nom d'un article tel qu'il est affiché dans le panier, le devis et le PDF.
+// La palanque personnalisée est enregistrée sous le nom de modèle "BARRE 113 PERSONNALISÉE" :
+// cet identifiant est conservé pour que les articles déjà au panier restent reconnus et modifiables.
+function getModelLabel(item) {
+    if (getConfigPage(item) === "config_personnalisee_forme2.html") return "Palanque personnalisée";
+    return `Modèle ${item.model}`;
+}
+
 // Adresse du configurateur en mode modification pour la ligne `index` du panier, ou null.
 function getEditUrl(item, index) {
     const page = getConfigPage(item);

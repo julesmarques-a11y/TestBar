@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barre 100% personnalisée – Forme 113</title>
-    <meta name="description" content="Créez une palanque 100% personnalisée EQUINOX (forme 113) : choisissez la hauteur, la longueur et la couleur RAL de chaque rayure.">
+    <title>Palanque personnalisée</title>
+    <meta name="description" content="Créez une palanque 100% personnalisée EQUINOX : choisissez la hauteur, la longueur et la couleur RAL de chaque rayure.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <style>
         * {
@@ -292,9 +292,9 @@
 <body>
     <header>
         <a href="index.html" class="btn-retour">← Retour</a>
-        <h1>🎨 Barre 100% personnalisée – Forme 113</h1>
+        <h1>🎨 Palanque personnalisée</h1>
         <p>
-            Barre en forme 113 composée automatiquement de rayures de 10 cm : 30 rayures pour 3 m, 35 rayures pour 3,50 m. La barre est affichée ci-dessous, cliquez sur les rayures pour les colorer.
+            Palanque composée automatiquement de rayures de 10 cm : 30 rayures pour 3 m, 35 rayures pour 3,50 m. La barre est affichée ci-dessous, cliquez sur les rayures pour les colorer.
         </p>
     </header>
 
@@ -575,7 +575,9 @@
                 alert("Veuillez colorer au moins une rayure.");
                 return;
             }
-            // Ajoute l'article, ou remplace la ligne en cours de modification
+            // Ajoute l'article, ou remplace la ligne en cours de modification.
+            // "BARRE 113 PERSONNALISÉE" est l'identifiant historique de la palanque : il n'est plus
+            // affiché (voir getModelLabel, js/cart.js) mais reste celui des articles déjà au panier.
             const result = saveCartItem({
                 model: "BARRE 113 PERSONNALISÉE",
                 colors: colorsUsed,
@@ -593,7 +595,7 @@
             if (result === "updated") {
                 window.location.href = "panier.html";
             } else if (result === "added") {
-                alert("Barre personnalisée ajoutée au panier !");
+                alert("Palanque personnalisée ajoutée au panier !");
             }
         }
 
