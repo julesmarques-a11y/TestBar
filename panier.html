@@ -345,17 +345,16 @@
 
             <div class="bottom-actions">
                 <a href="index.html" class="btn btn-secondary">← Retour à l'accueil</a>
+                <button class="btn btn-danger" id="clearCartBtn" onclick="if (clearCart()) loadCart()">Vider le panier</button>
                 <a href="devis.html" class="btn btn-success">Envoyer le devis →</a>
             </div>
         </div>
     </div>
 
     <script src="js/ral.js"></script>
+    <script src="js/cart.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            if (!sessionStorage.getItem("sessionActive")) {
-                sessionStorage.setItem("sessionActive", "true");
-            }
             loadCart();
         });
 
@@ -401,6 +400,7 @@
             console.log("📦 Contenu du panier :", cart);
 
             updateStats(cart);
+            document.getElementById("clearCartBtn").style.display = cart.length === 0 ? "none" : "";
 
             const individualContainer = document.getElementById("individualBarsContainer");
             const packsContainer = document.getElementById("packsContainer");

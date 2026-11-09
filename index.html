@@ -302,16 +302,6 @@
         © 2025 EQUINOX - Créateur d'espaces équestres
     </footer>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // Si la session n'est pas encore active, initialiser le panier vide
-            if (!sessionStorage.getItem("sessionActive")) {
-                console.log("Initialisation de la session et création d'un panier vide.");
-                localStorage.setItem("cart", JSON.stringify([])); // Crée un panier vide
-                sessionStorage.setItem("sessionActive", "true"); // Marque la session comme active
-            }
-        });
-    </script>
 </body>
 
 </html>
