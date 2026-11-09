@@ -273,6 +273,19 @@
         .btn-update:hover {
             background: #c0392b;
         }
+
+        /* Sur téléphone, marges latérales réduites : la barre prend toute la largeur utile. */
+        @media (max-width: 768px) {
+            header,
+            .container {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+            #svgContainer {
+                padding-left: 4px;
+                padding-right: 4px;
+            }
+        }
     </style>
 </head>
 
@@ -601,6 +614,7 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             generateColorPalette();
+            enableFingerStripes(rect => rect.setAttribute("fill", selectedColor));
 
             editContext = getEditContext("config_personnalisee_forme2.html");
             if (editContext) {

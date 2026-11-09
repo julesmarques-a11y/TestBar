@@ -160,3 +160,51 @@ function collectCustomRals(colorsUsed) {
     });
     return table;
 }
+
+// Vrai si le clic vient d'un doigt ou d'un stylet plutôt que d'une souris.
+function isFingerTap(event) {
+    if (event.pointerType) return event.pointerType !== "mouse";
+    return window.matchMedia("(pointer: coarse)").matches;
+}
+
+// Sur téléphone, les rayures et les zones les plus étroites des barres ne font que quelques pixels
+// de large : trop peu pour un doigt. Chaque pièce de `shapes` reçoit donc une surface tactile d'au
+// moins 28 px de large, prolongée de 8 px au-dessus et au-dessous, et parmi les pièces dont la
+// surface contient le point touché (x, y), on renvoie celle dont le centre est le plus proche.
+// Une pièce étroite se touche ainsi en visant à peu près, sans gêner les pièces larges voisines.
+// Renvoie null si le point est trop loin de toute pièce.
+function shapeAtFinger(shapes, x, y) {
+    const MIN_WIDTH = 28;
+    const PAD_Y = 8;
+    let best = null;
+    let bestDistance = Infinity;
+
+    shapes.forEach(shape => {
+        const rect = shape.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        const padX = Math.max(0, (MIN_WIDTH - rect.width) / 2);
+        if (x < rect.left - padX || x > rect.right + padX) return;
+        if (y < rect.top - PAD_Y || y > rect.bottom + PAD_Y) return;
+
+        const distance = Math.abs(x - (rect.left + rect.right) / 2);
+        if (distance < bestDistance) {
+            best = shape;
+            bestDistance = distance;
+        }
+    });
+    return best;
+}
+
+// Configurateurs à rayures : au doigt, c'est la rayure la plus proche du point touché qui est
+// colorée (voir shapeAtFinger) ; à la souris, le clic reste exact. `paint(rect)` colore la rayure.
+// À appeler une fois : l'écoute porte sur #svgContainer, qui survit aux régénérations de la barre.
+function enableFingerStripes(paint) {
+    const svgContainer = document.getElementById("svgContainer");
+    svgContainer.addEventListener("click", event => {
+        if (!isFingerTap(event)) return;
+        const stripe = shapeAtFinger(svgContainer.querySelectorAll("svg rect"), event.clientX, event.clientY);
+        if (!stripe) return;
+        event.stopPropagation();
+        paint(stripe);
+    }, true);
+}

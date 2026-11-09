@@ -411,40 +411,9 @@
             });
         }
 
-        // Vrai si le clic vient d'un doigt ou d'un stylet plutôt que d'une souris.
-        function isFingerTap(event) {
-            if (event.pointerType) return event.pointerType !== "mouse";
-            return window.matchMedia("(pointer: coarse)").matches;
-        }
-
-        // Sur téléphone, les zones les plus étroites ne font que quelques pixels de large : trop peu
-        // pour un doigt. Chaque pièce reçoit donc une surface tactile d'au moins 28 px de large,
-        // prolongée de 8 px au-dessus et au-dessous, et parmi les pièces dont la surface contient le
-        // point touché, on retient celle dont le centre est le plus proche. Une zone étroite se
-        // touche ainsi en visant à peu près, sans gêner les zones larges qui l'entourent.
-        function sectionAtFinger(sections, x, y) {
-            const MIN_WIDTH = 28;
-            const PAD_Y = 8;
-            let best = null;
-            let bestDistance = Infinity;
-
-            sections.forEach(section => {
-                const shapes = section.querySelectorAll("path, rect, circle, polygon, line, ellipse");
-                Array.from(shapes.length ? shapes : [section]).forEach(shape => {
-                    const rect = shape.getBoundingClientRect();
-                    if (!rect.width || !rect.height) return;
-                    const padX = Math.max(0, (MIN_WIDTH - rect.width) / 2);
-                    if (x < rect.left - padX || x > rect.right + padX) return;
-                    if (y < rect.top - PAD_Y || y > rect.bottom + PAD_Y) return;
-
-                    const distance = Math.abs(x - (rect.left + rect.right) / 2);
-                    if (distance < bestDistance) {
-                        best = section;
-                        bestDistance = distance;
-                    }
-                });
-            });
-            return best;
+        // Section (zone colorable) à laquelle appartient une pièce du dessin.
+        function sectionOf(shape) {
+            return shape.closest("[id^='b'][id*='-s']");
         }
 
         // Convertit une couleur calculée ("rgb(0, 128, 128)") en code hex.
@@ -522,13 +491,17 @@
                         });
                     });
 
-                    // Au doigt, c'est la zone la plus proche du point touché qui est colorée (voir sectionAtFinger).
+                    // Au doigt, c'est la zone la plus proche du point touché qui est colorée (voir shapeAtFinger, js/cart.js).
+                    const sectionShapes = Array.from(sections).flatMap(section => {
+                        const shapes = section.querySelectorAll("path, rect, circle, polygon, line, ellipse");
+                        return Array.from(shapes.length ? shapes : [section]);
+                    });
                     svgElement.addEventListener("click", event => {
                         if (!isFingerTap(event)) return;
-                        const section = sectionAtFinger(sections, event.clientX, event.clientY);
-                        if (!section) return;
+                        const shape = shapeAtFinger(sectionShapes, event.clientX, event.clientY);
+                        if (!shape) return;
                         event.stopPropagation();
-                        colorGroupOf(section.id);
+                        colorGroupOf(sectionOf(shape).id);
                     }, true);
 
                     if (editContext) restoreItem(editContext.item);
