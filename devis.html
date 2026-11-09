@@ -375,8 +375,8 @@
                 const ralCode = getColorLabel(c, customRals) || "RAL inconnu";
                 return `
                     <div class="color-item">
-                        <span class="color-sample" style="background-color:${c};"></span>
-                        <span class="color-ref">${ralCode}</span>
+                        <span class="color-sample" style="background-color:${escapeHtml(c)};"></span>
+                        <span class="color-ref">${escapeHtml(ralCode)}</span>
                     </div>
                 `;
             }).join("");
@@ -421,7 +421,7 @@
         function svgToImgHtml(svgString, altText) {
             if (!svgString) return "❌ Erreur SVG";
             const encoded = encodeURIComponent(withExplicitSize(svgString));
-            return `<img src="data:image/svg+xml;utf8,${encoded}" alt="${altText}">`;
+            return `<img src="data:image/svg+xml;utf8,${encoded}" alt="${escapeHtml(altText)}">`;
         }
 
         function loadOrderSummary() {
@@ -449,12 +449,12 @@
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td class="svg-container-td">${imgHtml}</td>
-                    <td>Modèle ${item.model}</td>
+                    <td>Modèle ${escapeHtml(item.model)}</td>
                     <td><div class="color-box">${colorsHtml}</div></td>
-                    <td>${item.length || "Non spécifié"}</td>
-                    <td>${heightDisplay}</td>
-                    <td>${diameterDisplay}</td>
-                    <td>${item.quantity}</td>
+                    <td>${escapeHtml(item.length || "Non spécifié")}</td>
+                    <td>${escapeHtml(heightDisplay)}</td>
+                    <td>${escapeHtml(diameterDisplay)}</td>
+                    <td>${escapeHtml(item.quantity)}</td>
                 `;
                 orderTable.appendChild(row);
             });

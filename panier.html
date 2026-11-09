@@ -364,8 +364,8 @@
                         const ralLabel = getColorLabel(c, customRals) || "";
                         return `
                     <div class="color-item">
-                        <div class="color-sample" style="background-color:${c};"></div>
-                        ${ralLabel ? `<div class="color-label">${ralLabel}</div>` : ""}
+                        <div class="color-sample" style="background-color:${escapeHtml(c)};"></div>
+                        ${ralLabel ? `<div class="color-label">${escapeHtml(ralLabel)}</div>` : ""}
                     </div>
                 `;
             }).join("");
@@ -459,20 +459,20 @@
                 <div class="cart-item">
                     <div>
                         ${svgDataUrl
-                            ? `<img src="${svgDataUrl}" alt="Modèle ${item.model}" class="item-image">`
+                            ? `<img src="${svgDataUrl}" alt="Modèle ${escapeHtml(item.model)}" class="item-image">`
                             : '<div class="item-image" style="display:flex;align-items:center;justify-content:center;background:#f0f0f0;">❌</div>'}
                     </div>
                     <div class="item-details">
-                        <div class="item-model">Modèle ${item.model}</div>
-                        <div class="item-length">📏 Longueur : ${item.length || "Non spécifié"}</div>
-                        ${item.height ? `<div class="item-length">📐 Hauteur : ${item.height}</div>` : ''}
-                        ${item.diameter ? `<div class="item-length">⭕ Diamètre : ${item.diameter}</div>` : ''}
+                        <div class="item-model">Modèle ${escapeHtml(item.model)}</div>
+                        <div class="item-length">📏 Longueur : ${escapeHtml(item.length || "Non spécifié")}</div>
+                        ${item.height ? `<div class="item-length">📐 Hauteur : ${escapeHtml(item.height)}</div>` : ''}
+                        ${item.diameter ? `<div class="item-length">⭕ Diamètre : ${escapeHtml(item.diameter)}</div>` : ''}
                         <div class="color-box">${colorBoxes}</div>
                     </div>
                     <div class="item-actions">
                         <div class="quantity-control">
                             <label>Quantité :</label>
-                            <input type="number" value="${item.quantity}" min="1"
+                            <input type="number" value="${escapeHtml(item.quantity)}" min="1"
                                    id="qty-${index}" class="quantity-input"
                                    onchange="updateQuantity(${index})">
                         </div>
@@ -487,7 +487,7 @@
 
         function createPackHtml(pack, packIndex) {
             let packHtml = `<div class="pack-header">
-                <span class="pack-title">📦 Pack de ${pack.packSize} barres</span>
+                <span class="pack-title">📦 Pack de ${escapeHtml(pack.packSize)} barres</span>
                 <button class="btn btn-danger" onclick="removeFromCart(${packIndex})">Supprimer le pack</button>
             </div>`;
 
@@ -502,18 +502,18 @@
                     <div class="cart-item">
                         <div>
                             ${svgImage
-                                ? `<img src="${svgImage}" alt="Modèle ${bar.model}" class="item-image">`
+                                ? `<img src="${svgImage}" alt="Modèle ${escapeHtml(bar.model)}" class="item-image">`
                                 : '<div class="item-image" style="display:flex;align-items:center;justify-content:center;background:#f0f0f0;">❌</div>'}
                         </div>
                         <div class="item-details">
-                            <div class="item-model">Modèle ${bar.model}</div>
-                            <div class="item-length">📏 Longueur : ${bar.length || "Non spécifié"}</div>
-                            ${bar.height ? `<div class="item-length">📐 Hauteur : ${bar.height}</div>` : ''}
+                            <div class="item-model">Modèle ${escapeHtml(bar.model)}</div>
+                            <div class="item-length">📏 Longueur : ${escapeHtml(bar.length || "Non spécifié")}</div>
+                            ${bar.height ? `<div class="item-length">📐 Hauteur : ${escapeHtml(bar.height)}</div>` : ''}
                             <div class="color-box">${colorBoxes}</div>
                         </div>
                         <div class="item-actions">
                             <div class="quantity-control">
-                                <span>Quantité : ${bar.quantity}</span>
+                                <span>Quantité : ${escapeHtml(bar.quantity)}</span>
                             </div>
                         </div>
                     </div>

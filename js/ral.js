@@ -75,3 +75,14 @@ function getColorLabel(hex, customRals) {
     const key = String(hex === null || hex === undefined ? "" : hex).trim().toLowerCase();
     return getRal(key) || (customRals && customRals[key]) || null;
 }
+
+// Échappe une valeur avant de l'insérer dans du HTML (texte ou attribut entre guillemets).
+// À appliquer à tout ce qui vient du panier : libellés RAL saisis par l'utilisateur, modèle, longueur…
+function escapeHtml(value) {
+    return String(value === null || value === undefined ? "" : value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
