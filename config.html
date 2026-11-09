@@ -98,7 +98,7 @@
         <input type="number" id="quantity" min="1" value="1" style="padding: 5px; font-size: 16px; width: 60px; text-align: center;">
         <button class="btn" onclick="addToCart()">Ajouter au Panier</button>
         <a href="panier.html" class="btn">Voir le Panier</a>
-        <button class="btn btn-clear" onclick="clearCart()">Vider le Panier</button>
+        <button class="btn btn-clear" onclick="if (clearCart()) alert('Le panier a été vidé.')">Vider le Panier</button>
         <select id="length" style="padding: 5px; font-size: 16px;">
             <option value="3m">3m</option>
             <option value="3.5m">3,50m</option>
@@ -111,6 +111,7 @@
 
 
     <script src="js/ral.js"></script>
+    <script src="js/cart.js"></script>
     <script>
         let selectedColor = ralColors[0];
         const colorPalette = document.getElementById("colorPalette");
