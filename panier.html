@@ -131,6 +131,7 @@
             font-size: 1.3em;
             font-weight: 400;
             color: #2c3e50;
+            overflow-wrap: anywhere;
         }
         
         .item-length {
@@ -284,7 +285,7 @@
         
         @media (max-width: 768px) {
             .cart-item {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr);
                 text-align: center;
             }
             .item-actions {
@@ -300,6 +301,23 @@
             header,
             .main-content {
                 padding: 20px 30px;
+            }
+        }
+        
+        /* Sur téléphone, les trois compteurs restent côte à côte sans dépasser de l'écran. */
+        @media (max-width: 520px) {
+            .stats-card {
+                padding: 12px;
+                gap: 8px;
+            }
+            .stat-item {
+                padding: 12px 4px;
+            }
+            .stat-number {
+                font-size: 2.2em;
+            }
+            .stat-label {
+                font-size: 0.8em;
             }
         }
     </style>
