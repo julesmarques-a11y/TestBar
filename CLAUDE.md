@@ -14,7 +14,7 @@
 Les SVG sont chargés par `fetch`, donc tester avec un serveur local, pas en `file://` :
 
 ```
-python3 -m http.server
+python -m http.server
 ```
 
 ## Règles de travail
