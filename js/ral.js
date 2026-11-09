@@ -1,4 +1,4 @@
-// Table unique hex → RAL, partagée par les configurateurs, le panier et le devis.
+// Table unique hex → RAL et libellés des couleurs, partagés par les configurateurs, le panier et le devis.
 // L'ordre des entrées est l'ordre d'affichage dans la palette.
 const hexToRal = {
     "#d0b084": "RAL 1001",
@@ -45,4 +45,33 @@ const ralColors = Object.keys(hexToRal);
 function getRal(hex) {
     if (hex === null || hex === undefined) return null;
     return hexToRal[String(hex).trim().toLowerCase()] || null;
+}
+
+// Table { hex: libellé } des RAL personnalisés d'un article du panier (champ custom_rals).
+// Les anciens articles n'ont qu'un libellé (custom_ral) et parfois sa couleur (custom_ral_color) :
+// le libellé vaut alors pour cette couleur ou, à défaut, pour les couleurs utilisées hors palette.
+function getCustomRals(item) {
+    const isHex = color => /^#[0-9a-f]{6}$/i.test(color || "");
+    const table = {};
+    if (!item) return table;
+
+    if (item.custom_rals && typeof item.custom_rals === "object") {
+        Object.entries(item.custom_rals).forEach(([hex, label]) => {
+            if (isHex(hex) && label) table[hex.toLowerCase()] = String(label);
+        });
+    } else if (item.custom_ral) {
+        const colors = isHex(item.custom_ral_color) ?
+            [item.custom_ral_color] :
+            (item.colors || []).filter(color => isHex(color) && !getRal(color));
+        colors.forEach(hex => {
+            table[hex.toLowerCase()] = String(item.custom_ral);
+        });
+    }
+    return table;
+}
+
+// Libellé d'une couleur : RAL de la palette, sinon RAL personnalisé de la table `customRals`, sinon null.
+function getColorLabel(hex, customRals) {
+    const key = String(hex === null || hex === undefined ? "" : hex).trim().toLowerCase();
+    return getRal(key) || (customRals && customRals[key]) || null;
 }

@@ -367,10 +367,10 @@
             if (el) el.textContent = "Date du devis : " + frDate;
         }
 
-        function makeColorsHtml(colors, customRal) {
+        function makeColorsHtml(colors, customRals) {
             if (!colors) return "";
             return colors.map(c => {
-                const ralCode = getRal(c) || (customRal || "RAL inconnu");
+                const ralCode = getColorLabel(c, customRals) || "RAL inconnu";
                 return `
                     <div class="color-item">
                         <span class="color-sample" style="background-color:${c};"></span>
@@ -421,7 +421,7 @@
 
             cart.forEach(item => {
                 const imgHtml = svgToImgHtml(item.svg, `Modèle ${item.model}`);
-                const colorsHtml = makeColorsHtml(item.colors, item.custom_ral || null);
+                const colorsHtml = makeColorsHtml(item.colors, getCustomRals(item));
                 const heightDisplay = item.height || "-";
                 const diameterDisplay = item.diameter || "-";
 

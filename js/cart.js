@@ -134,9 +134,15 @@ function restoreStripeColors(savedSvg) {
     });
 }
 
-// Couleur du RAL personnalisé d'un article. Les anciens articles n'ont pas custom_ral_color :
-// c'est alors la couleur utilisée qui ne fait pas partie de la palette.
-function getCustomRalColor(item) {
-    const color = item.custom_ral_color || (item.colors || []).find(c => !getRal(c)) || "";
-    return /^#[0-9a-f]{6}$/i.test(color) ? color.toLowerCase() : null;
+// Table { hex: libellé } à enregistrer dans l'article : les RAL personnalisés ajoutés à la palette
+// du configurateur ET utilisés sur la barre (`colorsUsed` : couleurs des rayures).
+function collectCustomRals(colorsUsed) {
+    const used = colorsUsed.map(color => color.toLowerCase());
+    const table = {};
+    document.querySelectorAll("#colorPalette .color-swatch[data-custom-ral]").forEach(swatch => {
+        if (used.includes(swatch.dataset.color)) {
+            table[swatch.dataset.color] = swatch.dataset.customRal;
+        }
+    });
+    return table;
 }
