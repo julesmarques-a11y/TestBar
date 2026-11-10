@@ -277,6 +277,7 @@
             enableFingerStripes(rect => rect.setAttribute("fill", selectedColor));
 
             editContext = getEditContext("config_personnalisee.html");
+            showEditBanner(editContext);
             if (editContext) {
                 restoreItem(editContext.item);
             } else {

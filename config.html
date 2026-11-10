@@ -340,6 +340,7 @@
 
         // Mode modification : config.html?model=1xx[&gamme=plein-coeur]&edit=<index de la ligne du panier>
         const editContext = model ? getEditContext("config.html", model, gamme) : null;
+        showEditBanner(editContext);
 
         // Recopie, section par section, les couleurs du SVG enregistré dans l'article.
         function restoreSectionColors(savedSvg) {

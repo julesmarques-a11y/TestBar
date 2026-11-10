@@ -140,6 +140,23 @@ function getEditContext(page, model, gamme) {
     };
 }
 
+// Bandeau en tête du configurateur quand un article du panier est en cours de modification,
+// avec un lien « Annuler » qui revient au panier sans rien changer.
+function showEditBanner(editContext) {
+    if (!editContext) return;
+    const banner = document.createElement("div");
+    banner.className = "edit-banner";
+    banner.setAttribute("role", "status");
+    banner.innerHTML = `
+        <span class="edit-banner-text">Vous modifiez un article du panier : <strong></strong> (ligne ${editContext.index + 1}).
+        Vos changements seront enregistrés avec « Mettre à jour l'article ».</span>
+        <a class="btn btn-neutral" href="panier.html">Annuler</a>`;
+    banner.querySelector("strong").textContent = getModelLabel(editContext.item);
+    const intro = document.querySelector(".page-intro");
+    if (intro) intro.prepend(banner);
+    else document.body.prepend(banner);
+}
+
 // Enregistre un article : remplace la ligne en cours de modification (editContext),
 // sinon ajoute une ligne. Renvoie une promesse de "added", "updated" ou "cancelled".
 async function saveCartItem(newItem, editContext) {
