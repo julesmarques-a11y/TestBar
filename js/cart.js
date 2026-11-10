@@ -59,10 +59,13 @@ function getConfigPage(item) {
 }
 
 // Nom d'un article tel qu'il est affiché dans le panier, le devis et le PDF.
-// La palanque personnalisée est enregistrée sous le nom de modèle "BARRE 113 PERSONNALISÉE" :
-// cet identifiant est conservé pour que les articles déjà au panier restent reconnus et modifiables.
+// La palanque personnalisée est enregistrée sous le nom de modèle "BARRE 113 PERSONNALISÉE" et
+// la barre octo sous "BARRE_OCTO_PERSONNALISABLE" : ces identifiants sont conservés pour que les
+// articles déjà au panier restent reconnus et modifiables.
 function getModelLabel(item) {
-    if (getConfigPage(item) === "config_personnalisee_forme2.html") return "Palanque personnalisée";
+    const page = getConfigPage(item);
+    if (page === "config_personnalisee_forme2.html") return "Palanque personnalisée";
+    if (page === "config_bar_octo.html") return "Barre octo personnalisée";
     return `Modèle ${item.model}`;
 }
 

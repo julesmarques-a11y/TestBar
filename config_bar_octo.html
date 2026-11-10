@@ -580,7 +580,9 @@
                 return;
             }
 
-            // Ajoute l'article, ou remplace la ligne en cours de modification
+            // Ajoute l'article, ou remplace la ligne en cours de modification.
+            // "BARRE_OCTO_PERSONNALISABLE" est l'identifiant historique de la barre octo : il n'est plus
+            // affiché (voir getModelLabel, js/cart.js) mais reste celui des articles déjà au panier.
             const result = saveCartItem({
                 model: "BARRE_OCTO_PERSONNALISABLE",
                 colors: colorsUsed,
