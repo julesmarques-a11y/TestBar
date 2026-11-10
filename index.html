@@ -6,7 +6,7 @@
     <title>EQUINOX - Catalogue des barres de CSO</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Catalogue des barres d'obstacles EQUINOX : choisissez un modèle de barre de CSO, personnalisez ses couleurs RAL et préparez votre devis.">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="img/icone-equinox.png" type="image/png">
     <link rel="stylesheet" href="css/site.css">
     <style>
         /* Catalogue : conteneur en carte, en-tête légèrement plus haut que sur les configurateurs. */
@@ -34,17 +34,15 @@
         }
 
         .btn-main {
-            padding: 12px 24px;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-radius: 4px;
+            padding: 8px 22px;
+            font-family: var(--font-family-ui);
+            font-size: 1em;
+            border-radius: var(--radius-pill);
             text-decoration: none;
-            font-weight: 500;
             display: inline-block;
-            border: none;
+            border: 1px solid transparent;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: color var(--transition), background-color var(--transition);
         }
         /* Titre catalogue */
 
