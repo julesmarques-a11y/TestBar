@@ -7,121 +7,31 @@
     <title>Configurateur de Barre CSO</title>
     <meta name="description" content="Configurez votre barre de CSO EQUINOX : choisissez les couleurs RAL de chaque zone du modèle, la longueur et la quantité, puis ajoutez-la au panier.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="css/site.css">
     <link rel="stylesheet" href="css/ral-picker.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-            color: #2c3e50;
-        }
-
-        header {
-            background: #2c3e50;
-            color: white;
-            padding: 24px 60px;
-            border-bottom: 4px solid #e74c3c;
-        }
-
-        h1 {
-            font-size: 2em;
-            font-weight: 300;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-
-        header p {
-            color: #ecf0f1;
-            font-size: 0.9em;
-            line-height: 1.5;
-            max-width: 800px;
-        }
-
-        .btn-retour {
-            display: inline-block;
-            margin-bottom: 14px;
-            padding: 8px 20px;
-            font-size: 0.8em;
-            background-color: #95a5a6;
-            color: white;
-            text-decoration: none;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.2s;
-        }
-
-        .btn-retour:hover {
-            background-color: #7f8c8d;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px 40px 40px;
-        }
-
-        .section {
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
-        }
+        /* Configurateur des modèles de série : écarts par rapport à css/site.css. */
 
         .section-title {
             font-size: 1.2em;
-            font-weight: 300;
-            color: #2c3e50;
             margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e74c3c;
         }
 
-        .controls {
-            display: flex;
-            gap: 24px;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .control-group label {
-            font-size: 0.8em;
-            color: #7f8c8d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 400;
+        /* Ici la dernière section garde son trait ; ce sont les boutons qui n'en ont pas. */
+        .section:last-child {
+            border-bottom: 1px solid var(--color-border);
         }
 
         .control-group select,
         .control-group input[type="number"] {
-            padding: 8px 12px;
-            border: 1px solid #bdc3c7;
-            font-size: 1em;
-            background: white;
             min-height: 40px;
         }
 
         /* Barres plein cœur : la longueur est fixée à 3 m, le choix est désactivé mais reste lisible. */
         .control-group select:disabled {
-            background: #f0f0f0;
-            color: #2c3e50;
+            background: var(--color-bg-disabled);
+            color: var(--color-text);
             opacity: 1;
-        }
-
-        .control-group input[type="number"] {
-            width: 80px;
-            text-align: center;
         }
 
         .control-group .check-option {
@@ -130,7 +40,7 @@
             gap: 8px;
             min-height: 40px;
             font-size: 0.95em;
-            color: #2c3e50;
+            color: var(--color-text);
             text-transform: none;
             letter-spacing: 0;
             cursor: pointer;
@@ -140,123 +50,41 @@
         .check-option input {
             width: 20px;
             height: 20px;
-            accent-color: #e74c3c;
+            accent-color: var(--color-accent);
             cursor: pointer;
-        }
-
-        #svgContainer {
-            background: white;
-            padding: 20px;
-            border: 1px solid #e0e0e0;
-            margin: 10px 0 0;
-            min-height: 180px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         #svgContainer svg {
             width: 100%;
             max-width: 760px;
-            height: auto;
-            display: block;
             touch-action: manipulation;
-        }
-
-        .color-palette {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-            gap: 12px 6px;
-            padding: 8px;
-            border: 1px solid #ececec;
-            background: #fafafa;
         }
 
         .color-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
             cursor: pointer;
             touch-action: manipulation;
-        }
-
-        .color-swatch {
-            width: 44px;
-            height: 44px;
-            border: 2px solid #bdc3c7;
-            transition: all 0.15s;
         }
 
         .color-item:hover .color-swatch {
             transform: translateY(-1px);
         }
 
-        .color-swatch.selected {
-            border: 3px solid #e74c3c;
-            box-shadow: 0 0 0 2px white, 0 0 0 4px #e74c3c;
-        }
-
-        .color-label {
-            font-size: 0.7em;
-            color: #7f8c8d;
-            text-align: center;
-            font-weight: 500;
-        }
-
         .button-container {
-            display: flex;
             flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
+            padding-top: 0;
+            border-top: none;
         }
 
         .btn {
-            padding: 12px 24px;
-            font-size: 0.85em;
             font-family: inherit;
-            color: white;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
             text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.2s;
-            font-weight: 400;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: #27ae60;
-        }
-
-        .btn-primary:hover {
-            background: #229954;
-        }
-
-        .btn-secondary {
-            background: #95a5a6;
-        }
-
-        .btn-secondary:hover {
-            background: #7f8c8d;
-        }
-
-        .btn-danger {
-            background: #e74c3c;
-        }
-
-        .btn-danger:hover {
-            background: #c0392b;
         }
 
         @media (max-width: 768px) {
             header {
                 padding: 18px 16px 20px;
             }
-            h1 {
+            header h1 {
                 font-size: 1.6em;
             }
             .container {

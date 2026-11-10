@@ -7,245 +7,177 @@
     <title>Panier</title>
     <meta name="description" content="Votre panier EQUINOX : vérifiez vos barres d'obstacles, modifiez les quantités ou les couleurs, puis générez votre devis.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="css/site.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        /* Panier : l'en-tête est dans le conteneur, le texte par défaut reste noir. */
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
             min-height: 100vh;
-            padding: 0;
-            margin: 0;
+            color: var(--color-ink);
         }
-        
+
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
+            padding: 0;
         }
-        
+
         header {
-            background: #2c3e50;
-            color: white;
             padding: 30px 60px;
-            border-bottom: 4px solid #e74c3c;
         }
-        
-        h1 {
-            color: white;
+
+        header h1 {
             font-size: 2.2em;
             margin: 0;
-            font-weight: 300;
-            letter-spacing: 1px;
         }
-        
+
         .main-content {
             padding: 40px 60px;
         }
-        
+
         .stats-card {
-            background: #fff;
-            border: 1px solid #e0e0e0;
+            background: var(--color-white);
+            border: 1px solid var(--color-border);
             padding: 30px;
             margin-bottom: 40px;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 30px;
         }
-        
+
         .stat-item {
             text-align: center;
             padding: 20px;
-            background: #f8f9fa;
-            border-left: 4px solid #e74c3c;
+            background: var(--color-bg-panel);
+            border-left: 4px solid var(--color-accent);
         }
-        
+
         .stat-number {
             font-size: 3em;
             font-weight: 300;
             display: block;
             margin-bottom: 8px;
-            color: #2c3e50;
+            color: var(--color-text);
         }
-        
+
         .stat-label {
             font-size: 0.95em;
-            color: #7f8c8d;
+            color: var(--color-text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         .section-title {
-            color: #2c3e50;
             font-size: 1.6em;
-            margin: 40px 0 20px 0;
-            font-weight: 300;
-            border-bottom: 2px solid #e74c3c;
+            margin: 40px 0 20px;
             padding-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
+
         .cart-section {
-            background: white;
-            border: 1px solid #e0e0e0;
+            background: var(--color-white);
+            border: 1px solid var(--color-border);
             margin-bottom: 30px;
         }
-        
+
         .cart-item {
             display: grid;
             grid-template-columns: 140px 1fr auto;
             gap: 30px;
             padding: 30px;
-            border-bottom: 1px solid #ecf0f1;
+            border-bottom: 1px solid var(--color-light);
             align-items: center;
             transition: background 0.2s;
         }
-        
+
         .cart-item:hover {
-            background: #fafafa;
+            background: var(--color-bg-soft);
         }
-        
+
         .cart-item:last-child {
             border-bottom: none;
         }
-        
+
         .item-image {
             width: 120px;
             height: auto;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--color-border);
             padding: 10px;
-            background: white;
+            background: var(--color-white);
         }
-        
+
         .item-details {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
-        
+
         .item-model {
             font-size: 1.3em;
             font-weight: 400;
-            color: #2c3e50;
+            color: var(--color-text);
             overflow-wrap: anywhere;
         }
-        
+
         .item-length {
-            color: #7f8c8d;
+            color: var(--color-text-muted);
             font-size: 0.95em;
         }
-        
+
         .color-box {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             margin-top: 5px;
         }
-        
-        .color-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-        
+
         .color-sample {
             width: 45px;
             height: 25px;
-            border: 1px solid #bdc3c7;
+            border: 1px solid var(--color-input-border);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-        
+
+        /* Libellé aligné comme son article (centré sur téléphone seulement). */
         .color-label {
-            font-size: 0.7em;
-            color: #666;
-            font-weight: 500;
+            color: var(--color-text-soft);
+            text-align: inherit;
         }
-        
+
         .item-actions {
             display: flex;
             flex-direction: column;
             gap: 10px;
             align-items: flex-end;
         }
-        
+
         .quantity-control {
             display: flex;
             align-items: center;
             gap: 10px;
-            background: #f8f9fa;
+            background: var(--color-bg-panel);
             padding: 8px 15px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--color-border);
         }
-        
+
         .quantity-input {
             width: 60px;
             text-align: center;
-            border: 1px solid #bdc3c7;
+            border: 1px solid var(--color-input-border);
             padding: 6px;
             font-size: 1em;
         }
-        
+
         .btn {
             padding: 12px 28px;
-            border: none;
             font-size: 0.9em;
-            font-weight: 400;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-block;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
-        
-        .btn-primary {
-            background: #e74c3c;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #c0392b;
-        }
-        
-        .btn-secondary {
-            background: #95a5a6;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #7f8c8d;
-        }
-        
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-        
-        .btn-success {
-            background: #27ae60;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #229954;
-        }
-        
+
         .action-buttons {
             display: flex;
             gap: 10px;
         }
-        
+
         .bottom-actions {
             display: flex;
             justify-content: center;
@@ -253,21 +185,21 @@
             flex-wrap: wrap;
             margin-top: 40px;
             padding: 40px 0;
-            border-top: 1px solid #e0e0e0;
+            border-top: 1px solid var(--color-border);
         }
-        
+
         .empty-cart {
             text-align: center;
             padding: 80px 20px;
-            color: #95a5a6;
+            color: var(--color-grey);
         }
-        
+
         .empty-cart-icon {
             font-size: 5em;
             margin-bottom: 20px;
             opacity: 0.5;
         }
-        
+
         @media (max-width: 768px) {
             .cart-item {
                 grid-template-columns: minmax(0, 1fr);
@@ -288,7 +220,7 @@
                 padding: 20px 30px;
             }
         }
-        
+
         /* Sur téléphone, les quatre compteurs se rangent sur deux lignes sans dépasser de l'écran. */
         @media (max-width: 520px) {
             .stats-card {
