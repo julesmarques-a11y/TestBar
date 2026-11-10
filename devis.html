@@ -325,9 +325,6 @@
         </div>
     </main>
 
-    <footer>
-        © <span id="footerYear">2026</span> EQUINOX - Créateur d'espaces équestres
-    </footer>
 
     <!-- html2pdf.js 0.14.0, copie locale du fichier publié sur cdnjs -->
     <script src="js/vendor/html2pdf.bundle.min.js"></script>
@@ -782,7 +779,6 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             // Année du pied de page : toujours l'année courante.
-            document.getElementById("footerYear").textContent = new Date().getFullYear();
             updateDevisNumber(new Date());
             updateDevisDate(new Date());
             summaryReady = loadOrderSummary();

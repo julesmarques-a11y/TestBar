@@ -1,5 +1,6 @@
-// En-tête commun aux 7 pages, injecté au chargement (script chargé avec defer) :
-// logo, bouton « Panier » avec le nombre de barres, barre d'étapes du parcours.
+// En-tête et pied de page communs aux 7 pages, injectés au chargement (script chargé avec defer).
+// En-tête : logo, bouton « Panier » avec le nombre de barres, barre d'étapes du parcours.
+// Pied de page : logo, copyright avec l'année courante, lien vers le site du client.
 (function () {
     "use strict";
 
@@ -87,7 +88,24 @@
         return header;
     }
 
+    function buildFooter() {
+        const footer = document.createElement("footer");
+        footer.className = "site-footer";
+        footer.innerHTML = `
+            <div class="site-footer-inner">
+                <a class="site-footer-logo" href="https://www.horsequinox.com/" title="Site EQUINOX">
+                    <img src="img/logo-equinox.png" alt="EQUINOX">
+                </a>
+                <p class="site-footer-text">
+                    Copyright © SARL EQUINOX ${new Date().getFullYear()}
+                    · <a href="https://www.horsequinox.com/">www.horsequinox.com</a>
+                </p>
+            </div>`;
+        return footer;
+    }
+
     document.body.prepend(buildHeader());
+    document.body.append(buildFooter());
     updateCartCount();
 
     // Panier modifié dans un autre onglet.

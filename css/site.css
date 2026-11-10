@@ -529,11 +529,45 @@ h4,
     font-weight: 500;
 }
 
-/* Pied de page */
+/* Pied de page commun (injecté par js/layout.js) */
 
-footer {
-    text-align: center;
-    padding: 12px 20px 18px;
+.site-footer {
+    margin-top: 48px;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-white);
+}
+
+.site-footer-inner {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 20px var(--container-gutter) 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+}
+
+.site-footer-logo {
+    display: block;
+    line-height: 0;
+}
+
+.site-footer-logo img {
+    height: 48px;
+    width: auto;
+}
+
+.site-footer-text {
     color: var(--color-text-muted);
-    font-size: 0.85em;
+    font-size: 0.875em;
+}
+
+.site-footer-text a {
+    color: var(--color-dark);
+    text-decoration: none;
+}
+
+.site-footer-text a:hover {
+    text-decoration: underline;
 }
