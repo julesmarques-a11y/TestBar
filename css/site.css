@@ -1,0 +1,314 @@
+/* Styles communs aux pages du configurateur EQUINOX (index, configurateurs, panier, devis).
+   Chaque page garde dans son propre <style>, après ce fichier, ce qui lui est propre et ses
+   écarts par rapport aux valeurs ci-dessous. Le thème (couleurs, police) se règle dans :root. */
+
+:root {
+    /* Police */
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+    /* Couleurs de la charte */
+    --color-dark: #2c3e50;          /* en-tête, titres, texte courant */
+    --color-text: var(--color-dark);
+    --color-accent: #e74c3c;        /* rouge : liserés, sélection, boutons « danger » */
+    --color-accent-dark: #c0392b;
+    --color-accent-tint: #fdf1ef;   /* survol d'une ligne du nuancier */
+    --color-success: #27ae60;       /* vert : actions principales */
+    --color-success-dark: #229954;
+    --color-orange: #e67e22;        /* orange : accès aux configurateurs personnalisés */
+    --color-orange-dark: #d35400;
+    --color-grey: #95a5a6;          /* gris : boutons secondaires, texte estompé */
+    --color-grey-dark: #7f8c8d;
+    --color-text-muted: var(--color-grey-dark);
+    --color-light: #ecf0f1;         /* texte clair sur fond sombre, fonds de badge */
+    --color-white: #ffffff;
+
+    /* Fonds et bordures */
+    --color-page-bg: #f5f5f5;
+    --color-surface: var(--color-white);
+    --color-bg-soft: #fafafa;
+    --color-bg-panel: #f8f9fa;
+    --color-bg-disabled: #f0f0f0;
+    --color-border: #e0e0e0;
+    --color-border-light: #ececec;
+    --color-border-soft: #ddd;
+    --color-border-faint: #eee;
+    --color-input-border: #bdc3c7;
+
+    /* Neutres du devis et du panier */
+    --color-ink: #000;
+    --color-text-strong: #333;
+    --color-text-soft: #666;
+
+    /* Anneau de la pastille RAL sélectionnée */
+    --swatch-ring: 0 0 0 2px var(--color-white), 0 0 0 4px var(--color-accent);
+}
+
+/* Reset */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background: var(--color-page-bg);
+    color: var(--color-text);
+}
+
+/* En-tête sombre */
+
+header {
+    background: var(--color-dark);
+    color: var(--color-white);
+    padding: 24px 60px;
+    border-bottom: 4px solid var(--color-accent);
+}
+
+header h1 {
+    font-size: 2em;
+    font-weight: 300;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+header p {
+    color: var(--color-light);
+    font-size: 0.9em;
+    line-height: 1.5;
+    max-width: 800px;
+}
+
+.brand-line {
+    font-size: 0.9em;
+    margin-bottom: 4px;
+    opacity: 0.9;
+}
+
+.brand-line span {
+    font-weight: 600;
+}
+
+.btn-retour {
+    display: inline-block;
+    margin-bottom: 14px;
+    padding: 8px 20px;
+    font-size: 0.8em;
+    background-color: var(--color-grey);
+    color: var(--color-white);
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+}
+
+.btn-retour:hover {
+    background-color: var(--color-grey-dark);
+}
+
+/* Conteneur principal et sections */
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: var(--color-surface);
+    padding: 30px 40px 40px;
+}
+
+.section {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.section:last-child {
+    border-bottom: none;
+}
+
+.section-title {
+    font-size: 1.4em;
+    font-weight: 300;
+    color: var(--color-text);
+    margin-bottom: 18px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--color-accent);
+}
+
+/* Boutons */
+
+.btn {
+    padding: 12px 24px;
+    font-size: 0.85em;
+    color: var(--color-white);
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    font-weight: 400;
+    display: inline-block;
+}
+
+.btn-primary,
+.btn-success,
+.btn-green {
+    background: var(--color-success);
+    color: var(--color-white);
+}
+
+.btn-primary:hover,
+.btn-success:hover,
+.btn-green:hover {
+    background: var(--color-success-dark);
+}
+
+.btn-secondary,
+.btn-grey {
+    background: var(--color-grey);
+    color: var(--color-white);
+}
+
+.btn-secondary:hover,
+.btn-grey:hover {
+    background: var(--color-grey-dark);
+}
+
+.btn-danger,
+.btn-update {
+    background: var(--color-accent);
+    color: var(--color-white);
+}
+
+.btn-danger:hover,
+.btn-update:hover {
+    background: var(--color-accent-dark);
+}
+
+.btn-orange {
+    background: var(--color-orange);
+    color: var(--color-white);
+}
+
+.btn-orange:hover {
+    background: var(--color-orange-dark);
+}
+
+/* Rangée de boutons en bas d'un configurateur */
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+}
+
+/* Formulaires des configurateurs : longueur, quantité, options */
+
+.controls {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.control-group label {
+    font-size: 0.8em;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 400;
+}
+
+.control-group select,
+.control-group input[type="number"] {
+    padding: 8px 12px;
+    border: 1px solid var(--color-input-border);
+    font-size: 1em;
+    background: var(--color-white);
+}
+
+.control-group input[type="number"] {
+    width: 80px;
+    text-align: center;
+}
+
+/* Aperçu de la barre */
+
+#svgContainer {
+    background: var(--color-white);
+    padding: 20px;
+    border: 1px solid var(--color-border);
+    margin: 10px 0 0;
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#svgContainer svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Palette RAL : pastilles et libellés (aussi utilisés par le panier et le devis) */
+
+.color-palette {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 12px 6px;
+    padding: 8px;
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg-soft);
+}
+
+.color-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.color-swatch {
+    width: 44px;
+    height: 44px;
+    border: 2px solid var(--color-input-border);
+    transition: all 0.15s;
+}
+
+.color-swatch:hover {
+    transform: translateY(-1px);
+}
+
+.color-swatch.selected {
+    border: 3px solid var(--color-accent);
+    box-shadow: var(--swatch-ring);
+}
+
+.color-label {
+    font-size: 0.7em;
+    color: var(--color-text-muted);
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Pied de page */
+
+footer {
+    text-align: center;
+    padding: 12px 20px 18px;
+    color: var(--color-text-muted);
+    font-size: 0.85em;
+}

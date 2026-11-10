@@ -7,236 +7,59 @@
     <title>Barre Octo personnalisée</title>
     <meta name="description" content="Créez une barre Octo 100% personnalisée EQUINOX : choisissez le diamètre, la longueur et la couleur RAL de chaque rayure.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="css/site.css">
     <link rel="stylesheet" href="css/ral-picker.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-            color: #2c3e50;
-        }
-        
+        /* Barre octo personnalisée : écarts par rapport à css/site.css. */
+
         header {
-            background: #2c3e50;
-            color: white;
-            padding: 24px 60px;
-            border-bottom: 4px solid #e74c3c;
             position: relative;
         }
-        
-        h1 {
-            font-size: 2em;
-            font-weight: 300;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-        
-        header p {
-            color: #ecf0f1;
-            font-size: 0.9em;
-            line-height: 1.5;
-            max-width: 800px;
-        }
-        
-        .btn-retour {
-            display: inline-block;
-            margin-bottom: 14px;
-            padding: 8px 20px;
-            font-size: 0.8em;
-            background-color: #95a5a6;
-            color: white;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.2s;
-        }
-        
-        .btn-retour:hover {
-            background-color: #7f8c8d;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px 40px 40px;
-        }
-        
-        .section {
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .section:last-child {
-            border-bottom: none;
-        }
-        
+
         .section-title {
             font-size: 1.2em;
-            font-weight: 300;
-            color: #2c3e50;
             margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e74c3c;
         }
-        
-        .controls {
-            display: flex;
-            gap: 24px;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-        
+
         .control-group {
-            display: flex;
-            flex-direction: column;
             gap: 8px;
         }
-        
-        .control-group label {
-            font-size: 0.8em;
-            color: #7f8c8d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 400;
-        }
-        
+
         .control-group select,
         .control-group input[type="number"] {
-            padding: 8px 12px;
-            border: 1px solid #bdc3c7;
             font-size: 0.95em;
-            background: white;
         }
-        
-        .control-group input[type="number"] {
-            width: 80px;
-            text-align: center;
-        }
-        
+
+        /* Palette compacte et défilante, pastilles réduites, sélection sans anneau. */
         .color-palette {
-            display: grid;
             grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
             gap: 10px;
             margin-bottom: 10px;
             max-height: 200px;
             overflow-y: auto;
-            padding: 8px;
-            border: 1px solid #ececec;
-            background: #fafafa;
         }
-        
+
         .color-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             gap: 6px;
         }
-        
+
         .color-swatch {
             width: 34px;
             height: 34px;
             cursor: pointer;
-            border: 2px solid #bdc3c7;
-            transition: all 0.15s;
         }
-        
-        .color-swatch:hover {
-            transform: translateY(-1px);
-        }
-        
+
         .color-swatch.selected {
-            border: 3px solid #e74c3c;
+            box-shadow: none;
         }
-        
-        .color-label {
-            font-size: 0.7em;
-            color: #7f8c8d;
-            text-align: center;
-            font-weight: 500;
-        }
-        
+
         #svgContainer {
-            background: white;
             padding: 40px 20px;
-            border: 1px solid #e0e0e0;
             margin: 10px 0 20px;
-            min-height: 180px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
-        
-        #svgContainer svg {
-            max-width: 100%;
-            height: auto;
-            display: block;
-        }
-        
-        .button-container {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
-        }
-        
+
         .btn {
             padding: 10px 24px;
-            font-size: 0.85em;
-            color: white;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.2s;
-            font-weight: 400;
-            display: inline-block;
-        }
-        
-        .btn-primary {
-            background: #27ae60;
-        }
-        
-        .btn-primary:hover {
-            background: #229954;
-        }
-        
-        .btn-secondary {
-            background: #95a5a6;
-        }
-        
-        .btn-secondary:hover {
-            background: #7f8c8d;
-        }
-        
-        .btn-update {
-            background: #e74c3c;
-        }
-        
-        .btn-update:hover {
-            background: #c0392b;
-        }
-        
-        .info-badge {
-            display: inline-block;
-            background: #ecf0f1;
-            padding: 6px 12px;
-            border-radius: 3px;
-            font-size: 0.85em;
-            color: #7f8c8d;
-            margin-left: 10px;
         }
 
         /* Sur téléphone, marges latérales réduites : la barre prend toute la largeur utile. */
