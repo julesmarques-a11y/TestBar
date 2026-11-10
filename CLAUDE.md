@@ -26,4 +26,4 @@ python -m http.server
 
 1. Vérifier qu'il n'y a pas d'erreur JS dans la console sur les pages touchées.
 2. Donner la liste des tests manuels à faire.
-3. Faire un commit par tâche sur la branche de travail que je t'indique, jamais directement sur `main`, sans push.
+3. Commiter directement sur `main` (un commit par tâche, ou par point quand la tâche en liste plusieurs), puis `git push origin main` à la fin de la tâche.
