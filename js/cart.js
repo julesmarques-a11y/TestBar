@@ -10,6 +10,13 @@ const CONFIG_PAGES = [
     "config_personnalisee_forme2.html"
 ];
 
+// Gamme « plein cœur » des modèles de série (champ gamme des articles) : longueur 3 m uniquement.
+const PLEIN_COEUR = "plein-coeur";
+
+function isPleinCoeur(item) {
+    return Boolean(item) && item.gamme === PLEIN_COEUR;
+}
+
 function readCart() {
     return JSON.parse(localStorage.getItem("cart")) || [];
 }
@@ -59,11 +66,39 @@ function getConfigPage(item) {
 }
 
 // Nom d'un article tel qu'il est affiché dans le panier, le devis et le PDF.
-// La palanque personnalisée est enregistrée sous le nom de modèle "BARRE 113 PERSONNALISÉE" :
-// cet identifiant est conservé pour que les articles déjà au panier restent reconnus et modifiables.
+// La palanque personnalisée est enregistrée sous le nom de modèle "BARRE 113 PERSONNALISÉE" et
+// la barre octo sous "BARRE_OCTO_PERSONNALISABLE" : ces identifiants sont conservés pour que les
+// articles déjà au panier restent reconnus et modifiables.
 function getModelLabel(item) {
-    if (getConfigPage(item) === "config_personnalisee_forme2.html") return "Palanque personnalisée";
-    return `Modèle ${item.model}`;
+    const page = getConfigPage(item);
+    if (page === "config_personnalisee_forme2.html") return "Palanque personnalisée";
+    if (page === "config_bar_octo.html") return "Barre octo personnalisée";
+    return `Modèle ${item.model}` + (isPleinCoeur(item) ? " – Plein cœur" : "");
+}
+
+// Configurateurs à rayures : une rayure non peinte y reste blanche (#ffffff, hors palette).
+const STRIPE_PAGES = [
+    "config_personnalisee.html",
+    "config_bar_octo.html",
+    "config_personnalisee_forme2.html"
+];
+
+// Vrai si l'article vient d'un configurateur à rayures et qu'une rayure y est restée blanche.
+// Le SVG est lu dans un document inerte (DOMParser), jamais inséré dans la page.
+function hasUnpaintedStripe(item) {
+    if (!STRIPE_PAGES.includes(getConfigPage(item))) return false;
+    const rects = new DOMParser().parseFromString(item.svg || "", "text/html").querySelectorAll("svg rect");
+    return Array.from(rects).some(rect => /^(#fff|#ffffff|white)$/i.test((rect.getAttribute("fill") || "").trim()));
+}
+
+// Couleurs d'un article à afficher dans le panier, le devis et le PDF : ses couleurs avec leur
+// libellé (RAL personnalisé de l'article ou RAL du nuancier, sinon null), puis, si une rayure est
+// restée blanche, une pastille blanche qui signale au peintre qu'il manque un RAL.
+function getDisplayColors(item) {
+    const customRals = getCustomRals(item);
+    const colors = (item.colors || []).map(hex => ({ hex, label: getColorLabel(hex, customRals) }));
+    if (hasUnpaintedStripe(item)) colors.push({ hex: "#ffffff", label: "Blanc (RAL à préciser)" });
+    return colors;
 }
 
 // Adresse du configurateur en mode modification pour la ligne `index` du panier, ou null.
@@ -71,21 +106,24 @@ function getEditUrl(item, index) {
     const page = getConfigPage(item);
     if (!page) return null;
     if (page === "config.html") {
-        return `config.html?model=${encodeURIComponent(item.model)}&edit=${index}`;
+        const gamme = isPleinCoeur(item) ? `&gamme=${PLEIN_COEUR}` : "";
+        return `config.html?model=${encodeURIComponent(item.model)}${gamme}&edit=${index}`;
     }
     return `${page}?edit=${index}`;
 }
 
 // Lit ?edit=<index> dans l'adresse. Renvoie { index, item, snapshot } si la ligne existe
-// et appartient bien à ce configurateur (et à ce modèle, pour le catalogue) ; sinon null.
-function getEditContext(page, model) {
+// et appartient bien à ce configurateur (et à ce modèle et cette gamme, pour le catalogue) ;
+// sinon null.
+function getEditContext(page, model, gamme) {
     const raw = new URLSearchParams(window.location.search).get("edit");
     if (raw === null) return null;
 
     const index = /^\d+$/.test(raw) ? parseInt(raw, 10) : -1;
     const item = readCart()[index];
     const matches = item && getConfigPage(item) === page &&
-        (model === undefined || String(item.model) === String(model));
+        (model === undefined || String(item.model) === String(model)) &&
+        (model === undefined || isPleinCoeur(item) === (gamme === PLEIN_COEUR));
 
     if (!matches) {
         alert("L'article à modifier est introuvable dans le panier. Vous pouvez configurer une nouvelle barre.");
@@ -156,16 +194,23 @@ function restoreStripeColors(savedSvg) {
     });
 }
 
-// Table { hex: libellé } à enregistrer dans l'article : les RAL personnalisés ajoutés à la palette
-// du configurateur ET utilisés sur la barre (`colorsUsed` : couleurs des rayures).
+// Table { hex: libellé } à enregistrer dans l'article : les couleurs hors palette standard ajoutées
+// au configurateur (nuancier ou saisie libre, voir js/ral-picker.js) ET utilisées sur la barre
+// (`colorsUsed` : couleurs des rayures ou des bandes).
 function collectCustomRals(colorsUsed) {
-    const used = colorsUsed.map(color => color.toLowerCase());
+    const used = colorsUsed.map(color => String(color).toLowerCase());
     const table = {};
-    document.querySelectorAll("#colorPalette .color-swatch[data-custom-ral]").forEach(swatch => {
+    document.querySelectorAll(".color-swatch[data-custom-ral]").forEach(swatch => {
         if (used.includes(swatch.dataset.color)) {
             table[swatch.dataset.color] = swatch.dataset.customRal;
         }
     });
+    // Couleurs retirées de « Mes RAL » mais encore sur la barre : leur libellé a été conservé.
+    if (typeof ralPickerLabels === "object") {
+        used.forEach(hex => {
+            if (!table[hex] && !isPaletteColor(hex) && ralPickerLabels[hex]) table[hex] = ralPickerLabels[hex];
+        });
+    }
     return table;
 }
 

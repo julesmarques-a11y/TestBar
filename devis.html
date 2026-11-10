@@ -133,93 +133,165 @@
             font-weight: 600;
         }
         
-        /* Sur petit écran, le tableau défile dans son bloc au lieu d'écraser ses colonnes. */
         .order-summary {
             margin-top: 15px;
-            overflow-x: auto;
         }
-        
-        /* Largeurs de colonnes fixées (voir <colgroup>) : le tableau ne dépasse jamais sa largeur,
-           donc jamais la largeur utile de la page du PDF, quel que soit le contenu du panier. */
-        table {
-            width: 100%;
-            min-width: 900px;
-            table-layout: fixed;
-            border-collapse: collapse;
-            background: white;
-            margin-top: 15px;
-            font-size: 0.9em;
-        }
-        
-        th,
-        td {
+
+        /* Un bloc par article, à l'écran comme dans le PDF : l'aperçu de la barre sur toute la
+           largeur, puis une ligne d'informations. */
+        .article {
+            margin-top: 14px;
+            padding: 14px 16px 12px;
             border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-            vertical-align: middle;
-            overflow-wrap: anywhere;
+            border-radius: 4px;
+            background: white;
         }
-        
-        .col-image {
-            width: 120px;
-        }
-        
-        .col-model {
-            width: 25%;
-        }
-        
-        .col-small {
-            width: 9%;
-        }
-        
-        th {
-            background-color: #27ae60;
-            color: white;
-            font-weight: 500;
-        }
-        
-        .svg-container-td {
-            padding: 0;
-        }
-        
-        /* La vignette garde les proportions du dessin, bornée par la largeur de la colonne et par
-           une hauteur maximale. Pas d'object-fit : html2canvas l'ignore et étirait l'image dans le PDF. */
-        .svg-container-td img {
-            max-width: 100%;
-            max-height: 40px;
+
+        /* L'image a une taille propre (voir drawingImage) : elle occupe la largeur du bloc, moins si
+           sa hauteur est plafonnée, en gardant ses proportions. Pas d'object-fit : html2canvas l'ignore. */
+        .article-preview img {
             display: block;
+            max-width: 100%;
+            max-height: 160px;
+            width: auto;
+            height: auto;
             margin: 0 auto;
         }
-        
+
+        .article-info {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 26px;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .article-name {
+            font-size: 1.15em;
+            font-weight: 600;
+        }
+
+        .article-qty {
+            padding: 2px 12px;
+            border-radius: 4px;
+            background: #2c3e50;
+            color: white;
+            white-space: nowrap;
+        }
+
+        .article-qty strong {
+            font-size: 1.5em;
+        }
+
         .color-box {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            justify-content: center;
-            gap: 4px;
+            gap: 6px 16px;
         }
-        
+
         .color-item {
             display: flex;
             align-items: center;
-            gap: 4px;
-            margin: 2px 4px;
+            gap: 5px;
         }
-        
+
         .color-sample {
-            width: 18px;
-            height: 18px;
+            width: 22px;
+            height: 22px;
             border: 1px solid #000;
             display: inline-block;
             flex-shrink: 0;
         }
-        
+
         .color-ref {
-            font-size: 0.8em;
+            font-size: 0.9em;
             color: #333;
             font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* Pages du PDF : construites hors écran au moment de la génération (voir buildPdfPages),
+           à la largeur utile de la page. Leurs tailles sont en pixels : 1 px = 0,26 mm sur le papier. */
+        .pdf-sheet {
+            position: fixed;
+            left: -10000px;
+            top: 0;
+        }
+
+        .pdf-page {
+            background: white;
+            font-size: 14px;
+        }
+
+        .pdf-running {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 20px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #e74c3c;
+        }
+
+        .pdf-page-number {
+            white-space: nowrap;
+        }
+
+        .pdf-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .pdf-title {
+            font-size: 22px;
+        }
+
+        .pdf-title strong {
+            color: #e74c3c;
+        }
+
+        .pdf-client,
+        .pdf-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 34px;
+            margin-top: 8px;
+        }
+
+        .pdf-page .article {
+            margin-top: 10px;
+            padding: 8px 10px;
+        }
+
+        /* Mention sur les couleurs : sous la sélection à l'écran, et en tête de la première page du PDF. */
+        .ral-notice {
+            margin-top: 10px;
+            color: #7f8c8d;
+            font-size: 0.8em;
+            line-height: 1.5;
+        }
+
+        .pdf-notice {
+            margin-top: 8px;
+            color: #7f8c8d;
+            font-size: 11px;
+        }
+
+        .pdf-page .article-info {
+            margin-top: 8px;
+            padding-top: 6px;
         }
         
+        /* Plafond fixé par buildPdfPages (variable --preview-max-height), selon le format de la page. */
+        .pdf-page .article-preview img {
+            max-height: var(--preview-max-height);
+        }
+
         .actions {
             margin-top: 20px;
             text-align: center;
@@ -270,9 +342,8 @@
                 padding: 20px 16px 28px;
                 margin: 15px auto 30px;
             }
-            th,
-            td {
-                font-size: 0.8em;
+            .article {
+                padding: 10px 10px 8px;
             }
         }
     </style>
@@ -290,70 +361,47 @@
     </header>
 
     <main class="container">
-        <div id="pdfContent">
-            <div class="devis-info">
-                <div>
-                    <span class="label">Numéro de devis :</span>
-                    <span class="devis-number" id="devisNumber"></span>
+        <div class="devis-info">
+            <div>
+                <span class="label">Numéro de devis :</span>
+                <span class="devis-number" id="devisNumber"></span>
+            </div>
+            <div id="devisDateDisplay"></div>
+        </div>
+
+        <form id="devisForm" onsubmit="return false;">
+            <div class="section-title">Informations client</div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="lastName">Nom *</label>
+                    <input type="text" id="lastName" name="lastName" required>
                 </div>
-                <div id="devisDateDisplay"></div>
+
+                <div class="form-group">
+                    <label for="orderNumber">Numéro de commande *</label>
+                    <input type="text" id="orderNumber" name="orderNumber" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="deliveryDate">Date de livraison souhaitée *</label>
+                    <input type="date" id="deliveryDate" name="deliveryDate" required>
+                </div>
             </div>
 
-            <form id="devisForm" onsubmit="return false;">
-                <div class="section-title">Informations client</div>
+            <div id="statsContainer">
+                <strong>📊 Statistiques :</strong><br>
+                <span id="count3m">0</span> barres de <strong>3 m</strong><br>
+                <span id="count35m">0</span> barres de <strong>3,5 m</strong><br>
+                <span id="countPleinCoeur">0</span> barres <strong>plein cœur 3 m</strong><br> Total : <strong><span id="countTotal">0</span> barres</strong>
+            </div>
 
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="lastName">Nom *</label>
-                        <input type="text" id="lastName" name="lastName" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="orderNumber">Numéro de commande *</label>
-                        <input type="text" id="orderNumber" name="orderNumber" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="deliveryDate">Date de livraison souhaitée *</label>
-                        <input type="date" id="deliveryDate" name="deliveryDate" required>
-                    </div>
-                </div>
-
-                <div id="statsContainer">
-                    <strong>📊 Statistiques :</strong><br>
-                    <span id="count3m">0</span> barres de <strong>3 m</strong><br>
-                    <span id="count35m">0</span> barres de <strong>3,5 m</strong><br> Total : <strong><span id="countTotal">0</span> barres</strong>
-                </div>
-
-                <div class="order-summary">
-                    <div class="section-title">Votre sélection</div>
-
-                    <table>
-                        <colgroup>
-                            <col class="col-image">
-                            <col class="col-model">
-                            <col>
-                            <col class="col-small">
-                            <col class="col-small">
-                            <col class="col-small">
-                            <col class="col-small">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th>Image</th>
-                                <th>Modèle</th>
-                                <th>Couleurs</th>
-                                <th>Longueur</th>
-                                <th>Hauteur</th>
-                                <th>Diamètre</th>
-                                <th>Quantité</th>
-                            </tr>
-                        </thead>
-                        <tbody id="orderTable"></tbody>
-                    </table>
-                </div>
-            </form>
-        </div>
+            <div class="order-summary">
+                <div class="section-title">Votre sélection</div>
+                <div id="orderList"></div>
+                <p class="ral-notice">Les couleurs affichées sont indicatives : seule la référence RAL fait foi.</p>
+            </div>
+        </form>
 
         <div class="actions">
             <button type="button" class="btn" id="downloadBtn" onclick="generatePdf()">Télécharger le devis en PDF</button>
@@ -371,6 +419,22 @@
     <script src="js/ral.js"></script>
     <script src="js/cart.js"></script>
     <script>
+        // Page du PDF, en millimètres. Portrait : les aperçus occupent toute la largeur utile
+        // (190 mm) en restant bas (barre 11 mm, palanque 19 mm, modèle de série en 2 x 2 : 13 mm),
+        // ce qui met six articles par page. En paysage, ils seraient plus larges (277 mm) mais
+        // leur hauteur devrait être plafonnée vers 13 mm pour rester aussi bas, donc réduite en
+        // largeur sous les 190 mm du portrait pour la palanque et les modèles de série.
+        const PDF_PAGE = {
+            orientation: "portrait",
+            width: 210,
+            height: 297,
+            margin: 10
+        };
+
+        // Largeur propre des images d'aperçu, en pixels : un peu plus que celle d'une page du PDF
+        // dessinée à l'échelle 2, pour que l'aperçu reste net une fois imprimé.
+        const PREVIEW_WIDTH = 2400;
+
         // Sans backend, pas de compteur commun à tous les navigateurs : le numéro de devis
         // est établi à partir de la date et de l'heure, à la seconde près pour que deux devis
         // générés dans la même minute n'aient pas le même numéro, par exemple DV-20261109-150742.
@@ -388,107 +452,231 @@
             return devisNumber;
         }
 
-        function updateDevisDate() {
-            const now = new Date();
-            const options = {
+        // Affiche la date du devis correspondant à `date` et la renvoie au format JJ/MM/AAAA.
+        function updateDevisDate(date) {
+            const frDate = date.toLocaleDateString('fr-FR', {
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit'
-            };
-            const frDate = now.toLocaleDateString('fr-FR', options);
+            });
             const el = document.getElementById("devisDateDisplay");
             if (el) el.textContent = "Date du devis : " + frDate;
+            return frDate;
         }
 
-        function makeColorsHtml(colors, customRals) {
-            if (!colors) return "";
-            return colors.map(c => {
-                const ralCode = getColorLabel(c, customRals) || "RAL inconnu";
-                return `
+        function makeColorsHtml(item) {
+            return getDisplayColors(item).map(({ hex, label }) => `
                     <div class="color-item">
-                        <span class="color-sample" style="background-color:${escapeHtml(c)};"></span>
-                        <span class="color-ref">${escapeHtml(ralCode)}</span>
+                        <span class="color-sample" style="background-color:${escapeHtml(hex)};"></span>
+                        <span class="color-ref">${escapeHtml(label || "RAL inconnu")}</span>
                     </div>
-                `;
-            }).join("");
+                `).join("");
         }
 
+        // Les barres plein cœur (toujours en 3 m) sont comptées à part des barres de 3 m.
         function updateStats(cart) {
             let count3m = 0;
             let count35m = 0;
+            let countPleinCoeur = 0;
 
             cart.forEach(item => {
                 const qty = item.quantity || 1;
-                if (item.length === "3m") count3m += qty;
-                if (item.length === "3.5m") count35m += qty;
+                if (isPleinCoeur(item)) countPleinCoeur += qty;
+                else if (item.length === "3m") count3m += qty;
+                else if (item.length === "3.5m") count35m += qty;
             });
 
-            const total = count3m + count35m;
+            const total = count3m + count35m + countPleinCoeur;
 
             document.getElementById("count3m").textContent = count3m;
             document.getElementById("count35m").textContent = count35m;
+            document.getElementById("countPleinCoeur").textContent = countPleinCoeur;
             document.getElementById("countTotal").textContent = total;
         }
 
-        // Les barres personnalisées sont enregistrées avec width="100%" et sans hauteur : l'image
-        // n'a alors pas de taille propre et sort tronquée dans le PDF. On lui donne la taille de
-        // son viewBox. Les modèles du catalogue ont déjà une largeur et une hauteur en unités
-        // absolues (et dessinent au-delà de leur viewBox) : ils sont laissés tels quels.
-        function withExplicitSize(svgString) {
-            const svg = new DOMParser().parseFromString(svgString, "image/svg+xml").documentElement;
-            if (svg.nodeName !== "svg") return svgString;
-
-            const isAbsolute = name => /^\d*\.?\d+(px)?$/.test((svg.getAttribute(name) || "").trim());
-            if (isAbsolute("width") && isAbsolute("height")) return svgString;
-
-            const viewBox = (svg.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
-            if (viewBox.length !== 4 || !(viewBox[2] > 0) || !(viewBox[3] > 0)) return svgString;
-
-            svg.setAttribute("width", viewBox[2]);
-            svg.setAttribute("height", viewBox[3]);
-            return new XMLSerializer().serializeToString(svg);
+        // "3.5m" (valeur enregistrée dans le panier) → "3,5 m".
+        function formatLength(length) {
+            const match = /^(\d+(?:\.\d+)?)\s*m$/.exec(String(length || "").trim());
+            return match ? `${match[1].replace(".", ",")} m` : (length || "Non spécifié");
         }
 
-        function svgToImgHtml(svgString, altText) {
-            if (!svgString) return "❌ Erreur SVG";
-            const encoded = encodeURIComponent(withExplicitSize(svgString));
-            return `<img src="data:image/svg+xml;utf8,${encoded}" alt="${escapeHtml(altText)}">`;
+        // "2026-12-04" (valeur d'un champ date) → "04/12/2026".
+        function formatDateFr(isoDate) {
+            const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+            return match ? `${match[3]}/${match[2]}/${match[1]}` : isoDate;
         }
 
-        function loadOrderSummary() {
+        const svgDataUrl = svg => `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+
+        // Charge `src` dans une image ; renvoie null si elle est illisible.
+        function loadImage(src) {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
+                img.src = src;
+            });
+        }
+
+        // Zones réellement peintes d'une image de `width` x `height` (ses pixels non transparents),
+        // dans les unités de l'image : une bande par groupe de lignes peintes consécutives, de haut
+        // en bas, chacune cadrée sur ses pixels peints avec un pixel de marge. Renvoie [] si rien
+        // n'est peint ou si l'image est illisible.
+        function paintedBands(img, width, height) {
+            const scale = Math.min(2000 / width, 2000 / height);
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.ceil(width * scale);
+            canvas.height = Math.ceil(height * scale);
+
+            let pixels;
+            try {
+                const ctx = canvas.getContext("2d", { willReadFrequently: true });
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            } catch (err) {
+                return [];
+            }
+
+            const bands = [];
+            let band = null;
+            for (let y = 0; y < canvas.height; y++) {
+                let left = canvas.width, right = -1;
+                for (let x = 0; x < canvas.width; x++) {
+                    if (pixels[(y * canvas.width + x) * 4 + 3] === 0) continue;
+                    if (x < left) left = x;
+                    right = x;
+                }
+                if (right < 0) {
+                    band = null; // ligne vide : fin de la bande en cours
+                    continue;
+                }
+                if (!band) {
+                    band = { left, right, top: y, bottom: y };
+                    bands.push(band);
+                }
+                band.left = Math.min(band.left, left);
+                band.right = Math.max(band.right, right);
+                band.bottom = y;
+            }
+
+            const toX = px => Math.max(0, Math.min(canvas.width, px)) * width / canvas.width;
+            const toY = px => Math.max(0, Math.min(canvas.height, px)) * height / canvas.height;
+            return bands.map(b => {
+                const x = toX(b.left - 1), y = toY(b.top - 1);
+                return { x, y, width: toX(b.right + 2) - x, height: toY(b.bottom + 2) - y };
+            });
+        }
+
+        // Image d'aperçu d'un article, cadrée sur le dessin de la barre. Le SVG enregistré dans le
+        // panier ne l'est pas :
+        // - les modèles de série dessinent quatre vues de la barre, l'une sous l'autre, dans une
+        //   image de 500 x 280 dont elles n'occupent qu'une partie ;
+        // - les barres personnalisées ont width="100%" et pas de hauteur : sans taille propre,
+        //   elles sortaient tronquées dans le PDF. On leur donne la taille de leur viewBox.
+        // On repère donc les zones réellement peintes et on en fait le cadre d'un SVG englobant, de
+        // PREVIEW_WIDTH pixels de large. Quatre vues superposées sont réparties sur deux colonnes
+        // (2 x 2), chacune dans un SVG imbriqué cadré sur sa vue, pour un aperçu moins haut.
+        // Le SVG du panier n'est jamais inséré dans la page : il n'est lu qu'à travers une image,
+        // qui n'exécute aucun script.
+        // Renvoie { src, width, height }, ou null si le SVG est inexploitable.
+        async function drawingImage(svgString) {
+            const svg = new DOMParser().parseFromString(svgString || "", "image/svg+xml").documentElement;
+            if (svg.nodeName !== "svg") return null;
+
+            const absolute = name => {
+                const match = /^(\d*\.?\d+)(px)?$/.exec((svg.getAttribute(name) || "").trim());
+                return match ? Number(match[1]) : 0;
+            };
+            let width = absolute("width");
+            let height = absolute("height");
+            if (!(width > 0 && height > 0)) {
+                const viewBox = (svg.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
+                if (viewBox.length !== 4 || !(viewBox[2] > 0) || !(viewBox[3] > 0)) return null;
+                width = viewBox[2];
+                height = viewBox[3];
+                svg.setAttribute("width", width);
+                svg.setAttribute("height", height);
+            }
+
+            const sized = new XMLSerializer().serializeToString(svg);
+            const img = await loadImage(svgDataUrl(sized));
+            if (!img) return null;
+
+            const bands = paintedBands(img, width, height);
+            const view = (frame, x, y, w, h) =>
+                `<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${frame.x} ${frame.y} ${frame.width} ${frame.height}">${sized}</svg>`;
+            let content, frameWidth, frameHeight;
+
+            if (bands.length === 4) {
+                const tileWidth = Math.max(...bands.map(b => b.width));
+                const tileHeight = Math.max(...bands.map(b => b.height));
+                const gapX = tileWidth * 0.04;
+                const gapY = tileHeight * 0.35;
+                frameWidth = 2 * tileWidth + gapX;
+                frameHeight = 2 * tileHeight + gapY;
+                content = bands.map((band, i) =>
+                    view(band, (i % 2) * (tileWidth + gapX), Math.floor(i / 2) * (tileHeight + gapY), tileWidth, tileHeight)).join("");
+            } else {
+                // Une seule vue : le cadre englobe toutes les bandes (toute l'image si rien n'est peint).
+                let frame = { x: 0, y: 0, width, height };
+                if (bands.length) {
+                    const x = Math.min(...bands.map(b => b.x));
+                    const right = Math.max(...bands.map(b => b.x + b.width));
+                    const last = bands[bands.length - 1];
+                    frame = { x, y: bands[0].y, width: right - x, height: last.y + last.height - bands[0].y };
+                }
+                frameWidth = frame.width;
+                frameHeight = frame.height;
+                content = view(frame, 0, 0, frame.width, frame.height);
+            }
+
+            const previewHeight = Math.round(PREVIEW_WIDTH * frameHeight / frameWidth);
+            const framed = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${frameWidth} ${frameHeight}" ` +
+                `width="${PREVIEW_WIDTH}" height="${previewHeight}">${content}</svg>`;
+            return { src: svgDataUrl(framed), width: PREVIEW_WIDTH, height: previewHeight };
+        }
+
+        // Bloc d'un article : l'aperçu de la barre sur toute la largeur puis, sur une ligne, la
+        // désignation, la quantité, les dimensions et les couleurs avec leur RAL.
+        async function createArticle(item) {
+            const label = getModelLabel(item);
+            const image = await drawingImage(item.svg);
+            const preview = image ?
+                `<img src="${image.src}" width="${image.width}" height="${image.height}" alt="${escapeHtml(label)}">` :
+                "❌ Erreur SVG";
+
+            const article = document.createElement("div");
+            article.className = "article";
+            article.innerHTML = `
+                <div class="article-preview">${preview}</div>
+                <div class="article-info">
+                    <span class="article-name">${escapeHtml(label)}</span>
+                    <span class="article-qty">Quantité : <strong>${escapeHtml(item.quantity)}</strong></span>
+                    <span>Longueur : <strong>${escapeHtml(formatLength(item.length))}</strong></span>
+                    ${item.height ? `<span>Hauteur : <strong>${escapeHtml(item.height)}</strong></span>` : ""}
+                    ${item.diameter ? `<span>Diamètre : <strong>${escapeHtml(item.diameter)}</strong></span>` : ""}
+                    <div class="color-box">${makeColorsHtml(item)}</div>
+                </div>
+            `;
+            return article;
+        }
+
+        async function loadOrderSummary() {
             console.log("📦 Chargement du résumé de commande...");
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const orderTable = document.getElementById("orderTable");
+            const orderList = document.getElementById("orderList");
 
-            orderTable.innerHTML = "";
+            orderList.innerHTML = "";
             updateStats(cart);
 
             if (cart.length === 0) {
-                const row = document.createElement("tr");
-                row.innerHTML = `<td colspan="7">Aucun article dans le panier.</td>`;
-                orderTable.appendChild(row);
+                orderList.innerHTML = "<p>Aucun article dans le panier.</p>";
                 console.log("ℹ️ Panier vide pour le devis.");
                 return;
             }
 
-            cart.forEach(item => {
-                const imgHtml = svgToImgHtml(item.svg, getModelLabel(item));
-                const colorsHtml = makeColorsHtml(item.colors, getCustomRals(item));
-                const heightDisplay = item.height || "-";
-                const diameterDisplay = item.diameter || "-";
-
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td class="svg-container-td">${imgHtml}</td>
-                    <td>${escapeHtml(getModelLabel(item))}</td>
-                    <td><div class="color-box">${colorsHtml}</div></td>
-                    <td>${escapeHtml(item.length || "Non spécifié")}</td>
-                    <td>${escapeHtml(heightDisplay)}</td>
-                    <td>${escapeHtml(diameterDisplay)}</td>
-                    <td>${escapeHtml(item.quantity)}</td>
-                `;
-                orderTable.appendChild(row);
-            });
+            const articles = await Promise.all(cart.map(createArticle));
+            articles.forEach(article => orderList.appendChild(article));
 
             console.log("✅ Résumé du devis chargé avec succès !");
         }
@@ -502,68 +690,110 @@
                 })));
         }
 
-        // html2pdf dessine tout le devis en une seule image, découpée ensuite en pages : il ne sait
-        // pas répéter l'en-tête d'un tableau. On pagine donc le tableau dans la copie du devis qu'il
-        // s'apprête à dessiner (`container`) : une ligne qui chevaucherait deux pages est repoussée
-        // en haut de la page suivante, précédée d'une copie de l'en-tête.
-        // `pageHeight` est la hauteur utile d'une page, en pixels.
-        function paginateTable(container, pageHeight) {
-            const table = container.querySelector("table");
-            const headRow = table && table.querySelector("thead tr");
-            const body = table && table.tBodies[0];
-            if (!headRow || !body || !body.rows.length || !(pageHeight > 0)) return;
+        // En-tête d'une page du PDF. La première page porte les informations du devis en texte
+        // simple, puis les statistiques ; les suivantes rappellent le numéro de devis et le client.
+        function pdfHeaderHtml(info, isFirstPage) {
+            const number = escapeHtml(info.devisNumber);
+            const name = escapeHtml(info.lastName);
+            const order = escapeHtml(info.orderNumber);
+            const pageNumber = `<span class="pdf-page-number"></span>`;
 
-            const origin = container.getBoundingClientRect().top;
-            const top = el => el.getBoundingClientRect().top - origin;
-            const bottom = el => el.getBoundingClientRect().bottom - origin;
-            const pageOf = y => Math.floor(y / pageHeight);
-            // Un élément finissant à moins d'un pixel du bas de page compte comme coupé (sa bordure le serait).
-            const lastPageOf = el => pageOf(bottom(el) + 1);
-            const headHeight = bottom(headRow) - top(headRow);
-
-            // Règle la hauteur de `spacer` pour que `el`, placé après lui, commence à `target`.
-            // La seconde passe corrige l'effet des marges et des bordures fusionnées.
-            const pushTo = (spacer, el, target) => {
-                spacer.style.height = "0px";
-                for (let pass = 0; pass < 2; pass++) {
-                    spacer.style.height = `${Math.max(0, parseFloat(spacer.style.height) + target - top(el))}px`;
-                }
-            };
-
-            // L'en-tête d'origine ne reste pas seul en bas de page : s'il n'est pas sur la même page
-            // que la fin de la première ligne, tout le tableau passe à la page suivante.
-            const firstRow = body.rows[0];
-            if (pageOf(top(headRow)) !== lastPageOf(firstRow) && bottom(firstRow) - top(headRow) + 1 < pageHeight) {
-                const target = (pageOf(top(headRow)) + 1) * pageHeight;
-                const spacer = document.createElement("div");
-                table.parentNode.insertBefore(spacer, table);
-                pushTo(spacer, headRow, target);
+            if (!isFirstPage) {
+                return `
+                    <div class="pdf-running">
+                        <span>EQUINOX – Devis n° <strong>${number}</strong> – Client : <strong>${name}</strong> – Commande n° <strong>${order}</strong></span>
+                        ${pageNumber}
+                    </div>
+                `;
             }
 
-            Array.from(body.rows).forEach(row => {
-                const page = pageOf(top(row));
-                if (lastPageOf(row) === page) return; // la ligne tient sur sa page
-                if (headHeight + bottom(row) - top(row) + 1 >= pageHeight) return; // plus haute qu'une page
+            const count = id => escapeHtml(document.getElementById(id).textContent);
+            return `
+                <div class="pdf-running">
+                    <span><strong>EQUINOX</strong> – Créateur d'espaces équestres</span>
+                    ${pageNumber}
+                </div>
+                <div class="pdf-head">
+                    <span class="pdf-title">Devis n° <strong>${number}</strong></span>
+                    <span>Date du devis : <strong>${escapeHtml(info.devisDate)}</strong></span>
+                </div>
+                <div class="pdf-client">
+                    <span>Nom : <strong>${name}</strong></span>
+                    <span>Numéro de commande : <strong>${order}</strong></span>
+                    <span>Date de livraison souhaitée : <strong>${escapeHtml(formatDateFr(info.deliveryDate))}</strong></span>
+                </div>
+                <div class="pdf-stats">
+                    <span>Statistiques :</span>
+                    <span><strong>${count("count3m")}</strong> barres de <strong>3 m</strong></span>
+                    <span><strong>${count("count35m")}</strong> barres de <strong>3,5 m</strong></span>
+                    <span><strong>${count("countPleinCoeur")}</strong> barres <strong>plein cœur 3 m</strong></span>
+                    <span>Total : <strong>${count("countTotal")} barres</strong></span>
+                </div>
+                <div class="pdf-notice">Les couleurs reproduites sont indicatives : seule la référence RAL fait foi.</div>
+            `;
+        }
 
-                const spacerRow = document.createElement("tr");
-                const spacer = document.createElement("td");
-                spacer.colSpan = headRow.cells.length;
-                spacer.style.padding = "0";
-                spacer.style.border = "none";
-                spacerRow.appendChild(spacer);
+        // Répartit une copie des articles affichés sur les pages du PDF, construites dans `sheet`
+        // (hors écran, à la largeur utile de la page), et renvoie ces pages. Un bloc qui ne tient
+        // plus sur la page en cours ouvre la page suivante : il n'est donc jamais coupé, et chaque
+        // page commence par son en-tête.
+        async function buildPdfPages(sheet, info) {
+            // Deux millimètres de moins que la hauteur utile : une page plus haute d'un seul pixel
+            // serait découpée en deux par html2pdf.
+            const maxHeight = (PDF_PAGE.height - 2 * PDF_PAGE.margin - 2) * 96 / 25.4;
+            const heightOf = el => el.getBoundingClientRect().height;
+            // Hauteur maximale de l'aperçu, en millimètres : le bloc d'un article (aperçu, ligne
+            // d'informations et marges, soit environ 19 mm hors aperçu) ne dépasse pas le quart de
+            // la hauteur utile de la page.
+            const previewMaxHeight = (PDF_PAGE.height - 2 * PDF_PAGE.margin) / 4 - 19;
 
-                const headCopy = headRow.cloneNode(true);
-                body.insertBefore(spacerRow, row);
-                body.insertBefore(headCopy, row);
-                pushTo(spacer, headCopy, (page + 1) * pageHeight);
+            const articles = Array.from(document.querySelectorAll("#orderList .article"), el => el.cloneNode(true));
+            articles.forEach(article => sheet.appendChild(article));
+            await imagesLoaded(sheet);
+
+            // Le nombre de pages n'est connu qu'à la fin : pendant la répartition, le numéro de page
+            // est occupé par un texte au moins aussi large que le numéro définitif, pour que
+            // celui-ci ne fasse pas passer l'en-tête à la ligne (et grandir la page) après coup.
+            const digits = "0".repeat(String(articles.length).length);
+            const pages = [];
+            const addPage = () => {
+                const page = document.createElement("div");
+                page.className = "pdf-page";
+                page.style.setProperty("--preview-max-height", `${previewMaxHeight}mm`);
+                page.innerHTML = pdfHeaderHtml(info, pages.length === 0);
+                page.querySelector(".pdf-page-number").textContent = `Page ${digits} / ${digits}`;
+                sheet.appendChild(page);
+                pages.push(page);
+                return page;
+            };
+
+            let page = addPage();
+            articles.forEach(article => {
+                page.appendChild(article);
+                if (heightOf(page) > maxHeight && page.querySelectorAll(".article").length > 1) {
+                    page = addPage();
+                    page.appendChild(article);
+                }
+
+                // Seul sur sa page et encore trop haut : l'aperçu est réduit, proportions gardées.
+                const excess = heightOf(page) - maxHeight;
+                const img = article.querySelector("img");
+                if (excess > 0 && img) {
+                    img.style.height = `${Math.max(20, heightOf(img) - excess)}px`;
+                    img.style.width = "auto";
+                }
             });
+
+            pages.forEach((p, i) => {
+                p.querySelector(".pdf-page-number").textContent = `Page ${i + 1} / ${pages.length}`;
+            });
+            return pages;
         }
 
         async function generatePdf() {
             const lastName = document.getElementById("lastName").value.trim();
             const orderNumber = document.getElementById("orderNumber").value.trim();
             const deliveryDate = document.getElementById("deliveryDate").value.trim();
-            const cart = JSON.parse(localStorage.getItem("cart")) || [];
             const downloadBtn = document.getElementById("downloadBtn");
             const loadingText = document.getElementById("loading");
 
@@ -572,69 +802,74 @@
                 return;
             }
 
-            if (!cart || cart.length === 0) {
+            await summaryReady;
+            if (!document.querySelector("#orderList .article")) {
                 alert("Votre panier est vide, impossible de générer un devis.");
                 return;
             }
 
             // Le numéro et la date imprimés sont ceux du moment de la génération.
             const now = new Date();
-            const fileName = `Devis_EQX_${updateDevisNumber(now)}.pdf`;
+            const devisNumber = updateDevisNumber(now);
+            const devisDate = updateDevisDate(now);
 
             downloadBtn.disabled = true;
             loadingText.style.display = "block";
 
-            const infoBloc = document.getElementById("devisDateDisplay");
-            if (infoBloc) {
-                const frNow = now.toLocaleDateString('fr-FR', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                });
-                infoBloc.textContent = `Date du devis : ${frNow} – Client : ${lastName}, commande n° ${orderNumber} – Livraison souhaitée : ${deliveryDate}`;
-            }
+            const sheet = document.createElement("div");
+            sheet.className = "pdf-sheet";
+            sheet.style.width = `${PDF_PAGE.width - 2 * PDF_PAGE.margin}mm`;
+            document.body.appendChild(sheet);
 
-            const element = document.getElementById('pdfContent');
             const opt = {
-                margin: 10,
-                filename: fileName,
+                margin: PDF_PAGE.margin,
+                filename: `Devis_EQX_${devisNumber}.pdf`,
                 image: {
                     type: 'jpeg',
-                    quality: 0.98
+                    quality: 0.95
                 },
+                // Échelle 2 : environ 190 points par pouce, pour un aperçu net à l'impression.
                 html2canvas: {
-                    scale: 1
+                    scale: 2
                 },
-                // Paysage : les 7 colonnes tiennent dans la largeur utile sans couper les mots.
                 jsPDF: {
                     unit: 'mm',
-                    format: 'a4',
-                    orientation: 'landscape'
+                    format: [PDF_PAGE.width, PDF_PAGE.height],
+                    orientation: PDF_PAGE.orientation
                 }
             };
 
             try {
-                // Entre la copie du devis (toContainer) et son dessin : aucune ligne du tableau
-                // coupée entre deux pages, et l'en-tête répété en haut de chaque page.
-                await html2pdf().set(opt).from(element).toContainer().then(async function() {
-                    await imagesLoaded(this.prop.container);
-                    paginateTable(this.prop.container, this.prop.pageSize.inner.px.height);
-                }).save();
+                const pages = await buildPdfPages(sheet, { devisNumber, devisDate, lastName, orderNumber, deliveryDate });
+
+                // Chaque page est dessinée séparément puis ajoutée au PDF : html2pdf dessinerait
+                // sinon tout le devis en une seule image, trop grande pour un long panier.
+                let worker = html2pdf().set(opt).from(pages[0]).toPdf();
+                pages.slice(1).forEach(page => {
+                    worker = worker.get("pdf").then(pdf => {
+                        pdf.addPage();
+                    }).from(page).toContainer().toCanvas().toPdf();
+                });
+                await worker.save();
             } catch (err) {
                 console.error("Erreur lors de la génération du PDF :", err);
                 alert("Une erreur est survenue pendant la génération du PDF.");
             } finally {
+                sheet.remove();
                 downloadBtn.disabled = false;
                 loadingText.style.display = "none";
             }
         }
 
+        // Résolue quand les articles du panier sont affichés.
+        let summaryReady = Promise.resolve();
+
         document.addEventListener("DOMContentLoaded", () => {
             // Année du pied de page : toujours l'année courante.
             document.getElementById("footerYear").textContent = new Date().getFullYear();
             updateDevisNumber(new Date());
-            updateDevisDate();
-            loadOrderSummary();
+            updateDevisDate(new Date());
+            summaryReady = loadOrderSummary();
         });
     </script>
 </body>

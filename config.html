@@ -7,6 +7,7 @@
     <title>Configurateur de Barre CSO</title>
     <meta name="description" content="Configurez votre barre de CSO EQUINOX : choisissez les couleurs RAL de chaque zone du modèle, la longueur et la quantité, puis ajoutez-la au panier.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="css/ral-picker.css">
     <style>
         * {
             margin: 0;
@@ -111,9 +112,36 @@
             min-height: 40px;
         }
 
+        /* Barres plein cœur : la longueur est fixée à 3 m, le choix est désactivé mais reste lisible. */
+        .control-group select:disabled {
+            background: #f0f0f0;
+            color: #2c3e50;
+            opacity: 1;
+        }
+
         .control-group input[type="number"] {
             width: 80px;
             text-align: center;
+        }
+
+        .control-group .check-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 40px;
+            font-size: 0.95em;
+            color: #2c3e50;
+            text-transform: none;
+            letter-spacing: 0;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .check-option input {
+            width: 20px;
+            height: 20px;
+            accent-color: #e74c3c;
+            cursor: pointer;
         }
 
         #svgContainer {
@@ -253,7 +281,7 @@
         <a href="index.html" class="btn-retour">← Retour à l'accueil</a>
         <h1>Configurateur de Barre CSO</h1>
         <p>
-            Choisissez une couleur dans la palette, puis cliquez sur les zones de la barre pour les colorer.
+            Choisissez une couleur dans la palette, puis cliquez sur chaque bande de la barre pour la colorer.
         </p>
     </header>
 
@@ -274,6 +302,14 @@
                     <label for="quantity">Quantité</label>
                     <input type="number" id="quantity" min="1" value="1">
                 </div>
+
+                <div class="control-group">
+                    <label for="linkedBands">Coloriage</label>
+                    <label class="check-option" title="Un clic colore aussi les bandes liées à celle cliquée : plus rapide sur les modèles à beaucoup de bandes.">
+                        <input type="checkbox" id="linkedBands">
+                        Colorer les bandes liées ensemble
+                    </label>
+                </div>
             </div>
 
             <div id="svgContainer"></div>
@@ -282,6 +318,38 @@
         <div class="section">
             <h2 class="section-title">Palette de couleurs RAL</h2>
             <div class="color-palette" id="colorPalette"></div>
+            <div class="my-rals" id="myRals" hidden>
+                <h3 class="my-rals-title">Mes RAL</h3>
+                <div class="color-palette" id="myRalPalette"></div>
+            </div>
+            <p class="ral-notice">Les couleurs affichées à l'écran sont indicatives : seule la référence RAL fait foi.</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Autres couleurs RAL</h2>
+            <div class="custom-ral-box">
+                <strong>Vous ne trouvez pas votre RAL dans la palette ? Cherchez-le dans le nuancier RAL Classic (216 teintes).</strong>
+                <div class="ral-search">
+                    <input type="search" id="ralSearchInput" placeholder="Numéro ou nom, ex : 6018 ou vert" autocomplete="off" aria-label="Rechercher une teinte dans le nuancier RAL">
+                    <ul id="ralSearchResults" class="ral-search-results" hidden></ul>
+                </div>
+                <small>
+                    Choisissez une teinte dans la liste : elle s'ajoute à « Mes RAL », sous la palette, et son numéro figurera dans votre panier et votre devis.
+                </small>
+                <details class="ral-free">
+                    <summary>Teinte hors nuancier RAL Classic (saisie libre)</summary>
+                    <div class="custom-ral-row">
+                        <input type="text" id="customRalInput" placeholder="Référence, ex : RAL Design 180 50 15">
+                        <input type="color" id="customRalColor" value="#ff0000" aria-label="Couleur d'écran la plus proche">
+                        <button type="button" class="btn btn-secondary" id="addCustomRalBtn">
+                            Ajouter à la palette
+                        </button>
+                    </div>
+                    <small>
+                        Indiquez la référence de la teinte et choisissez la couleur d'écran la plus proche : la référence sera reprise telle quelle dans votre panier et votre devis.
+                    </small>
+                </details>
+            </div>
         </div>
 
         <div class="button-container">
@@ -293,6 +361,7 @@
 
     <script src="js/ral.js"></script>
     <script src="js/cart.js"></script>
+    <script src="js/ral-picker.js"></script>
     <script>
         let selectedColor = ralColors[0];
         const colorPalette = document.getElementById("colorPalette");
@@ -306,6 +375,7 @@
             const swatch = document.createElement("div");
             swatch.classList.add("color-swatch");
             swatch.style.backgroundColor = color;
+            swatch.dataset.color = color;
             swatchContainer.appendChild(swatch);
 
             // Création du label pour afficher le code RAL correspondant
@@ -327,6 +397,12 @@
         // La première couleur est la couleur active au chargement : on l'affiche comme sélectionnée.
         colorPalette.querySelector(".color-swatch").classList.add("selected");
 
+        // Recherche dans le nuancier, saisie libre et « Mes RAL » (js/ral-picker.js).
+        initRalPicker({ onSelect: hex => { selectedColor = hex; } });
+
+        // Groupes de bandes liées, utilisés quand « Colorer les bandes liées ensemble » est coché :
+        // un clic colore alors toutes les bandes du groupe de la bande cliquée. Sinon (réglage par
+        // défaut), un clic ne colore que la bande cliquée.
         const groups = {
             "b1-group1": ["b1-s1"],
 
@@ -386,34 +462,58 @@
             return null;
         }
 
-        // Applique la couleur sélectionnée à toutes les sections du groupe de la section `sectionId`.
-        function colorGroupOf(sectionId) {
-            console.log("Section cliquée:", sectionId);
-            const groupId = findGroup(sectionId);
-            if (!groupId) {
-                console.warn("Aucun groupe trouvé pour :", sectionId);
-                return;
+        // Zones colorables du SVG (sections) : <g id="bN-sK"> contenant les quatre vues d'une bande.
+        const SECTION_SELECTOR = "[id^='b'][id*='-s']";
+        const SHAPES = "path, rect, circle, polygon, line, ellipse";
+
+        // Bandes dessinées en plusieurs sections. Dans le modèle 113, chaque bande est découpée en
+        // quatre sections, une par vue : les colorer séparément rendrait les vues différentes.
+        // Partout ailleurs, une bande est une seule section (parfois avec une section imbriquée,
+        // comme b12-s91 dans b12-s9 : voir outerSection).
+        const bandPieces = [
+            ["b14-s1", "b14-s1-0", "b14-s1-9", "b14-s1-8"],
+            ["b14-s2", "b14-s2-1", "b14-s2-4", "b14-s2-7"]
+        ];
+
+        // Section la plus englobante d'une section : la bande entière quand des sections sont imbriquées.
+        function outerSection(section) {
+            let outer = section;
+            for (let el = section.parentElement; el; el = el.parentElement) {
+                if (el.matches(SECTION_SELECTOR)) outer = el;
             }
-            groups[groupId].forEach(id => {
-                const targetSection = document.getElementById(id);
-                if (targetSection) {
-                    const elements = targetSection.querySelectorAll("path, rect, circle, polygon, line, ellipse");
-                    if (elements.length === 0) {
-                        targetSection.setAttribute("fill", selectedColor);
-                        targetSection.style.fill = selectedColor;
-                    } else {
-                        elements.forEach(element => {
-                            element.setAttribute("fill", selectedColor);
-                            element.style.fill = selectedColor;
-                        });
-                    }
-                }
+            return outer;
+        }
+
+        // Identifiants des sections qui forment la bande à laquelle appartient la section `sectionId`.
+        function bandOf(sectionId) {
+            const section = document.getElementById(sectionId);
+            const id = section ? outerSection(section).id : sectionId;
+            return bandPieces.find(pieces => pieces.includes(id)) || [id];
+        }
+
+        // Applique `color` à toutes les pièces de la section `id`.
+        function paintSection(id, color) {
+            const section = document.getElementById(id);
+            if (!section) return;
+            const elements = section.querySelectorAll(SHAPES);
+            (elements.length ? Array.from(elements) : [section]).forEach(element => {
+                element.setAttribute("fill", color);
+                element.style.fill = color;
             });
+        }
+
+        // Applique la couleur sélectionnée à la bande de la section `sectionId` ; si « Colorer les
+        // bandes liées ensemble » est coché, à tout le groupe de cette bande.
+        function colorFrom(sectionId) {
+            const band = bandOf(sectionId);
+            const linked = document.getElementById("linkedBands").checked;
+            const groupId = linked ? findGroup(band[0]) : null;
+            (groupId ? groups[groupId] : band).forEach(id => paintSection(id, selectedColor));
         }
 
         // Section (zone colorable) à laquelle appartient une pièce du dessin.
         function sectionOf(shape) {
-            return shape.closest("[id^='b'][id*='-s']");
+            return shape.closest(SECTION_SELECTOR);
         }
 
         // Convertit une couleur calculée ("rgb(0, 128, 128)") en code hex.
@@ -424,28 +524,39 @@
             return "#" + match.slice(1).map(n => Number(n).toString(16).padStart(2, "0")).join("");
         }
 
-        // Vrai si une zone colorable affiche encore une couleur hors palette,
-        // c'est-à-dire la couleur par défaut du SVG (#008080, #ff9955…).
+        // Vrai si une zone colorable affiche encore une couleur inconnue du configurateur (ni palette
+        // standard, ni « Mes RAL »), c'est-à-dire la couleur par défaut du SVG (#008080, #ff9955…).
         function hasOffPaletteZone() {
-            const shapes = "path, rect, circle, polygon, line, ellipse";
-            return Object.values(groups).flat().some(sectionId => {
-                const section = document.getElementById(sectionId);
-                if (!section) return false;
-                const elements = section.querySelectorAll(shapes);
+            const sections = document.querySelectorAll(`#svgContainer ${SECTION_SELECTOR}`);
+            return Array.from(sections).some(section => {
+                const elements = section.querySelectorAll(SHAPES);
                 return Array.from(elements.length ? elements : [section])
-                    .some(element => !getRal(rgbToHex(getComputedStyle(element).fill)));
+                    .some(element => !knownColorLabel(rgbToHex(getComputedStyle(element).fill)));
             });
         }
 
         const urlParams = new URLSearchParams(window.location.search);
         const model = urlParams.get("model");
 
-        // Mode modification : config.html?model=1xx&edit=<index de la ligne du panier>
-        const editContext = model ? getEditContext("config.html", model) : null;
+        // Gamme « plein cœur » (config.html?model=1xx&gamme=plein-coeur) : même configurateur,
+        // mais longueur fixée à 3 m ; l'article en garde la mention jusqu'au PDF.
+        const gamme = urlParams.get("gamme") === PLEIN_COEUR ? PLEIN_COEUR : null;
+        if (gamme) {
+            document.title = "Configurateur de barre plein cœur 3 m";
+            document.querySelector("h1").textContent = "Configurateur de barre plein cœur 3 m";
+            document.querySelector(".btn-retour").href = "index.html#plein-coeur";
+            const lengthSelect = document.getElementById("length");
+            Array.from(lengthSelect.options).filter(option => option.value !== "3m").forEach(option => option.remove());
+            lengthSelect.value = "3m";
+            lengthSelect.disabled = true;
+            lengthSelect.title = "Les barres plein cœur existent uniquement en 3 m.";
+        }
+
+        // Mode modification : config.html?model=1xx[&gamme=plein-coeur]&edit=<index de la ligne du panier>
+        const editContext = model ? getEditContext("config.html", model, gamme) : null;
 
         // Recopie, section par section, les couleurs du SVG enregistré dans l'article.
         function restoreSectionColors(savedSvg) {
-            const shapes = "path, rect, circle, polygon, line, ellipse";
             const savedDoc = new DOMParser().parseFromString(savedSvg || "", "text/html");
             const copyFill = (from, to) => {
                 const fill = from.getAttribute("fill");
@@ -453,13 +564,13 @@
                 if (from.style.fill) to.style.fill = from.style.fill;
             };
 
-            document.querySelectorAll("#svgContainer [id^='b'][id*='-s']").forEach(section => {
+            document.querySelectorAll(`#svgContainer ${SECTION_SELECTOR}`).forEach(section => {
                 const savedSection = savedDoc.getElementById(section.id);
                 if (!savedSection) return;
                 copyFill(savedSection, section);
 
-                const elements = section.querySelectorAll(shapes);
-                const savedElements = savedSection.querySelectorAll(shapes);
+                const elements = section.querySelectorAll(SHAPES);
+                const savedElements = savedSection.querySelectorAll(SHAPES);
                 if (elements.length !== savedElements.length) return;
                 elements.forEach((element, i) => copyFill(savedElements[i], element));
             });
@@ -470,6 +581,7 @@
             document.getElementById("quantity").value = item.quantity || 1;
             setSelectValue("length", item.length);
             restoreSectionColors(item.svg);
+            restoreMyRals(item);
             document.getElementById("addToCartBtn").textContent = "Mettre à jour l'article";
         }
 
@@ -483,17 +595,18 @@
                     const svgElement = svgDoc.documentElement;
                     svgContainer.appendChild(svgElement);
 
-                    const sections = svgContainer.querySelectorAll("[id^='b'][id*='-s']");
+                    const sections = svgContainer.querySelectorAll(SECTION_SELECTOR);
                     sections.forEach(section => {
                         section.style.cursor = "pointer";
-                        section.addEventListener("click", function() {
-                            colorGroupOf(this.id);
-                        });
+                    });
+                    svgElement.addEventListener("click", event => {
+                        const section = sectionOf(event.target);
+                        if (section) colorFrom(section.id);
                     });
 
                     // Au doigt, c'est la zone la plus proche du point touché qui est colorée (voir shapeAtFinger, js/cart.js).
                     const sectionShapes = Array.from(sections).flatMap(section => {
-                        const shapes = section.querySelectorAll("path, rect, circle, polygon, line, ellipse");
+                        const shapes = section.querySelectorAll(SHAPES);
                         return Array.from(shapes.length ? shapes : [section]);
                     });
                     svgElement.addEventListener("click", event => {
@@ -501,7 +614,7 @@
                         const shape = shapeAtFinger(sectionShapes, event.clientX, event.clientY);
                         if (!shape) return;
                         event.stopPropagation();
-                        colorGroupOf(sectionOf(shape).id);
+                        colorFrom(sectionOf(shape).id);
                     }, true);
 
                     if (editContext) restoreItem(editContext.item);
@@ -570,10 +683,12 @@
             // Ajouter l'article (ou remplacer la ligne en cours de modification), avec le SVG enregistré
             const result = saveCartItem({
                 model: model,
+                ...(gamme ? { gamme } : {}),
                 colors: colors,
                 quantity: quantity,
                 svg: svgElement,
                 length: length,
+                custom_rals: collectCustomRals(colors),
                 sourcePage: "config.html"
             }, editContext);
 

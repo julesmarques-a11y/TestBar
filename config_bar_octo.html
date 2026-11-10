@@ -7,6 +7,7 @@
     <title>Barre Octo personnalisée</title>
     <meta name="description" content="Créez une barre Octo 100% personnalisée EQUINOX : choisissez le diamètre, la longueur et la couleur RAL de chaque rayure.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="css/ral-picker.css">
     <style>
         * {
             margin: 0;
@@ -164,52 +165,6 @@
             font-weight: 500;
         }
         
-        .custom-ral-box {
-            background: #f8f9fa;
-            padding: 12px;
-            border-left: 3px solid #e74c3c;
-            margin-bottom: 10px;
-        }
-        
-        .custom-ral-box strong {
-            display: block;
-            margin-bottom: 8px;
-            color: #2c3e50;
-            font-weight: 400;
-            font-size: 0.9em;
-        }
-        
-        .custom-ral-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        
-        .custom-ral-row input[type="text"] {
-            flex: 1;
-            min-width: 160px;
-            padding: 8px 10px;
-            border: 1px solid #bdc3c7;
-            font-size: 0.85em;
-        }
-        
-        .custom-ral-row input[type="color"] {
-            width: 46px;
-            height: 32px;
-            border: 1px solid #bdc3c7;
-            cursor: pointer;
-            padding: 0;
-        }
-        
-        .custom-ral-box small {
-            display: block;
-            color: #7f8c8d;
-            font-size: 0.78em;
-            margin-top: 6px;
-            line-height: 1.4;
-        }
-        
         #svgContainer {
             background: white;
             padding: 40px 20px;
@@ -347,23 +302,37 @@
         <div class="section">
             <h2 class="section-title">Palette de couleurs RAL</h2>
             <div class="color-palette" id="colorPalette"></div>
+            <div class="my-rals" id="myRals" hidden>
+                <h3 class="my-rals-title">Mes RAL</h3>
+                <div class="color-palette" id="myRalPalette"></div>
+            </div>
+            <p class="ral-notice">Les couleurs affichées à l'écran sont indicatives : seule la référence RAL fait foi.</p>
         </div>
 
         <div class="section">
-            <h2 class="section-title">RAL personnalisé</h2>
+            <h2 class="section-title">Autres couleurs RAL</h2>
             <div class="custom-ral-box">
-                <strong>Vous ne trouvez pas votre RAL dans la palette ?</strong>
-                <div class="custom-ral-row">
-                    <input type="text" id="customRalInput" placeholder="Ex : RAL 3027, RAL 1036, etc.">
-                    <input type="color" id="customRalColor" value="#ff0000">
-                    <button type="button" class="btn btn-secondary" id="addCustomRalBtn">
-                        Ajouter à la palette
-                    </button>
+                <strong>Vous ne trouvez pas votre RAL dans la palette ? Cherchez-le dans le nuancier RAL Classic (216 teintes).</strong>
+                <div class="ral-search">
+                    <input type="search" id="ralSearchInput" placeholder="Numéro ou nom, ex : 6018 ou vert" autocomplete="off" aria-label="Rechercher une teinte dans le nuancier RAL">
+                    <ul id="ralSearchResults" class="ral-search-results" hidden></ul>
                 </div>
                 <small>
-                    Choisissez la couleur la plus proche de votre RAL. Elle sera ajoutée à la palette pour colorer la barre.
-                    Vous pouvez ajouter plusieurs RAL personnalisés : ceux utilisés sur la barre seront indiqués dans votre panier / devis.
+                    Choisissez une teinte dans la liste : elle s'ajoute à « Mes RAL », sous la palette, et son numéro figurera dans votre panier et votre devis.
                 </small>
+                <details class="ral-free">
+                    <summary>Teinte hors nuancier RAL Classic (saisie libre)</summary>
+                    <div class="custom-ral-row">
+                        <input type="text" id="customRalInput" placeholder="Référence, ex : RAL Design 180 50 15">
+                        <input type="color" id="customRalColor" value="#ff0000" aria-label="Couleur d'écran la plus proche">
+                        <button type="button" class="btn btn-secondary" id="addCustomRalBtn">
+                            Ajouter à la palette
+                        </button>
+                    </div>
+                    <small>
+                        Indiquez la référence de la teinte et choisissez la couleur d'écran la plus proche : la référence sera reprise telle quelle dans votre panier et votre devis.
+                    </small>
+                </details>
             </div>
         </div>
 
@@ -375,6 +344,7 @@
 
     <script src="js/ral.js"></script>
     <script src="js/cart.js"></script>
+    <script src="js/ral-picker.js"></script>
     <script>
         let selectedColor = ralColors[0];
         const BAR_HEIGHT = 18;
@@ -438,61 +408,6 @@
 
             const firstSwatch = colorPalette.querySelector(".color-swatch");
             if (firstSwatch) firstSwatch.classList.add("selected");
-        }
-
-        // Ajoute un RAL personnalisé à la palette et le sélectionne. On peut en ajouter plusieurs ;
-        // rajouter une couleur déjà ajoutée met simplement à jour son libellé.
-        function addCustomRalSwatch(ralText, ralColor) {
-            const colorPalette = document.getElementById("colorPalette");
-            let swatch = colorPalette.querySelector(`.color-swatch[data-custom-ral][data-color="${ralColor}"]`);
-
-            if (!swatch) {
-                const wrapper = document.createElement("div");
-                wrapper.classList.add("color-item");
-
-                swatch = document.createElement("div");
-                swatch.classList.add("color-swatch");
-                swatch.style.backgroundColor = ralColor;
-                swatch.dataset.color = ralColor;
-
-                const label = document.createElement("div");
-                label.classList.add("color-label");
-
-                wrapper.appendChild(swatch);
-                wrapper.appendChild(label);
-
-                wrapper.addEventListener("click", () => {
-                    document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("selected"));
-                    swatch.classList.add("selected");
-                    selectedColor = ralColor;
-                });
-
-                colorPalette.appendChild(wrapper);
-            }
-
-            swatch.dataset.customRal = ralText;
-            swatch.nextElementSibling.textContent = ralText;
-            swatch.parentElement.click();
-        }
-
-        // Bouton « Ajouter à la palette » : ajoute le RAL saisi, avec la couleur choisie.
-        function addCustomRalFromForm() {
-            const input = document.getElementById("customRalInput");
-            const ralText = input.value.trim();
-
-            if (!ralText) {
-                alert("Veuillez saisir le numéro de RAL (ex : RAL 3027).");
-                return;
-            }
-            const ralColor = document.getElementById("customRalColor").value.toLowerCase();
-
-            if (getRal(ralColor)) {
-                alert(`Cette couleur est déjà dans la palette (${getRal(ralColor)}). Choisissez-la directement dans la palette.`);
-                return;
-            }
-
-            addCustomRalSwatch(ralText, ralColor);
-            input.value = "";
         }
 
         function generateBar() {
@@ -580,7 +495,9 @@
                 return;
             }
 
-            // Ajoute l'article, ou remplace la ligne en cours de modification
+            // Ajoute l'article, ou remplace la ligne en cours de modification.
+            // "BARRE_OCTO_PERSONNALISABLE" est l'identifiant historique de la barre octo : il n'est plus
+            // affiché (voir getModelLabel, js/cart.js) mais reste celui des articles déjà au panier.
             const result = saveCartItem({
                 model: "BARRE_OCTO_PERSONNALISABLE",
                 colors: colorsUsed,
@@ -612,13 +529,14 @@
             generateBar();
             restoreStripeColors(item.svg);
 
-            Object.entries(getCustomRals(item)).forEach(([hex, label]) => addCustomRalSwatch(label, hex));
+            restoreMyRals(item);
 
             document.getElementById("addToCartBtn").textContent = "Mettre à jour l'article";
         }
 
         document.addEventListener("DOMContentLoaded", () => {
             generateColorPalette();
+            initRalPicker({ onSelect: hex => { selectedColor = hex; } });
             enableFingerStripes(rect => rect.setAttribute("fill", selectedColor));
 
             editContext = getEditContext("config_bar_octo.html");
@@ -630,7 +548,6 @@
 
             document.getElementById("regenerateBtn").addEventListener("click", generateBar);
             document.getElementById("length").addEventListener("change", generateBar);
-            document.getElementById("addCustomRalBtn").addEventListener("click", addCustomRalFromForm);
         });
     </script>
 </body>
