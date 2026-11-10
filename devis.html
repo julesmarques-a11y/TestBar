@@ -147,11 +147,13 @@
             background: white;
         }
 
-        /* L'image a une taille propre (voir drawingImage) : elle occupe la largeur du bloc et sa
-           hauteur suit ses proportions. Pas d'object-fit : html2canvas l'ignore. */
+        /* L'image a une taille propre (voir drawingImage) : elle occupe la largeur du bloc, moins si
+           sa hauteur est plafonnée, en gardant ses proportions. Pas d'object-fit : html2canvas l'ignore. */
         .article-preview img {
             display: block;
-            width: 100%;
+            max-width: 100%;
+            max-height: 160px;
+            width: auto;
             height: auto;
             margin: 0 auto;
         }
@@ -269,6 +271,11 @@
         .pdf-page .article-info {
             margin-top: 8px;
             padding-top: 6px;
+        }
+        
+        /* Plafond fixé par buildPdfPages (variable --preview-max-height), selon le format de la page. */
+        .pdf-page .article-preview img {
+            max-height: var(--preview-max-height);
         }
 
         .actions {
@@ -396,13 +403,15 @@
     <script src="js/ral.js"></script>
     <script src="js/cart.js"></script>
     <script>
-        // Page du PDF, en millimètres. Paysage : une barre est un objet très allongé et son aperçu,
-        // qui occupe toute la largeur utile, y est près de moitié plus grand qu'en portrait
-        // (277 mm contre 190 mm).
+        // Page du PDF, en millimètres. Portrait : les aperçus occupent toute la largeur utile
+        // (190 mm) en restant bas (barre 11 mm, palanque 19 mm, modèle de série en 2 x 2 : 13 mm),
+        // ce qui met six articles par page. En paysage, ils seraient plus larges (277 mm) mais
+        // leur hauteur devrait être plafonnée vers 13 mm pour rester aussi bas, donc réduite en
+        // largeur sous les 190 mm du portrait pour la palanque et les modèles de série.
         const PDF_PAGE = {
-            orientation: "landscape",
-            width: 297,
-            height: 210,
+            orientation: "portrait",
+            width: 210,
+            height: 297,
             margin: 10
         };
 
@@ -493,9 +502,11 @@
             });
         }
 
-        // Rectangle réellement peint d'une image de `width` x `height` (ses pixels non transparents),
-        // dans les unités de l'image. Renvoie null si rien n'est peint ou si l'image est illisible.
-        function paintedArea(img, width, height) {
+        // Zones réellement peintes d'une image de `width` x `height` (ses pixels non transparents),
+        // dans les unités de l'image : une bande par groupe de lignes peintes consécutives, de haut
+        // en bas, chacune cadrée sur ses pixels peints avec un pixel de marge. Renvoie [] si rien
+        // n'est peint ou si l'image est illisible.
+        function paintedBands(img, width, height) {
             const scale = Math.min(2000 / width, 2000 / height);
             const canvas = document.createElement("canvas");
             canvas.width = Math.ceil(width * scale);
@@ -507,38 +518,50 @@
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
             } catch (err) {
-                return null;
+                return [];
             }
 
-            let left = canvas.width, right = -1, top = canvas.height, bottom = -1;
+            const bands = [];
+            let band = null;
             for (let y = 0; y < canvas.height; y++) {
+                let left = canvas.width, right = -1;
                 for (let x = 0; x < canvas.width; x++) {
                     if (pixels[(y * canvas.width + x) * 4 + 3] === 0) continue;
                     if (x < left) left = x;
-                    if (x > right) right = x;
-                    if (y < top) top = y;
-                    bottom = y;
+                    right = x;
                 }
+                if (right < 0) {
+                    band = null; // ligne vide : fin de la bande en cours
+                    continue;
+                }
+                if (!band) {
+                    band = { left, right, top: y, bottom: y };
+                    bands.push(band);
+                }
+                band.left = Math.min(band.left, left);
+                band.right = Math.max(band.right, right);
+                band.bottom = y;
             }
-            if (right < 0) return null;
 
-            // Un pixel de marge autour du dessin, sans sortir de l'image.
-            const x0 = Math.max(0, left - 1) * width / canvas.width;
-            const x1 = Math.min(canvas.width, right + 2) * width / canvas.width;
-            const y0 = Math.max(0, top - 1) * height / canvas.height;
-            const y1 = Math.min(canvas.height, bottom + 2) * height / canvas.height;
-            return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+            const toX = px => Math.max(0, Math.min(canvas.width, px)) * width / canvas.width;
+            const toY = px => Math.max(0, Math.min(canvas.height, px)) * height / canvas.height;
+            return bands.map(b => {
+                const x = toX(b.left - 1), y = toY(b.top - 1);
+                return { x, y, width: toX(b.right + 2) - x, height: toY(b.bottom + 2) - y };
+            });
         }
 
         // Image d'aperçu d'un article, cadrée sur le dessin de la barre. Le SVG enregistré dans le
         // panier ne l'est pas :
-        // - les modèles de série dessinent quatre vues de la barre dans une image de 500 x 280
-        //   dont elles n'occupent qu'une partie ;
+        // - les modèles de série dessinent quatre vues de la barre, l'une sous l'autre, dans une
+        //   image de 500 x 280 dont elles n'occupent qu'une partie ;
         // - les barres personnalisées ont width="100%" et pas de hauteur : sans taille propre,
         //   elles sortaient tronquées dans le PDF. On leur donne la taille de leur viewBox.
-        // On repère donc la zone réellement peinte et on en fait le cadre d'un SVG englobant, de
-        // PREVIEW_WIDTH pixels de large. Le SVG du panier n'est jamais inséré dans la page : il n'est
-        // lu qu'à travers une image, qui n'exécute aucun script.
+        // On repère donc les zones réellement peintes et on en fait le cadre d'un SVG englobant, de
+        // PREVIEW_WIDTH pixels de large. Quatre vues superposées sont réparties sur deux colonnes
+        // (2 x 2), chacune dans un SVG imbriqué cadré sur sa vue, pour un aperçu moins haut.
+        // Le SVG du panier n'est jamais inséré dans la page : il n'est lu qu'à travers une image,
+        // qui n'exécute aucun script.
         // Renvoie { src, width, height }, ou null si le SVG est inexploitable.
         async function drawingImage(svgString) {
             const svg = new DOMParser().parseFromString(svgString || "", "image/svg+xml").documentElement;
@@ -563,10 +586,37 @@
             const img = await loadImage(svgDataUrl(sized));
             if (!img) return null;
 
-            const area = paintedArea(img, width, height) || { x: 0, y: 0, width, height };
-            const previewHeight = Math.round(PREVIEW_WIDTH * area.height / area.width);
-            const framed = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${area.x} ${area.y} ${area.width} ${area.height}" ` +
-                `width="${PREVIEW_WIDTH}" height="${previewHeight}">${sized}</svg>`;
+            const bands = paintedBands(img, width, height);
+            const view = (frame, x, y, w, h) =>
+                `<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${frame.x} ${frame.y} ${frame.width} ${frame.height}">${sized}</svg>`;
+            let content, frameWidth, frameHeight;
+
+            if (bands.length === 4) {
+                const tileWidth = Math.max(...bands.map(b => b.width));
+                const tileHeight = Math.max(...bands.map(b => b.height));
+                const gapX = tileWidth * 0.04;
+                const gapY = tileHeight * 0.35;
+                frameWidth = 2 * tileWidth + gapX;
+                frameHeight = 2 * tileHeight + gapY;
+                content = bands.map((band, i) =>
+                    view(band, (i % 2) * (tileWidth + gapX), Math.floor(i / 2) * (tileHeight + gapY), tileWidth, tileHeight)).join("");
+            } else {
+                // Une seule vue : le cadre englobe toutes les bandes (toute l'image si rien n'est peint).
+                let frame = { x: 0, y: 0, width, height };
+                if (bands.length) {
+                    const x = Math.min(...bands.map(b => b.x));
+                    const right = Math.max(...bands.map(b => b.x + b.width));
+                    const last = bands[bands.length - 1];
+                    frame = { x, y: bands[0].y, width: right - x, height: last.y + last.height - bands[0].y };
+                }
+                frameWidth = frame.width;
+                frameHeight = frame.height;
+                content = view(frame, 0, 0, frame.width, frame.height);
+            }
+
+            const previewHeight = Math.round(PREVIEW_WIDTH * frameHeight / frameWidth);
+            const framed = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${frameWidth} ${frameHeight}" ` +
+                `width="${PREVIEW_WIDTH}" height="${previewHeight}">${content}</svg>`;
             return { src: svgDataUrl(framed), width: PREVIEW_WIDTH, height: previewHeight };
         }
 
@@ -674,6 +724,10 @@
             // serait découpée en deux par html2pdf.
             const maxHeight = (PDF_PAGE.height - 2 * PDF_PAGE.margin - 2) * 96 / 25.4;
             const heightOf = el => el.getBoundingClientRect().height;
+            // Hauteur maximale de l'aperçu, en millimètres : le bloc d'un article (aperçu, ligne
+            // d'informations et marges, soit environ 19 mm hors aperçu) ne dépasse pas le quart de
+            // la hauteur utile de la page.
+            const previewMaxHeight = (PDF_PAGE.height - 2 * PDF_PAGE.margin) / 4 - 19;
 
             const articles = Array.from(document.querySelectorAll("#orderList .article"), el => el.cloneNode(true));
             articles.forEach(article => sheet.appendChild(article));
@@ -687,6 +741,7 @@
             const addPage = () => {
                 const page = document.createElement("div");
                 page.className = "pdf-page";
+                page.style.setProperty("--preview-max-height", `${previewMaxHeight}mm`);
                 page.innerHTML = pdfHeaderHtml(info, pages.length === 0);
                 page.querySelector(".pdf-page-number").textContent = `Page ${digits} / ${digits}`;
                 sheet.appendChild(page);
