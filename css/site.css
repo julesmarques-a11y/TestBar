@@ -108,6 +108,10 @@
     box-sizing: border-box;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 /* L'en-tête reste visible au défilement : les ancres s'arrêtent dessous. */
 html {
     scroll-padding-top: 130px;

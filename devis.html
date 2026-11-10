@@ -239,6 +239,14 @@
 
         .actions {
             margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .actions #loading {
+            flex-basis: 100%;
             text-align: center;
         }
 
@@ -259,6 +267,7 @@
 
 <body>
     <section class="page-intro">
+        <a href="panier.html" class="btn btn-neutral">← Retour au panier</a>
         <h1>Devis</h1>
         <p>
             Renseignez le nom, le numéro de commande et la date de livraison souhaitée. Téléchargez ensuite votre devis en PDF. Le numéro de devis est établi à partir de la date et de l'heure de génération.
@@ -309,7 +318,8 @@
         </form>
 
         <div class="actions">
-            <button type="button" class="btn btn-primary" id="downloadBtn" onclick="generatePdf()">Télécharger le devis en PDF</button>
+            <button type="button" class="btn btn-primary" id="downloadBtn" onclick="generatePdf()">Télécharger le PDF</button>
+            <button type="button" class="btn btn-secondary" id="newQuoteBtn" hidden onclick="startNewQuote()">Nouveau devis</button>
             <p id="loading">Génération du PDF...</p>
         </div>
     </main>
@@ -757,6 +767,8 @@
                     }).from(page).toContainer().toCanvas().toPdf();
                 });
                 await worker.save();
+                showToast("Devis téléchargé.", { type: "success" });
+                document.getElementById("newQuoteBtn").hidden = false;
             } catch (err) {
                 console.error("Erreur lors de la génération du PDF :", err);
                 showToast("Une erreur est survenue pendant la génération du PDF.", { type: "error" });
@@ -765,6 +777,14 @@
                 downloadBtn.disabled = false;
                 loadingText.style.display = "none";
             }
+        }
+
+        // Après téléchargement : vider le panier (avec confirmation) et repartir du catalogue.
+        async function startNewQuote() {
+            const ok = await confirmDialog("Commencer un nouveau devis ? Le panier sera vidé.", { okLabel: "Nouveau devis" });
+            if (!ok) return;
+            writeCart([]);
+            window.location.href = "index.html";
         }
 
         // Résolue quand les articles du panier sont affichés.
