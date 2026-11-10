@@ -69,6 +69,31 @@ function getModelLabel(item) {
     return `Modèle ${item.model}`;
 }
 
+// Configurateurs à rayures : une rayure non peinte y reste blanche (#ffffff, hors palette).
+const STRIPE_PAGES = [
+    "config_personnalisee.html",
+    "config_bar_octo.html",
+    "config_personnalisee_forme2.html"
+];
+
+// Vrai si l'article vient d'un configurateur à rayures et qu'une rayure y est restée blanche.
+// Le SVG est lu dans un document inerte (DOMParser), jamais inséré dans la page.
+function hasUnpaintedStripe(item) {
+    if (!STRIPE_PAGES.includes(getConfigPage(item))) return false;
+    const rects = new DOMParser().parseFromString(item.svg || "", "text/html").querySelectorAll("svg rect");
+    return Array.from(rects).some(rect => /^(#fff|#ffffff|white)$/i.test((rect.getAttribute("fill") || "").trim()));
+}
+
+// Couleurs d'un article à afficher dans le panier, le devis et le PDF : ses couleurs avec leur
+// libellé (RAL de la palette ou RAL personnalisé, sinon null), puis, si une rayure est restée
+// blanche, une pastille blanche qui signale au peintre qu'il manque un RAL.
+function getDisplayColors(item) {
+    const customRals = getCustomRals(item);
+    const colors = (item.colors || []).map(hex => ({ hex, label: getColorLabel(hex, customRals) }));
+    if (hasUnpaintedStripe(item)) colors.push({ hex: "#ffffff", label: "Blanc (RAL à préciser)" });
+    return colors;
+}
+
 // Adresse du configurateur en mode modification pour la ligne `index` du panier, ou null.
 function getEditUrl(item, index) {
     const page = getConfigPage(item);

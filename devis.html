@@ -448,17 +448,13 @@
             return frDate;
         }
 
-        function makeColorsHtml(colors, customRals) {
-            if (!colors) return "";
-            return colors.map(c => {
-                const ralCode = getColorLabel(c, customRals) || "RAL inconnu";
-                return `
+        function makeColorsHtml(item) {
+            return getDisplayColors(item).map(({ hex, label }) => `
                     <div class="color-item">
-                        <span class="color-sample" style="background-color:${escapeHtml(c)};"></span>
-                        <span class="color-ref">${escapeHtml(ralCode)}</span>
+                        <span class="color-sample" style="background-color:${escapeHtml(hex)};"></span>
+                        <span class="color-ref">${escapeHtml(label || "RAL inconnu")}</span>
                     </div>
-                `;
-            }).join("");
+                `).join("");
         }
 
         function updateStats(cart) {
@@ -639,7 +635,7 @@
                     <span>Longueur : <strong>${escapeHtml(formatLength(item.length))}</strong></span>
                     ${item.height ? `<span>Hauteur : <strong>${escapeHtml(item.height)}</strong></span>` : ""}
                     ${item.diameter ? `<span>Diamètre : <strong>${escapeHtml(item.diameter)}</strong></span>` : ""}
-                    <div class="color-box">${makeColorsHtml(item.colors, getCustomRals(item))}</div>
+                    <div class="color-box">${makeColorsHtml(item)}</div>
                 </div>
             `;
             return article;
