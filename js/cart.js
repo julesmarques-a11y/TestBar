@@ -76,6 +76,7 @@ function getModelLabel(item) {
     const page = getConfigPage(item);
     if (page === "config_personnalisee_forme2.html") return "Palanque personnalisée";
     if (page === "config_bar_octo.html") return "Barre octo personnalisée";
+    if (page === "config_personnalisee.html") return "Barre personnalisée";
     return `Modèle ${item.model}` + (isPleinCoeur(item) ? " – Plein cœur" : "");
 }
 

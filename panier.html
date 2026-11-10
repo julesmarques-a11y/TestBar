@@ -156,18 +156,22 @@
 
         .bottom-actions {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             gap: 15px;
             flex-wrap: wrap;
             margin-top: 40px;
-            padding: 40px 0;
+            padding: 32px 0;
             border-top: 1px solid var(--color-border);
+        }
+
+        .empty-cart .btn {
+            margin-top: 20px;
         }
 
         .empty-cart {
             text-align: center;
-            padding: 80px 20px;
-            color: var(--color-grey);
+            padding: 64px 20px;
+            color: var(--color-text-muted);
         }
 
         .empty-cart-icon {
@@ -247,13 +251,13 @@
             <div id="emptyCart" class="cart-section empty-cart" style="display: none;">
                 <div class="empty-cart-icon">🛒</div>
                 <h3>Votre panier est vide</h3>
-                <p>Ajoutez des barres pour commencer</p>
+                <p>Choisissez une barre dans le catalogue pour commencer.</p>
+                <a href="index.html" class="btn btn-secondary">Voir le catalogue</a>
             </div>
 
-            <div class="bottom-actions">
-                <a href="index.html" class="btn btn-neutral">← Retour à l'accueil</a>
-                <button class="btn btn-neutral" id="clearCartBtn" onclick="clearCart().then(done => { if (done) loadCart(); })">Vider le panier</button>
-                <a href="devis.html" class="btn btn-primary">Générer le devis →</a>
+            <div class="bottom-actions" id="bottomActions">
+                <a href="index.html" class="btn btn-secondary">Continuer mes achats</a>
+                <a href="devis.html" class="btn btn-primary">Générer le devis</a>
             </div>
         </div>
     </div>
@@ -300,7 +304,7 @@
             console.log("📦 Contenu du panier :", cart);
 
             updateStats(cart);
-            document.getElementById("clearCartBtn").style.display = cart.length === 0 ? "none" : "";
+            document.getElementById("bottomActions").style.display = cart.length === 0 ? "none" : "";
 
             const individualContainer = document.getElementById("individualBarsContainer");
             const individualSection = document.getElementById("individualSection");
