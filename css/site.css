@@ -283,7 +283,7 @@ h4,
     margin-bottom: 8px;
 }
 
-.page-intro .btn-retour {
+.page-intro .btn {
     margin-bottom: 16px;
 }
 
@@ -320,25 +320,6 @@ h4,
     }
 }
 
-.btn-retour {
-    display: inline-block;
-    margin-bottom: 14px;
-    padding: 8px 20px;
-    font-family: var(--font-family-ui);
-    font-size: 0.9em;
-    background-color: var(--color-white);
-    color: var(--color-text);
-    border: none;
-    border-radius: 1px;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background-color var(--transition), color var(--transition);
-}
-
-.btn-retour:hover {
-    background-color: var(--color-light);
-}
-
 /* Conteneur principal et sections */
 
 .container {
@@ -364,60 +345,58 @@ h4,
     margin-bottom: 18px;
 }
 
-/* Boutons */
+/* Boutons : trois classes seulement.
+   .btn-primary   pilule marine  : l'action qui fait avancer (ajouter au panier, générer le devis, PDF)
+   .btn-secondary pilule orange  : ouvrir ou continuer (voir le panier, configurer, mettre à jour)
+   .btn-neutral   gris clair, coins carrés : revenir, vider, supprimer */
 
 .btn {
+    display: inline-block;
     padding: 8px 22px;
     font-family: var(--font-family-ui);
     font-size: 1em;
+    font-weight: 400;
     line-height: 1.5;
-    color: var(--color-text-on-dark);
+    text-align: center;
+    text-decoration: none;
     border: 1px solid transparent;
     border-radius: var(--radius-pill);
     cursor: pointer;
-    text-decoration: none;
-    text-align: center;
     transition: color var(--transition), background-color var(--transition), border-color var(--transition);
-    font-weight: 400;
-    display: inline-block;
 }
 
-.btn-primary,
-.btn-success,
-.btn-green {
+.btn-primary {
     background: var(--color-dark);
     color: var(--color-text-on-dark);
 }
 
-.btn-primary:hover,
-.btn-success:hover,
-.btn-green:hover {
+.btn-primary:hover:not(:disabled) {
     background: var(--color-dark-hover);
 }
 
-.btn-secondary,
-.btn-grey {
+.btn-secondary {
+    background: var(--color-accent);
+    color: var(--color-dark);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+    color: var(--color-ink);
+}
+
+.btn-neutral {
     background: var(--color-grey);
     color: var(--color-text);
     border-radius: 1px;
 }
 
-.btn-secondary:hover,
-.btn-grey:hover {
+.btn-neutral:hover:not(:disabled) {
     background: var(--color-grey-dark);
 }
 
-.btn-danger,
-.btn-update,
-.btn-orange {
-    background: var(--color-accent);
-    color: var(--color-dark);
-}
-
-.btn-danger:hover,
-.btn-update:hover,
-.btn-orange:hover {
-    background: var(--color-accent-hover);
+.btn:disabled {
+    opacity: 0.65;
+    cursor: default;
 }
 
 /* Rangée de boutons en bas d'un configurateur */

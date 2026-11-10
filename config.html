@@ -76,11 +76,6 @@
             border-top: none;
         }
 
-        .btn {
-            font-family: inherit;
-            text-align: center;
-        }
-
         @media (max-width: 768px) {
             #svgContainer {
                 padding: 12px 4px;
@@ -98,7 +93,7 @@
 
 <body>
     <section class="page-intro">
-        <a href="index.html" class="btn-retour" id="backLink">← Retour à l'accueil</a>
+        <a href="index.html" class="btn btn-neutral" id="backLink">← Retour à l'accueil</a>
         <h1>Configurateur de barre CSO</h1>
         <p>
             Choisissez une couleur dans la palette, puis cliquez sur chaque bande de la barre pour la colorer.
@@ -175,7 +170,7 @@
         <div class="button-container">
             <button class="btn btn-primary" id="addToCartBtn" onclick="addToCart()">Ajouter au Panier</button>
             <a href="panier.html" class="btn btn-secondary">Voir le Panier</a>
-            <button class="btn btn-danger" onclick="if (clearCart()) alert('Le panier a été vidé.')">Vider le Panier</button>
+            <button class="btn btn-neutral" onclick="if (clearCart()) alert('Le panier a été vidé.')">Vider le Panier</button>
         </div>
     </div>
 

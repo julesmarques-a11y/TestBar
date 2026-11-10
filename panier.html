@@ -150,11 +150,6 @@
             font-size: 1em;
         }
 
-        .btn {
-            padding: 12px 28px;
-            font-size: 0.9em;
-        }
-
         .action-buttons {
             display: flex;
             gap: 10px;
@@ -257,9 +252,9 @@
             </div>
 
             <div class="bottom-actions">
-                <a href="index.html" class="btn btn-secondary">← Retour à l'accueil</a>
-                <button class="btn btn-danger" id="clearCartBtn" onclick="if (clearCart()) loadCart()">Vider le panier</button>
-                <a href="devis.html" class="btn btn-success">Générer le devis →</a>
+                <a href="index.html" class="btn btn-neutral">← Retour à l'accueil</a>
+                <button class="btn btn-neutral" id="clearCartBtn" onclick="if (clearCart()) loadCart()">Vider le panier</button>
+                <a href="devis.html" class="btn btn-primary">Générer le devis →</a>
             </div>
         </div>
     </div>
@@ -358,7 +353,7 @@
                         </div>
                         <div class="action-buttons">
                             <button class="btn btn-secondary" onclick="redirectToConfig(${index})">Modifier</button>
-                            <button class="btn btn-danger" onclick="removeFromCart(${index})">Supprimer</button>
+                            <button class="btn btn-neutral" onclick="removeFromCart(${index})">Supprimer</button>
                         </div>
                     </div>
                 </div>
@@ -381,6 +376,7 @@
         }
 
         function removeFromCart(index) {
+            if (!confirm("Supprimer cet article du panier ?")) return;
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
             cart.splice(index, 1);
             writeCart(cart);

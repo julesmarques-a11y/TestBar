@@ -47,10 +47,6 @@
             margin: 10px 0 20px;
         }
 
-        .btn {
-            padding: 10px 24px;
-        }
-
         /* Sur téléphone, marges latérales réduites : la barre prend toute la largeur utile. */
         @media (max-width: 768px) {
             #svgContainer {
@@ -63,7 +59,7 @@
 
 <body>
     <section class="page-intro">
-        <a href="index.html" class="btn-retour" id="backLink">← Retour à l'accueil</a>
+        <a href="index.html" class="btn btn-neutral" id="backLink">← Retour à l'accueil</a>
         <h1>Palanque personnalisée</h1>
         <p>
             Palanque composée automatiquement de rayures de 10 cm : 30 rayures pour 3 m, 35 rayures pour 3,50 m. La barre est affichée ci-dessous, cliquez sur les rayures pour les colorer.
@@ -97,7 +93,7 @@
                     <input type="number" id="quantity" min="1" value="1">
                 </div>
 
-                <button class="btn btn-update" id="regenerateBtn" type="button">
+                <button class="btn btn-secondary" id="regenerateBtn" type="button">
                     Mettre à jour la barre
                 </button>
             </div>
