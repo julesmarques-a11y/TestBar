@@ -10,106 +10,30 @@
     <link rel="stylesheet" href="css/site.css">
     <script src="js/layout.js" defer></script>
     <link rel="stylesheet" href="css/ral-picker.css">
-    <style>
-        /* Palanque personnalisée : écarts par rapport à css/site.css. */
-
-        .control-group select,
-        .control-group input[type="number"] {
-            font-size: 0.95em;
-        }
-
-        /* Palette compacte et défilante, pastilles réduites, sélection sans anneau. */
-        .color-palette {
-            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-            gap: 10px;
-            margin-bottom: 10px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .color-swatch {
-            width: 34px;
-            height: 34px;
-            cursor: pointer;
-        }
-
-        .color-swatch.selected {
-            box-shadow: none;
-        }
-
-        #svgContainer {
-            padding: 40px 20px;
-            margin: 10px 0 20px;
-        }
-
-        /* Sur téléphone, marges latérales réduites : la barre prend toute la largeur utile. */
-        @media (max-width: 768px) {
-            #svgContainer {
-                padding-left: 4px;
-                padding-right: 4px;
-            }
-        }
-    </style>
 </head>
 
 <body>
     <section class="page-intro">
-        <a href="index.html" class="btn btn-neutral" id="backLink">← Retour à l'accueil</a>
         <h1>Palanque personnalisée</h1>
         <p>
-            Palanque composée automatiquement de rayures de 10 cm : 30 rayures pour 3 m, 35 rayures pour 3,50 m. La barre est affichée ci-dessous, cliquez sur les rayures pour les colorer.
+            Palanque composée de rayures de 10 cm (30 rayures pour 3 m, 35 pour 3,50 m). Choisissez une couleur RAL, puis cliquez sur chaque rayure pour la colorer.
         </p>
     </section>
 
     <div class="container">
         <div class="section">
-            <h2 class="section-title">Configuration de la barre</h2>
-
-            <div class="controls">
-                <div class="control-group">
-                    <label for="length">Longueur</label>
-                    <select id="length">
-                        <option value="3m">3 m (300 cm)</option>
-                        <option value="3.5m">3,50 m (350 cm)</option>
-                    </select>
-                </div>
-
-                <div class="control-group">
-                    <label for="height">Hauteur</label>
-                    <select id="height">
-                        <option value="95">95 mm</option>
-                        <option value="145">145 mm</option>
-                        <option value="220">220 mm</option>
-                    </select>
-                </div>
-
-                <div class="control-group">
-                    <label for="quantity">Quantité</label>
-                    <input type="number" id="quantity" min="1" value="1">
-                </div>
-
-                <button class="btn btn-secondary" id="regenerateBtn" type="button">
-                    Mettre à jour la barre
-                </button>
-            </div>
-
-            <div id="svgContainer">
-                <p style="color: #95a5a6;">Chargement de la barre...</p>
-            </div>
+            <h2 class="section-title">Aperçu de la palanque</h2>
+            <div id="svgContainer"><p class="text-muted">Chargement de la barre…</p></div>
         </div>
 
         <div class="section">
-            <h2 class="section-title">Palette de couleurs RAL</h2>
+            <h2 class="section-title">Couleurs RAL</h2>
             <div class="color-palette" id="colorPalette"></div>
             <div class="my-rals" id="myRals" hidden>
                 <h3 class="my-rals-title">Mes RAL</h3>
                 <div class="color-palette" id="myRalPalette"></div>
             </div>
             <p class="ral-notice">Les couleurs affichées à l'écran sont indicatives : seule la référence RAL fait foi.</p>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title">Autres couleurs RAL</h2>
             <div class="custom-ral-box">
                 <strong>Vous ne trouvez pas votre RAL dans la palette ? Cherchez-le dans le nuancier RAL Classic (216 teintes).</strong>
                 <div class="ral-search">
@@ -135,12 +59,38 @@
             </div>
         </div>
 
-        <div class="button-container">
+        <div class="section">
+            <h2 class="section-title">Options</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="length">Longueur</label>
+                    <select id="length">
+                        <option value="3m">3 m (300 cm)</option>
+                        <option value="3.5m">3,50 m (350 cm)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="height">Hauteur</label>
+                    <select id="height">
+                        <option value="95">95 mm</option>
+                        <option value="145">145 mm</option>
+                        <option value="220">220 mm</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="quantity">Quantité</label>
+                    <input type="number" id="quantity" min="1" value="1">
+                </div>
+            </div>
+        </div>
+
+        <div class="action-bar">
             <button class="btn btn-primary" id="addToCartBtn" onclick="addToCart()">Ajouter au panier</button>
-            <a href="panier.html" class="btn btn-secondary">Voir le panier</a>
+            <a href="index.html" class="btn btn-neutral" id="backLink">Retour au catalogue</a>
         </div>
     </div>
-
     <script src="js/ral.js"></script>
     <script src="js/notify.js"></script>
     <script src="js/cart.js"></script>
@@ -341,7 +291,6 @@
             } else {
                 generateBar();
             }
-            document.getElementById("regenerateBtn").addEventListener("click", generateBar);
             document.getElementById("length").addEventListener("change", generateBar);
         });
     </script>

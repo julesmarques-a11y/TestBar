@@ -13,11 +13,6 @@
     <style>
         /* Configurateur des modèles de série : écarts par rapport à css/site.css. */
 
-        /* Ici la dernière section garde son trait ; ce sont les boutons qui n'en ont pas. */
-        .section:last-child {
-            border-bottom: 1px solid var(--color-border);
-        }
-
         .control-group select,
         .control-group input[type="number"] {
             min-height: 40px;
@@ -61,26 +56,10 @@
             touch-action: manipulation;
         }
 
-        .color-item:hover .color-swatch {
-            transform: translateY(-1px);
-        }
-
-        .button-container {
-            flex-wrap: wrap;
-            padding-top: 0;
-            border-top: none;
-        }
-
         @media (max-width: 768px) {
             #svgContainer {
                 padding: 12px 4px;
                 min-height: 0;
-            }
-            .button-container {
-                flex-direction: column;
-            }
-            .btn {
-                width: 100%;
             }
         }
     </style>
@@ -88,31 +67,17 @@
 
 <body>
     <section class="page-intro">
-        <a href="index.html" class="btn btn-neutral" id="backLink">← Retour à l'accueil</a>
         <h1>Configurateur de barre CSO</h1>
         <p>
-            Choisissez une couleur dans la palette, puis cliquez sur chaque bande de la barre pour la colorer.
+            Choisissez une couleur RAL dans la palette, puis cliquez sur chaque bande de la barre pour la colorer.
         </p>
     </section>
 
     <div class="container">
         <div class="section">
-            <h2 class="section-title">Configuration de la barre</h2>
-
-            <div class="controls">
-                <div class="control-group">
-                    <label for="length">Longueur</label>
-                    <select id="length">
-                        <option value="3m">3m</option>
-                        <option value="3.5m">3,50m</option>
-                    </select>
-                </div>
-
-                <div class="control-group">
-                    <label for="quantity">Quantité</label>
-                    <input type="number" id="quantity" min="1" value="1">
-                </div>
-
+            <h2 class="section-title">Aperçu de la barre</h2>
+            <div id="svgContainer"></div>
+            <div class="controls preview-options">
                 <div class="control-group">
                     <label for="linkedBands">Coloriage</label>
                     <label class="check-option" title="Un clic colore aussi les bandes liées à celle cliquée : plus rapide sur les modèles à beaucoup de bandes.">
@@ -121,22 +86,16 @@
                     </label>
                 </div>
             </div>
-
-            <div id="svgContainer"></div>
         </div>
 
         <div class="section">
-            <h2 class="section-title">Palette de couleurs RAL</h2>
+            <h2 class="section-title">Couleurs RAL</h2>
             <div class="color-palette" id="colorPalette"></div>
             <div class="my-rals" id="myRals" hidden>
                 <h3 class="my-rals-title">Mes RAL</h3>
                 <div class="color-palette" id="myRalPalette"></div>
             </div>
             <p class="ral-notice">Les couleurs affichées à l'écran sont indicatives : seule la référence RAL fait foi.</p>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title">Autres couleurs RAL</h2>
             <div class="custom-ral-box">
                 <strong>Vous ne trouvez pas votre RAL dans la palette ? Cherchez-le dans le nuancier RAL Classic (216 teintes).</strong>
                 <div class="ral-search">
@@ -162,13 +121,29 @@
             </div>
         </div>
 
-        <div class="button-container">
-            <button class="btn btn-primary" id="addToCartBtn" onclick="addToCart()">Ajouter au Panier</button>
-            <a href="panier.html" class="btn btn-secondary">Voir le Panier</a>
-            <button class="btn btn-neutral" onclick="clearCart().then(done => { if (done) showToast('Le panier a été vidé.'); })">Vider le Panier</button>
+        <div class="section">
+            <h2 class="section-title">Options</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="length">Longueur</label>
+                    <select id="length">
+                        <option value="3m">3m</option>
+                        <option value="3.5m">3,50m</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="quantity">Quantité</label>
+                    <input type="number" id="quantity" min="1" value="1">
+                </div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn btn-primary" id="addToCartBtn" onclick="addToCart()">Ajouter au panier</button>
+            <a href="index.html" class="btn btn-neutral" id="backLink">Retour au catalogue</a>
         </div>
     </div>
-
     <script src="js/ral.js"></script>
     <script src="js/notify.js"></script>
     <script src="js/cart.js"></script>
