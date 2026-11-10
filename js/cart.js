@@ -23,6 +23,8 @@ function readCart() {
 
 function writeCart(cart) {
     localStorage.setItem("cart", JSON.stringify(cart));
+    // Compteur du bouton « Panier » de l'en-tête (js/layout.js), s'il est chargé.
+    if (typeof window.updateCartCount === "function") window.updateCartCount();
 }
 
 // Vide le panier après confirmation. Renvoie true si le panier a été vidé.

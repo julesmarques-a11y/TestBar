@@ -8,13 +8,10 @@
     <meta name="description" content="Créez une palanque 100% personnalisée EQUINOX : choisissez la hauteur, la longueur et la couleur RAL de chaque rayure.">
     <link rel="icon" href="img/icone-equinox.png" type="image/png">
     <link rel="stylesheet" href="css/site.css">
+    <script src="js/layout.js" defer></script>
     <link rel="stylesheet" href="css/ral-picker.css">
     <style>
         /* Palanque personnalisée : écarts par rapport à css/site.css. */
-
-        header {
-            position: relative;
-        }
 
         .section-title {
             font-size: 1.25em;
@@ -56,11 +53,6 @@
 
         /* Sur téléphone, marges latérales réduites : la barre prend toute la largeur utile. */
         @media (max-width: 768px) {
-            header,
-            .container {
-                padding-left: 16px;
-                padding-right: 16px;
-            }
             #svgContainer {
                 padding-left: 4px;
                 padding-right: 4px;
@@ -70,13 +62,13 @@
 </head>
 
 <body>
-    <header>
-        <a href="index.html" class="btn-retour">← Retour</a>
-        <h1>🎨 Palanque personnalisée</h1>
+    <section class="page-intro">
+        <a href="index.html" class="btn-retour" id="backLink">← Retour à l'accueil</a>
+        <h1>Palanque personnalisée</h1>
         <p>
             Palanque composée automatiquement de rayures de 10 cm : 30 rayures pour 3 m, 35 rayures pour 3,50 m. La barre est affichée ci-dessous, cliquez sur les rayures pour les colorer.
         </p>
-    </header>
+    </section>
 
     <div class="container">
         <div class="section">

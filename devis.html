@@ -8,23 +8,9 @@
     <meta name="description" content="Générez votre devis EQUINOX en PDF à partir des barres d'obstacles de votre panier.">
     <link rel="icon" href="img/icone-equinox.png" type="image/png">
     <link rel="stylesheet" href="css/site.css">
+    <script src="js/layout.js" defer></script>
     <style>
-        /* Devis : conteneur en carte comme le catalogue, formulaire client, articles et pages du PDF. */
-
-        header {
-            padding: 24px 60px 26px;
-            text-align: left;
-        }
-
-        header h1 {
-            margin-bottom: 6px;
-        }
-
-        .container {
-            max-width: 1300px;
-            margin: 25px auto 40px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
-        }
+        /* Devis : formulaire client, articles et pages du PDF. */
 
         form {
             width: 100%;
@@ -275,13 +261,6 @@
         }
 
         @media (max-width: 768px) {
-            header {
-                padding: 18px 20px 20px;
-            }
-            .container {
-                padding: 20px 16px 28px;
-                margin: 15px auto 30px;
-            }
             .article {
                 padding: 10px 10px 8px;
             }
@@ -290,15 +269,12 @@
 </head>
 
 <body>
-    <header>
-        <div class="brand-line">
-            <span>EQUINOX</span> – Créateur d'espaces équestres
-        </div>
+    <section class="page-intro">
         <h1>Devis</h1>
         <p>
             Renseignez le nom, le numéro de commande et la date de livraison souhaitée. Téléchargez ensuite votre devis en PDF. Le numéro de devis est établi à partir de la date et de l'heure de génération.
         </p>
-    </header>
+    </section>
 
     <main class="container">
         <div class="devis-info">

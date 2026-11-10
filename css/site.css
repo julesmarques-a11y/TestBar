@@ -108,6 +108,11 @@
     box-sizing: border-box;
 }
 
+/* L'en-tête reste visible au défilement : les ancres s'arrêtent dessous. */
+html {
+    scroll-padding-top: 130px;
+}
+
 body {
     font-family: var(--font-family);
     font-size: var(--font-size-base);
@@ -126,35 +131,193 @@ h4,
     line-height: 1.2;
 }
 
-/* En-tête sombre */
+/* En-tête commun (injecté par js/layout.js) : logo, bouton Panier, étapes du parcours */
 
-header {
-    background: var(--color-dark);
-    color: var(--color-text-on-dark);
-    padding: 24px 60px;
-    border-bottom: 4px solid var(--color-accent);
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--color-white);
+    border-bottom: 1px solid var(--color-border);
 }
 
-header h1 {
+.site-header-bar {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 10px var(--container-gutter);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.site-logo {
+    display: block;
+    line-height: 0;
+}
+
+.site-logo img {
+    height: 64px;
+    width: auto;
+}
+
+/* Bouton Panier : pilule orange, indépendante des styles de boutons des pages */
+.site-cart-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px 6px 20px;
+    font-family: var(--font-family-ui);
+    font-size: 1em;
+    line-height: 1.5;
+    background: var(--color-accent);
+    color: var(--color-dark);
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--transition), color var(--transition);
+}
+
+.site-cart-btn:hover {
+    background: var(--color-accent-hover);
+    color: var(--color-ink);
+}
+
+.site-cart-count {
+    display: inline-block;
+    min-width: 26px;
+    padding: 0 8px;
+    border-radius: var(--radius-pill);
+    background: var(--color-dark);
+    color: var(--color-text-on-dark);
+    font-size: 0.85em;
+    line-height: 26px;
+    text-align: center;
+}
+
+.site-steps {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-gutter) 10px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    list-style: none;
+    font-family: var(--font-family-ui);
+    font-size: 0.875em;
+}
+
+.site-steps li {
+    display: flex;
+    align-items: center;
+}
+
+.site-steps li + li::before {
+    content: "›";
+    margin: 0 10px 0 4px;
+    color: var(--color-text-muted);
+}
+
+.site-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.site-step-num {
+    width: 24px;
+    height: 24px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+    line-height: 1;
+}
+
+.site-step-current {
+    color: var(--color-dark);
+    font-weight: 700;
+}
+
+.site-step-current .site-step-num {
+    background: var(--color-dark);
+    border-color: var(--color-dark);
+    color: var(--color-text-on-dark);
+}
+
+.site-step-done {
+    color: var(--color-dark);
+}
+
+.site-step-done:hover {
+    text-decoration: underline;
+}
+
+.site-step-todo {
+    color: rgba(33, 37, 41, 0.4);
+}
+
+/* Titre de page, sous l'en-tête */
+
+.page-intro {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 28px var(--container-gutter) 0;
+}
+
+.page-intro h1 {
     font-size: 2em;
+    color: var(--color-text-headings);
     margin-bottom: 8px;
 }
 
-header p {
-    color: var(--color-text-on-dark);
-    font-size: 0.9em;
-    line-height: 1.5;
+.page-intro p {
+    color: var(--color-text-muted);
     max-width: 800px;
+    margin-bottom: 8px;
 }
 
-.brand-line {
-    font-size: 0.9em;
-    margin-bottom: 4px;
-    opacity: 0.9;
+.page-intro .btn-retour {
+    margin-bottom: 16px;
 }
 
-.brand-line span {
-    font-weight: 600;
+@media (max-width: 768px) {
+    .site-header-bar {
+        padding: 8px var(--container-gutter);
+    }
+    .site-logo img {
+        height: 48px;
+    }
+    .site-cart-btn {
+        padding: 4px 6px 4px 14px;
+        font-size: 0.9em;
+    }
+    .site-steps {
+        font-size: 0.8em;
+        padding-bottom: 8px;
+    }
+    .site-steps li + li::before {
+        margin: 0 6px 0 2px;
+    }
+    .site-step {
+        gap: 5px;
+    }
+    .site-step-num {
+        width: 20px;
+        height: 20px;
+    }
+    .page-intro {
+        padding-top: 20px;
+    }
+    .page-intro h1 {
+        font-size: 1.6em;
+    }
 }
 
 .btn-retour {
@@ -179,10 +342,10 @@ header p {
 /* Conteneur principal et sections */
 
 .container {
-    max-width: 1400px;
+    max-width: var(--container-max);
     margin: 0 auto;
     background: var(--color-surface);
-    padding: 30px 40px 40px;
+    padding: 20px var(--container-gutter) 40px;
 }
 
 .section {

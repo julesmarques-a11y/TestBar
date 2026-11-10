@@ -8,22 +8,10 @@
     <meta name="description" content="Catalogue des barres d'obstacles EQUINOX : choisissez un modèle de barre de CSO, personnalisez ses couleurs RAL et préparez votre devis.">
     <link rel="icon" href="img/icone-equinox.png" type="image/png">
     <link rel="stylesheet" href="css/site.css">
+    <script src="js/layout.js" defer></script>
     <style>
-        /* Catalogue : conteneur en carte, en-tête légèrement plus haut que sur les configurateurs. */
+        /* Catalogue des modèles. */
 
-        header {
-            padding: 24px 60px 26px;
-        }
-
-        header h1 {
-            margin-bottom: 6px;
-        }
-
-        .container {
-            max-width: 1300px;
-            margin: 25px auto 40px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
-        }
         /* Boutons principaux */
 
         .top-actions {
@@ -112,13 +100,6 @@
         }
 
         @media (max-width: 768px) {
-            header {
-                padding: 18px 20px 20px;
-            }
-            .container {
-                padding: 20px 16px 28px;
-                margin: 15px auto 30px;
-            }
             .top-actions {
                 flex-direction: column;
             }
@@ -131,16 +112,12 @@
 </head>
 
 <body>
-    <!-- Header simple, sans menu -->
-    <header>
-        <div class="brand-line">
-            <span>EQUINOX</span> – Créateur d'espaces équestres
-        </div>
+    <section class="page-intro">
         <h1>Catalogue des barres de CSO</h1>
         <p>
             Découvrez nos modèles de barres et personnalisez-les selon vos couleurs RAL. Vous pouvez aussi créer une barre ou une palanque 100% personnalisée.
         </p>
-    </header>
+    </section>
 
     <!-- Contenu principal -->
     <main class="container">
