@@ -10,21 +10,12 @@
     <link rel="stylesheet" href="css/site.css">
     <script src="js/layout.js" defer></script>
     <style>
-        /* Catalogue des modèles. */
+        /* Catalogue des modèles : trois groupes de cartes. */
 
-        /* Boutons principaux */
-
-        .top-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-
-        /* Titre catalogue */
+        /* Titre de groupe */
 
         .catalog-header {
-            margin-top: 10px;
+            margin-top: 4px;
             margin-bottom: 15px;
         }
 
@@ -38,8 +29,8 @@
         }
 
         .catalog-header-second {
-            margin-top: 40px;
-            padding-top: 25px;
+            margin-top: 48px;
+            padding-top: 32px;
             border-top: 1px solid var(--color-border);
         }
         /* Catalogue */
@@ -56,20 +47,20 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            padding: 15px 15px 12px;
+            padding: 16px 16px 14px;
             background: var(--color-white);
-            border-radius: 8px;
+            border-radius: var(--radius);
             border: 1px solid var(--color-border-light);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s;
+            transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
             text-decoration: none;
             color: inherit;
         }
 
-        .catalog-item:hover {
+        .catalog-item:hover,
+        .catalog-item:focus-visible {
             transform: translateY(-2px);
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-            border-color: var(--color-accent);
+            box-shadow: var(--shadow-card);
+            border-color: transparent;
         }
 
         .catalog-item img {
@@ -77,21 +68,49 @@
             max-width: 400px;
             height: auto;
             object-fit: contain;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .catalog-item p {
-            font-size: 1em;
-            font-weight: 500;
+            font-family: var(--font-family-headings);
+            font-size: 1.125em;
+            font-weight: var(--font-weight-headings);
             color: var(--color-text);
         }
 
-        @media (max-width: 768px) {
-            .top-actions {
-                flex-direction: column;
+        /* « Configurer » apparaît au survol ; toujours visible quand il n'y a pas de survol (tactile). */
+        .catalog-cta {
+            margin-top: 12px;
+            padding: 6px 18px;
+            font-size: 0.9em;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity var(--transition), transform var(--transition);
+        }
+
+        .catalog-item:hover .catalog-cta,
+        .catalog-item:focus-visible .catalog-cta {
+            opacity: 1;
+            transform: none;
+        }
+
+        @media (hover: none), (max-width: 768px) {
+            .catalog-cta {
+                opacity: 1;
+                transform: none;
             }
-            .btn {
-                width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .catalog {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 12px;
+            }
+            .catalog-item {
+                padding: 12px 10px 10px;
+            }
+            .catalog-item p {
+                font-size: 1em;
             }
         }
     </style>
@@ -101,125 +120,153 @@
     <section class="page-intro">
         <h1>Catalogue des barres de CSO</h1>
         <p>
-            Découvrez nos modèles de barres et personnalisez-les selon vos couleurs RAL. Vous pouvez aussi créer une barre ou une palanque 100% personnalisée.
+            Choisissez un modèle de série, une barre plein cœur ou une barre sur mesure, puis personnalisez ses couleurs RAL.
         </p>
     </section>
 
     <!-- Contenu principal -->
     <main class="container">
-        <!-- Boutons principaux -->
-        <div class="top-actions">
-            <a href="config_personnalisee.html" class="btn btn-secondary">
-                Créer une barre 100% personnalisée
-            </a>
-            <a href="config_bar_octo.html" class="btn btn-secondary">
-                Créer une barre octo 100% personnalisée
-            </a>
-            <a href="config_personnalisee_forme2.html" class="btn btn-secondary">
-                Créer une palanque 100% personnalisée
-            </a>
-            <a href="panier.html" class="btn btn-secondary">
-                Panier
-            </a>
-        </div>
-
-        <div class="catalog-header">
-            <h2 class="section-title">Modèles de barres</h2>
-            <p>Cliquez sur un modèle pour choisir ses couleurs et l'ajouter à votre panier.</p>
+        <div class="catalog-header" id="serie">
+            <h2 class="section-title">Barres de série</h2>
+            <p>14 modèles de barres de CSO en 3 m ou 3,50 m : choisissez les couleurs RAL de chaque bande.</p>
         </div>
 
         <div class="catalog">
             <a class="catalog-item" href="config.html?model=101">
                 <img src="Bar_V101.svg" alt="Modèle 101">
                 <p>Modèle 101</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=102">
                 <img src="Bar_V102.svg" alt="Modèle 102">
                 <p>Modèle 102</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=103">
                 <img src="Bar_V103.svg" alt="Modèle 103">
                 <p>Modèle 103</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=104">
                 <img src="Bar_V104.svg" alt="Modèle 104">
                 <p>Modèle 104</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=105">
                 <img src="Bar_V105.svg" alt="Modèle 105">
                 <p>Modèle 105</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=106">
                 <img src="Bar_V106.svg" alt="Modèle 106">
                 <p>Modèle 106</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=107">
                 <img src="Bar_V107.svg" alt="Modèle 107">
                 <p>Modèle 107</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=108">
                 <img src="Bar_V108.svg" alt="Modèle 108">
                 <p>Modèle 108</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=109">
                 <img src="Bar_V109.svg" alt="Modèle 109">
                 <p>Modèle 109</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=110">
                 <img src="Bar_V110.svg" alt="Modèle 110">
                 <p>Modèle 110</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=111">
                 <img src="Bar_V111.svg" alt="Modèle 111">
                 <p>Modèle 111</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=112">
                 <img src="Bar_V112.svg" alt="Modèle 112">
                 <p>Modèle 112</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=113">
                 <img src="Bar_V113.svg" alt="Modèle 113">
                 <p>Modèle 113</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=114">
                 <img src="Bar_V114.svg" alt="Modèle 114">
                 <p>Modèle 114</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
         </div>
 
         <div class="catalog-header catalog-header-second" id="plein-coeur">
             <h2 class="section-title">Barres plein cœur 3 m</h2>
-            <p>Ces modèles existent aussi en version plein cœur, en 3 m uniquement. Cliquez sur un modèle pour choisir ses couleurs.</p>
+            <p>7 modèles en bois plein cœur, en 3 m uniquement, aux mêmes couleurs RAL.</p>
         </div>
 
         <div class="catalog">
             <a class="catalog-item" href="config.html?model=101&amp;gamme=plein-coeur">
                 <img src="Bar_V101.svg" alt="Modèle 101 plein cœur">
                 <p>Modèle 101 – Plein cœur</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=102&amp;gamme=plein-coeur">
                 <img src="Bar_V102.svg" alt="Modèle 102 plein cœur">
                 <p>Modèle 102 – Plein cœur</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=104&amp;gamme=plein-coeur">
                 <img src="Bar_V104.svg" alt="Modèle 104 plein cœur">
                 <p>Modèle 104 – Plein cœur</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=105&amp;gamme=plein-coeur">
                 <img src="Bar_V105.svg" alt="Modèle 105 plein cœur">
                 <p>Modèle 105 – Plein cœur</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=108&amp;gamme=plein-coeur">
                 <img src="Bar_V108.svg" alt="Modèle 108 plein cœur">
                 <p>Modèle 108 – Plein cœur</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=110&amp;gamme=plein-coeur">
                 <img src="Bar_V110.svg" alt="Modèle 110 plein cœur">
                 <p>Modèle 110 – Plein cœur</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
             <a class="catalog-item" href="config.html?model=111&amp;gamme=plein-coeur">
                 <img src="Bar_V111.svg" alt="Modèle 111 plein cœur">
                 <p>Modèle 111 – Plein cœur</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
+            </a>
+        </div>
+
+        <div class="catalog-header catalog-header-second" id="sur-mesure">
+            <h2 class="section-title">Sur mesure</h2>
+            <p>Composez votre barre rayure par rayure (rayures de 10 cm), en 3 m ou 3,50 m.</p>
+        </div>
+
+        <div class="catalog">
+            <a class="catalog-item" href="config_personnalisee.html">
+                <img src="img/apercu-barre-personnalisee.svg" alt="Barre personnalisée">
+                <p>Barre personnalisée</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
+            </a>
+            <a class="catalog-item" href="config_bar_octo.html">
+                <img src="img/apercu-barre-octo.svg" alt="Barre octo personnalisée">
+                <p>Barre octo personnalisée</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
+            </a>
+            <a class="catalog-item" href="config_personnalisee_forme2.html">
+                <img src="img/apercu-palanque.svg" alt="Palanque personnalisée">
+                <p>Palanque personnalisée</p>
+                <span class="btn btn-primary catalog-cta">Configurer</span>
             </a>
         </div>
     </main>
