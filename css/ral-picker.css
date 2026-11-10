@@ -132,6 +132,14 @@
     background: white;
 }
 
+/* Mention sous la palette : l'écran ne reproduit pas fidèlement les teintes. */
+.ral-notice {
+    margin-top: 12px;
+    color: #7f8c8d;
+    font-size: 0.8em;
+    line-height: 1.5;
+}
+
 /* Section « Mes RAL », sous la palette standard. */
 .my-rals {
     margin-top: 16px;
