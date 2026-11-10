@@ -247,7 +247,7 @@ function initRalPicker({ onSelect } = {}) {
         const labelInput = document.getElementById("customRalInput");
         const label = labelInput.value.trim().replace(/\s+/g, " ");
         if (!label) {
-            alert("Indiquez la référence de la teinte (ex : RAL Design 180 50 15, NCS S 1050-R…).");
+            showError(labelInput, "Indiquez la référence de la teinte (ex : RAL Design 180 50 15, NCS S 1050-R…).");
             return;
         }
 
@@ -261,7 +261,7 @@ function initRalPicker({ onSelect } = {}) {
 
         const hex = document.getElementById("customRalColor").value.toLowerCase();
         if (isPaletteColor(hex)) {
-            alert(`Cette couleur d'écran est déjà celle du ${getRal(hex)} de la palette. Choisissez une couleur d'écran légèrement différente pour votre teinte.`);
+            showError("addCustomRalBtn", `Cette couleur d'écran est déjà celle du ${getRal(hex)} de la palette. Choisissez une couleur d'écran légèrement différente pour votre teinte.`);
             return;
         }
         addMyRal({ hex, label });

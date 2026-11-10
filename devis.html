@@ -319,6 +319,7 @@
     <script src="js/vendor/html2pdf.bundle.min.js"></script>
 
     <script src="js/ral.js"></script>
+    <script src="js/notify.js"></script>
     <script src="js/cart.js"></script>
     <script>
         // Page du PDF, en millimètres. Portrait : les aperçus occupent toute la largeur utile
@@ -699,14 +700,17 @@
             const downloadBtn = document.getElementById("downloadBtn");
             const loadingText = document.getElementById("loading");
 
+            clearErrors();
             if (!lastName || !orderNumber || !deliveryDate) {
-                alert("Veuillez remplir tous les champs obligatoires (nom, numéro de commande, date de livraison).");
+                const missing = ["lastName", "orderNumber", "deliveryDate"].find(id => !document.getElementById(id).value.trim());
+                showError("downloadBtn", "Renseignez le nom, le numéro de commande et la date de livraison souhaitée.");
+                document.getElementById(missing).focus();
                 return;
             }
 
             await summaryReady;
             if (!document.querySelector("#orderList .article")) {
-                alert("Votre panier est vide, impossible de générer un devis.");
+                showError("downloadBtn", "Votre panier est vide : ajoutez des barres avant de générer un devis.");
                 return;
             }
 
@@ -755,7 +759,7 @@
                 await worker.save();
             } catch (err) {
                 console.error("Erreur lors de la génération du PDF :", err);
-                alert("Une erreur est survenue pendant la génération du PDF.");
+                showToast("Une erreur est survenue pendant la génération du PDF.", { type: "error" });
             } finally {
                 sheet.remove();
                 downloadBtn.disabled = false;

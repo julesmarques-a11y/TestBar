@@ -165,11 +165,12 @@
         <div class="button-container">
             <button class="btn btn-primary" id="addToCartBtn" onclick="addToCart()">Ajouter au Panier</button>
             <a href="panier.html" class="btn btn-secondary">Voir le Panier</a>
-            <button class="btn btn-neutral" onclick="if (clearCart()) alert('Le panier a été vidé.')">Vider le Panier</button>
+            <button class="btn btn-neutral" onclick="clearCart().then(done => { if (done) showToast('Le panier a été vidé.'); })">Vider le Panier</button>
         </div>
     </div>
 
     <script src="js/ral.js"></script>
+    <script src="js/notify.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/ral-picker.js"></script>
     <script>
@@ -429,13 +430,14 @@
 
                     if (editContext) restoreItem(editContext.item);
                 })
-                .catch(error => alert("Erreur de chargement du modèle SVG"));
+                .catch(error => showToast("Le dessin du modèle n'a pas pu être chargé.", { type: "error" }));
         } else {
-            alert("Modèle non spécifié !");
+            showToast("Aucun modèle n'est indiqué dans l'adresse de la page.", { type: "error" });
         }
 
 
-        function addToCart() {
+        async function addToCart() {
+            clearErrors();
             const model = new URLSearchParams(window.location.search).get("model");
             const quantity = parseInt(document.getElementById("quantity").value);
             const length = document.getElementById("length").value;
@@ -447,22 +449,20 @@
 
 
             if (!model) {
-                alert("Aucun modèle sélectionné.");
-                console.error("❌ Erreur : Aucun modèle détecté.");
+                showError("addToCartBtn", "Aucun modèle sélectionné.");
                 return;
             }
 
             if (quantity <= 0) {
-                alert("Veuillez entrer une quantité valide.");
-                console.error("❌ Erreur : Quantité invalide.");
+                showError("quantity", "Indiquez une quantité d'au moins 1.");
                 return;
             }
 
             // Les couleurs par défaut du SVG ne sont pas des RAL : elles resteraient sur l'image
             // du devis sans figurer dans la liste des couleurs.
             if (hasOffPaletteZone()) {
-                alert("Certaines zones de la barre ont encore leur couleur d'origine, qui ne fait pas partie de la palette RAL.\n\n" +
-                    "Cliquez sur chacune de ces zones pour lui appliquer une couleur de la palette, puis " +
+                showError("addToCartBtn", "Certaines zones de la barre ont encore leur couleur d'origine, hors palette RAL : " +
+                    "cliquez sur chacune pour lui appliquer une couleur de la palette, puis " +
                     (editContext ? "mettez à jour l'article." : "ajoutez la barre au panier."));
                 return;
             }
@@ -474,8 +474,7 @@
             console.log("Couleurs sélectionnées:", colors);
 
             if (colors.length === 0) {
-                alert("Veuillez sélectionner au moins une couleur.");
-                console.error("❌ Erreur : Aucune couleur sélectionnée.");
+                showError("addToCartBtn", "Sélectionnez au moins une couleur.");
                 return;
             }
 
@@ -485,13 +484,12 @@
             console.log("🔄 SVG sauvegardé:", svgElement);
 
             if (!svgElement || svgElement.trim() === "") {
-                alert("Erreur : Impossible de récupérer l'image du modèle.");
-                console.error("❌ Erreur : SVG non récupéré.");
+                showError("addToCartBtn", "L'image du modèle n'a pas pu être récupérée.");
                 return;
             }
 
             // Ajouter l'article (ou remplacer la ligne en cours de modification), avec le SVG enregistré
-            const result = saveCartItem({
+            const result = await saveCartItem({
                 model: model,
                 ...(gamme ? { gamme } : {}),
                 colors: colors,
@@ -502,12 +500,7 @@
                 sourcePage: "config.html"
             }, editContext);
 
-            if (result === "updated") {
-                window.location.href = "panier.html";
-            } else if (result === "added") {
-                console.log("✅ Modèle ajouté au panier avec succès !");
-                alert("Modèle ajouté au panier !");
-            }
+            notifyCartSaved(result, "Modèle ajouté au panier.");
         }
     </script>
 

@@ -27,13 +27,14 @@ function writeCart(cart) {
     if (typeof window.updateCartCount === "function") window.updateCartCount();
 }
 
-// Vide le panier après confirmation. Renvoie true si le panier a été vidé.
-function clearCart() {
+// Vide le panier après confirmation. Renvoie une promesse : true si le panier a été vidé.
+async function clearCart() {
     if (readCart().length === 0) {
-        alert("Le panier est déjà vide.");
+        showToast("Le panier est déjà vide.");
         return false;
     }
-    if (!confirm("Vider le panier ? Tous les articles seront supprimés.")) return false;
+    const ok = await confirmDialog("Vider le panier ? Tous les articles seront supprimés.", { okLabel: "Vider le panier" });
+    if (!ok) return false;
     writeCart([]);
     return true;
 }
@@ -128,7 +129,7 @@ function getEditContext(page, model, gamme) {
         (model === undefined || isPleinCoeur(item) === (gamme === PLEIN_COEUR));
 
     if (!matches) {
-        alert("L'article à modifier est introuvable dans le panier. Vous pouvez configurer une nouvelle barre.");
+        showToast("L'article à modifier est introuvable dans le panier. Vous pouvez configurer une nouvelle barre.", { type: "error" });
         return null;
     }
     return {
@@ -139,8 +140,8 @@ function getEditContext(page, model, gamme) {
 }
 
 // Enregistre un article : remplace la ligne en cours de modification (editContext),
-// sinon ajoute une ligne. Renvoie "added", "updated" ou "cancelled".
-function saveCartItem(newItem, editContext) {
+// sinon ajoute une ligne. Renvoie une promesse de "added", "updated" ou "cancelled".
+async function saveCartItem(newItem, editContext) {
     const cart = readCart();
 
     if (!editContext) {
@@ -157,15 +158,27 @@ function saveCartItem(newItem, editContext) {
     }
 
     if (index === -1) {
-        if (!confirm("L'article d'origine a été modifié ou supprimé du panier entre-temps. Ajouter cette barre comme nouvel article ?")) {
-            return "cancelled";
-        }
+        const ok = await confirmDialog("L'article d'origine a été modifié ou supprimé du panier entre-temps. Ajouter cette barre comme nouvel article ?",
+            { okLabel: "Ajouter comme nouvel article" });
+        if (!ok) return "cancelled";
         cart.push(newItem);
     } else {
         cart[index] = newItem;
     }
     writeCart(cart);
     return "updated";
+}
+
+// Message après enregistrement d'un article : « Continuer » reste sur la page, « Voir le panier » y va.
+function notifyCartSaved(result, addedMessage) {
+    if (result === "cancelled") return;
+    showToast(result === "updated" ? "Article mis à jour dans le panier." : addedMessage, {
+        type: "success",
+        actions: [
+            { label: "Continuer" },
+            { label: "Voir le panier", href: "panier.html", primary: true }
+        ]
+    });
 }
 
 // Sélectionne `value` dans le <select> `id`, seulement si cette option existe.

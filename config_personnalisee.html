@@ -186,6 +186,7 @@
     </div>
 
     <script src="js/ral.js"></script>
+    <script src="js/notify.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/ral-picker.js"></script>
     <script>
@@ -299,12 +300,13 @@
         }
 
         // Ajouter au panier
-        function addToCart() {
+        async function addToCart() {
+            clearErrors();
             const quantity = parseInt(document.getElementById("quantity").value);
             const length = document.getElementById("length").value;
 
             if (!quantity || quantity <= 0) {
-                alert("Veuillez entrer une quantité valide.");
+                showError("quantity", "Indiquez une quantité d'au moins 1.");
                 return;
             }
 
@@ -318,14 +320,14 @@
             const svgElement = svgContainer.querySelector("svg");
 
             if (!svgElement) {
-                alert("Erreur : la barre n'a pas pu être générée.");
+                showError("addToCartBtn", "La barre n'a pas pu être générée.");
                 return;
             }
 
             const svgHtml = svgElement.outerHTML;
 
             if (!svgHtml || svgHtml.trim() === "") {
-                alert("Erreur : la barre n'a pas pu être générée.");
+                showError("addToCartBtn", "La barre n'a pas pu être générée.");
                 return;
             }
 
@@ -337,12 +339,12 @@
             )];
 
             if (colorsUsed.length === 0) {
-                alert("Veuillez colorer au moins une rayure.");
+                showError("addToCartBtn", "Colorez au moins une rayure.");
                 return;
             }
 
             // Ajoute l'article, ou remplace la ligne en cours de modification
-            const result = saveCartItem({
+            const result = await saveCartItem({
                 model: "BARRE PERSONNALISÉE",
                 colors: colorsUsed,
                 quantity: quantity,
@@ -355,11 +357,7 @@
                 sourcePage: "config_personnalisee.html"
             }, editContext);
 
-            if (result === "updated") {
-                window.location.href = "panier.html";
-            } else if (result === "added") {
-                alert("Barre personnalisée ajoutée au panier !");
-            }
+            notifyCartSaved(result, "Barre personnalisée ajoutée au panier.");
         }
 
         // Remet le configurateur dans l'état de l'article en cours de modification.

@@ -142,6 +142,7 @@
     </div>
 
     <script src="js/ral.js"></script>
+    <script src="js/notify.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/ral-picker.js"></script>
     <script>
@@ -259,12 +260,13 @@
             });
         }
 
-        function addToCart() {
+        async function addToCart() {
+            clearErrors();
             const quantity = parseInt(document.getElementById("quantity").value);
             const length = document.getElementById("length").value;
             const height = document.getElementById("height").value;
             if (!quantity || quantity <= 0) {
-                alert("Veuillez entrer une quantité valide.");
+                showError("quantity", "Indiquez une quantité d'au moins 1.");
                 return;
             }
             const {
@@ -275,12 +277,12 @@
             const svgContainer = document.getElementById("svgContainer");
             const svgElement = svgContainer.querySelector("svg");
             if (!svgElement) {
-                alert("Erreur : la barre n'a pas pu être générée.");
+                showError("addToCartBtn", "La barre n'a pas pu être générée.");
                 return;
             }
             const svgHtml = svgElement.outerHTML;
             if (!svgHtml || svgHtml.trim() === "") {
-                alert("Erreur : la barre n'a pas pu être générée.");
+                showError("addToCartBtn", "La barre n'a pas pu être générée.");
                 return;
             }
             const filledStripes = svgContainer.querySelectorAll("rect[data-stripe]");
@@ -290,13 +292,13 @@
                 .filter(c => c && c.toLowerCase() !== "#ffffff" && c.toLowerCase() !== "white")
             )];
             if (colorsUsed.length === 0) {
-                alert("Veuillez colorer au moins une rayure.");
+                showError("addToCartBtn", "Colorez au moins une rayure.");
                 return;
             }
             // Ajoute l'article, ou remplace la ligne en cours de modification.
             // "BARRE 113 PERSONNALISÉE" est l'identifiant historique de la palanque : il n'est plus
             // affiché (voir getModelLabel, js/cart.js) mais reste celui des articles déjà au panier.
-            const result = saveCartItem({
+            const result = await saveCartItem({
                 model: "BARRE 113 PERSONNALISÉE",
                 colors: colorsUsed,
                 quantity: quantity,
@@ -310,11 +312,7 @@
                 sourcePage: "config_personnalisee_forme2.html"
             }, editContext);
 
-            if (result === "updated") {
-                window.location.href = "panier.html";
-            } else if (result === "added") {
-                alert("Palanque personnalisée ajoutée au panier !");
-            }
+            notifyCartSaved(result, "Palanque ajoutée au panier.");
         }
 
         // Remet le configurateur dans l'état de l'article en cours de modification.

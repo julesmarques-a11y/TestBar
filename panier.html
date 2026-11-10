@@ -252,13 +252,14 @@
 
             <div class="bottom-actions">
                 <a href="index.html" class="btn btn-neutral">← Retour à l'accueil</a>
-                <button class="btn btn-neutral" id="clearCartBtn" onclick="if (clearCart()) loadCart()">Vider le panier</button>
+                <button class="btn btn-neutral" id="clearCartBtn" onclick="clearCart().then(done => { if (done) loadCart(); })">Vider le panier</button>
                 <a href="devis.html" class="btn btn-primary">Générer le devis →</a>
             </div>
         </div>
     </div>
 
     <script src="js/ral.js"></script>
+    <script src="js/notify.js"></script>
     <script src="js/cart.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -369,13 +370,14 @@
                 localStorage.setItem("cart", JSON.stringify(cart));
                 loadCart();
             } else {
-                alert("La quantité doit être au moins 1.");
                 input.value = cart[index].quantity;
+                showError(input, "La quantité doit être au moins 1.");
             }
         }
 
-        function removeFromCart(index) {
-            if (!confirm("Supprimer cet article du panier ?")) return;
+        async function removeFromCart(index) {
+            const ok = await confirmDialog("Supprimer cet article du panier ?", { okLabel: "Supprimer" });
+            if (!ok) return;
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
             cart.splice(index, 1);
             writeCart(cart);
@@ -389,7 +391,7 @@
             if (editUrl) {
                 window.location.href = editUrl;
             } else {
-                alert("Cet article ne peut pas être modifié : son configurateur d'origine est inconnu. Supprimez-le puis recréez-le.");
+                showToast("Cet article ne peut pas être modifié : son configurateur d'origine est inconnu. Supprimez-le puis recréez-le.", { type: "error" });
             }
         }
     </script>
