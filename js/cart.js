@@ -92,8 +92,8 @@ function hasUnpaintedStripe(item) {
 }
 
 // Couleurs d'un article à afficher dans le panier, le devis et le PDF : ses couleurs avec leur
-// libellé (RAL de la palette ou RAL personnalisé, sinon null), puis, si une rayure est restée
-// blanche, une pastille blanche qui signale au peintre qu'il manque un RAL.
+// libellé (RAL personnalisé de l'article ou RAL du nuancier, sinon null), puis, si une rayure est
+// restée blanche, une pastille blanche qui signale au peintre qu'il manque un RAL.
 function getDisplayColors(item) {
     const customRals = getCustomRals(item);
     const colors = (item.colors || []).map(hex => ({ hex, label: getColorLabel(hex, customRals) }));
@@ -208,7 +208,7 @@ function collectCustomRals(colorsUsed) {
     // Couleurs retirées de « Mes RAL » mais encore sur la barre : leur libellé a été conservé.
     if (typeof ralPickerLabels === "object") {
         used.forEach(hex => {
-            if (!table[hex] && !getRal(hex) && ralPickerLabels[hex]) table[hex] = ralPickerLabels[hex];
+            if (!table[hex] && !isPaletteColor(hex) && ralPickerLabels[hex]) table[hex] = ralPickerLabels[hex];
         });
     }
     return table;

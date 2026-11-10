@@ -43,10 +43,9 @@ const ralPickerLabels = {};
 
 let ralPickerOnSelect = () => {};
 
-// Libellé d'une couleur connue du configurateur : RAL de la palette standard ou couleur de « Mes RAL ».
+// Libellé d'une couleur connue du configurateur : RAL du nuancier ou couleur de « Mes RAL ».
 function knownColorLabel(hex) {
-    const key = String(hex === null || hex === undefined ? "" : hex).trim().toLowerCase();
-    return getRal(key) || ralPickerLabels[key] || null;
+    return getRal(hex) || ralPickerLabels[normalizeHex(hex)] || null;
 }
 
 // Sélectionne une pastille (palette standard ou « Mes RAL ») comme couleur active.
@@ -72,7 +71,7 @@ function addMyRal({ hex, label, name }, options = {}) {
     hex = String(hex).trim().toLowerCase();
     const select = options.select !== false;
 
-    if (getRal(hex)) {
+    if (isPaletteColor(hex)) {
         const standard = findSwatch(hex);
         if (standard && select) selectSwatch(standard);
         return standard;
@@ -261,7 +260,7 @@ function initRalPicker({ onSelect } = {}) {
         }
 
         const hex = document.getElementById("customRalColor").value.toLowerCase();
-        if (getRal(hex)) {
+        if (isPaletteColor(hex)) {
             alert(`Cette couleur d'écran est déjà celle du ${getRal(hex)} de la palette. Choisissez une couleur d'écran légèrement différente pour votre teinte.`);
             return;
         }

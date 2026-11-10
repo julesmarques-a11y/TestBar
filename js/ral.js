@@ -260,24 +260,37 @@ function searchRal(query, limit = 40) {
 // Couleurs de la palette standard des configurateurs, dans l'ordre d'affichage.
 const PALETTE_CODES = ["1001", "1014", "1015", "1016", "2000", "3018", "3020", "4002", "4010", "5002", "5013", "5014", "5022", "6005", "6018", "6019", "6021", "6034", "7012", "7015", "7016", "7021", "7022", "7035", "7037", "7042", "7045", "8011", "8012", "8014", "9001", "9004", "9005", "9010", "9016"];
 
-// Table unique hex → RAL des couleurs de la palette standard.
+// Table unique hex → « RAL xxxx » : la palette standard d'abord (ordre d'affichage), puis le reste
+// du nuancier. Toute couleur du nuancier a donc un libellé, qu'elle soit ou non dans la palette.
 const hexToRal = {};
 PALETTE_CODES.forEach(code => {
     hexToRal[ralByCode[code].hex] = ralByCode[code].label;
 });
+RAL_CLASSIC.forEach(([code, , hex]) => {
+    if (!hexToRal[hex]) hexToRal[hex] = "RAL " + code;
+});
 
-// Couleurs proposées dans la palette des configurateurs.
-const ralColors = Object.keys(hexToRal);
+// Couleurs proposées dans la palette standard des configurateurs.
+const ralColors = PALETTE_CODES.map(code => ralByCode[code].hex);
 
-// Renvoie le libellé RAL d'un code hex (insensible à la casse), ou null s'il est inconnu.
+function normalizeHex(hex) {
+    return String(hex === null || hex === undefined ? "" : hex).trim().toLowerCase();
+}
+
+// Renvoie le libellé « RAL xxxx » d'un code hex du nuancier (insensible à la casse), ou null s'il
+// n'en fait pas partie (couleur par défaut d'un SVG, teinte hors nuancier saisie librement…).
 function getRal(hex) {
-    if (hex === null || hex === undefined) return null;
-    return hexToRal[String(hex).trim().toLowerCase()] || null;
+    return hexToRal[normalizeHex(hex)] || null;
+}
+
+// Vrai si le code hex est une des couleurs de la palette standard.
+function isPaletteColor(hex) {
+    return ralColors.includes(normalizeHex(hex));
 }
 
 // Table { hex: libellé } des RAL personnalisés d'un article du panier (champ custom_rals).
 // Les anciens articles n'ont qu'un libellé (custom_ral) et parfois sa couleur (custom_ral_color) :
-// le libellé vaut alors pour cette couleur ou, à défaut, pour les couleurs utilisées hors palette.
+// le libellé vaut alors pour cette couleur ou, à défaut, pour les couleurs utilisées hors palette standard.
 function getCustomRals(item) {
     const isHex = color => /^#[0-9a-f]{6}$/i.test(color || "");
     const table = {};
@@ -290,7 +303,7 @@ function getCustomRals(item) {
     } else if (item.custom_ral) {
         const colors = isHex(item.custom_ral_color) ?
             [item.custom_ral_color] :
-            (item.colors || []).filter(color => isHex(color) && !getRal(color));
+            (item.colors || []).filter(color => isHex(color) && !isPaletteColor(color));
         colors.forEach(hex => {
             table[hex.toLowerCase()] = String(item.custom_ral);
         });
@@ -298,10 +311,11 @@ function getCustomRals(item) {
     return table;
 }
 
-// Libellé d'une couleur : RAL de la palette, sinon RAL personnalisé de la table `customRals`, sinon null.
+// Libellé d'une couleur : RAL personnalisé de la table `customRals` (libellé choisi par l'utilisateur
+// pour cette couleur d'écran), sinon RAL du nuancier, sinon null.
 function getColorLabel(hex, customRals) {
-    const key = String(hex === null || hex === undefined ? "" : hex).trim().toLowerCase();
-    return getRal(key) || (customRals && customRals[key]) || null;
+    const key = normalizeHex(hex);
+    return (customRals && customRals[key]) || getRal(key) || null;
 }
 
 // Échappe une valeur avant de l'insérer dans du HTML (texte ou attribut entre guillemets).
