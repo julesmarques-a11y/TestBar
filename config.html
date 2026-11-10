@@ -111,6 +111,13 @@
             min-height: 40px;
         }
 
+        /* Barres plein cœur : la longueur est fixée à 3 m, le choix est désactivé mais reste lisible. */
+        .control-group select:disabled {
+            background: #f0f0f0;
+            color: #2c3e50;
+            opacity: 1;
+        }
+
         .control-group input[type="number"] {
             width: 80px;
             text-align: center;
@@ -493,8 +500,22 @@
         const urlParams = new URLSearchParams(window.location.search);
         const model = urlParams.get("model");
 
-        // Mode modification : config.html?model=1xx&edit=<index de la ligne du panier>
-        const editContext = model ? getEditContext("config.html", model) : null;
+        // Gamme « plein cœur » (config.html?model=1xx&gamme=plein-coeur) : même configurateur,
+        // mais longueur fixée à 3 m ; l'article en garde la mention jusqu'au PDF.
+        const gamme = urlParams.get("gamme") === PLEIN_COEUR ? PLEIN_COEUR : null;
+        if (gamme) {
+            document.title = "Configurateur de barre plein cœur 3 m";
+            document.querySelector("h1").textContent = "Configurateur de barre plein cœur 3 m";
+            document.querySelector(".btn-retour").href = "index.html#plein-coeur";
+            const lengthSelect = document.getElementById("length");
+            Array.from(lengthSelect.options).filter(option => option.value !== "3m").forEach(option => option.remove());
+            lengthSelect.value = "3m";
+            lengthSelect.disabled = true;
+            lengthSelect.title = "Les barres plein cœur existent uniquement en 3 m.";
+        }
+
+        // Mode modification : config.html?model=1xx[&gamme=plein-coeur]&edit=<index de la ligne du panier>
+        const editContext = model ? getEditContext("config.html", model, gamme) : null;
 
         // Recopie, section par section, les couleurs du SVG enregistré dans l'article.
         function restoreSectionColors(savedSvg) {
@@ -623,6 +644,7 @@
             // Ajouter l'article (ou remplacer la ligne en cours de modification), avec le SVG enregistré
             const result = saveCartItem({
                 model: model,
+                ...(gamme ? { gamme } : {}),
                 colors: colors,
                 quantity: quantity,
                 svg: svgElement,

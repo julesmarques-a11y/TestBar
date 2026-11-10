@@ -10,6 +10,13 @@ const CONFIG_PAGES = [
     "config_personnalisee_forme2.html"
 ];
 
+// Gamme « plein cœur » des modèles de série (champ gamme des articles) : longueur 3 m uniquement.
+const PLEIN_COEUR = "plein-coeur";
+
+function isPleinCoeur(item) {
+    return Boolean(item) && item.gamme === PLEIN_COEUR;
+}
+
 function readCart() {
     return JSON.parse(localStorage.getItem("cart")) || [];
 }
@@ -66,7 +73,7 @@ function getModelLabel(item) {
     const page = getConfigPage(item);
     if (page === "config_personnalisee_forme2.html") return "Palanque personnalisée";
     if (page === "config_bar_octo.html") return "Barre octo personnalisée";
-    return `Modèle ${item.model}`;
+    return `Modèle ${item.model}` + (isPleinCoeur(item) ? " – Plein cœur" : "");
 }
 
 // Configurateurs à rayures : une rayure non peinte y reste blanche (#ffffff, hors palette).
@@ -99,21 +106,24 @@ function getEditUrl(item, index) {
     const page = getConfigPage(item);
     if (!page) return null;
     if (page === "config.html") {
-        return `config.html?model=${encodeURIComponent(item.model)}&edit=${index}`;
+        const gamme = isPleinCoeur(item) ? `&gamme=${PLEIN_COEUR}` : "";
+        return `config.html?model=${encodeURIComponent(item.model)}${gamme}&edit=${index}`;
     }
     return `${page}?edit=${index}`;
 }
 
 // Lit ?edit=<index> dans l'adresse. Renvoie { index, item, snapshot } si la ligne existe
-// et appartient bien à ce configurateur (et à ce modèle, pour le catalogue) ; sinon null.
-function getEditContext(page, model) {
+// et appartient bien à ce configurateur (et à ce modèle et cette gamme, pour le catalogue) ;
+// sinon null.
+function getEditContext(page, model, gamme) {
     const raw = new URLSearchParams(window.location.search).get("edit");
     if (raw === null) return null;
 
     const index = /^\d+$/.test(raw) ? parseInt(raw, 10) : -1;
     const item = readCart()[index];
     const matches = item && getConfigPage(item) === page &&
-        (model === undefined || String(item.model) === String(model));
+        (model === undefined || String(item.model) === String(model)) &&
+        (model === undefined || isPleinCoeur(item) === (gamme === PLEIN_COEUR));
 
     if (!matches) {
         alert("L'article à modifier est introuvable dans le panier. Vous pouvez configurer une nouvelle barre.");

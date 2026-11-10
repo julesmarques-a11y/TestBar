@@ -53,7 +53,7 @@
             padding: 30px;
             margin-bottom: 40px;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 30px;
         }
         
@@ -289,9 +289,10 @@
             }
         }
         
-        /* Sur téléphone, les trois compteurs restent côte à côte sans dépasser de l'écran. */
+        /* Sur téléphone, les quatre compteurs se rangent sur deux lignes sans dépasser de l'écran. */
         @media (max-width: 520px) {
             .stats-card {
+                grid-template-columns: repeat(2, 1fr);
                 padding: 12px;
                 gap: 8px;
             }
@@ -323,6 +324,10 @@
                 <div class="stat-item">
                     <span class="stat-number" id="count35m">0</span>
                     <span class="stat-label">Barres de 3,5m</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="countPleinCoeur">0</span>
+                    <span class="stat-label">Barres plein cœur 3m</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-number" id="countTotal">0</span>
@@ -365,19 +370,23 @@
                 `).join("");
         }
 
+        // Les barres plein cœur (toujours en 3 m) sont comptées à part des barres de 3 m.
         function updateStats(cart) {
             let count3m = 0;
             let count35m = 0;
+            let countPleinCoeur = 0;
 
             cart.forEach(item => {
                 const qty = item.quantity || 1;
-                if (item.length === "3m") count3m += qty;
-                if (item.length === "3.5m") count35m += qty;
+                if (isPleinCoeur(item)) countPleinCoeur += qty;
+                else if (item.length === "3m") count3m += qty;
+                else if (item.length === "3.5m") count35m += qty;
             });
 
-            const total = count3m + count35m;
+            const total = count3m + count35m + countPleinCoeur;
             document.getElementById("count3m").textContent = count3m;
             document.getElementById("count35m").textContent = count35m;
+            document.getElementById("countPleinCoeur").textContent = countPleinCoeur;
             document.getElementById("countTotal").textContent = total;
         }
 
