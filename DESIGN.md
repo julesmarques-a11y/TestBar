@@ -102,15 +102,15 @@ Le simulateur doit rester autonome : on **n'appelle pas** `fonts.googleapis.com`
 
 | Fichier | Famille | Graisse / style |
 |---|---|---|
-| `fonts/nunito-300.woff2` | Nunito | 300 normal |
-| `fonts/nunito-400.woff2` | Nunito | 400 normal |
-| `fonts/nunito-700.woff2` | Nunito | 700 normal |
-| `fonts/crimson-pro-700.woff2` | Crimson Pro | 700 normal |
-| `fonts/crimson-pro-700italic.woff2` | Crimson Pro | 700 italique |
-| `fonts/inter-400.woff2` | Inter | 400 normal |
-| `fonts/inter-700.woff2` | Inter | 700 normal |
+| `fonts/nunito.woff2` | Nunito | police variable, 300 à 700, normal (39 ko) |
+| `fonts/crimson-pro-700.woff2` | Crimson Pro | 700 normal (19 ko) |
+| `fonts/crimson-pro-700italic.woff2` | Crimson Pro | 700 italique (19 ko) |
+| `fonts/inter.woff2` | Inter | police variable, 400 à 700, normal (48 ko) |
 
-Soit sept fichiers, environ 20 à 30 ko chacun. Polices de repli si un fichier ne charge pas :
+Quatre fichiers (125 ko en tout), sous-ensemble latin, téléchargés depuis fonts.gstatic.com le
+10 novembre 2026. Google Fonts sert Nunito et Inter sous forme de police variable : demander les graisses
+300, 400 et 700 renvoie trois fois le même fichier, d'où un seul fichier par famille au lieu des sept
+prévus au départ. Polices de repli si un fichier ne charge pas :
 `Georgia, "Times New Roman", serif` pour Crimson Pro ; `"Segoe UI", Tahoma, Arial, sans-serif` pour
 Nunito et Inter (c'est la police actuelle du simulateur, donc rien ne casse).
 

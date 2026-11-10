@@ -2,6 +2,41 @@
    Chaque page garde dans son propre <style>, après ce fichier, ce qui lui est propre et ses
    écarts par rapport aux valeurs ci-dessous. Le thème (couleurs, police) se règle dans :root. */
 
+/* Polices embarquées (fonts/, licence SIL OFL 1.1, voir DESIGN.md § 4) : aucun appel réseau.
+   Nunito et Inter sont des polices variables (un fichier couvre toutes les graisses). */
+
+@font-face {
+    font-family: 'Nunito';
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url('../fonts/nunito.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Crimson Pro';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/crimson-pro-700.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Crimson Pro';
+    font-style: italic;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/crimson-pro-700italic.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('../fonts/inter.woff2') format('woff2');
+}
+
 :root {
     /* Police */
     --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
