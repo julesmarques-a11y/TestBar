@@ -194,16 +194,23 @@ function restoreStripeColors(savedSvg) {
     });
 }
 
-// Table { hex: libellé } à enregistrer dans l'article : les RAL personnalisés ajoutés à la palette
-// du configurateur ET utilisés sur la barre (`colorsUsed` : couleurs des rayures).
+// Table { hex: libellé } à enregistrer dans l'article : les couleurs hors palette standard ajoutées
+// au configurateur (nuancier ou saisie libre, voir js/ral-picker.js) ET utilisées sur la barre
+// (`colorsUsed` : couleurs des rayures ou des bandes).
 function collectCustomRals(colorsUsed) {
-    const used = colorsUsed.map(color => color.toLowerCase());
+    const used = colorsUsed.map(color => String(color).toLowerCase());
     const table = {};
-    document.querySelectorAll("#colorPalette .color-swatch[data-custom-ral]").forEach(swatch => {
+    document.querySelectorAll(".color-swatch[data-custom-ral]").forEach(swatch => {
         if (used.includes(swatch.dataset.color)) {
             table[swatch.dataset.color] = swatch.dataset.customRal;
         }
     });
+    // Couleurs retirées de « Mes RAL » mais encore sur la barre : leur libellé a été conservé.
+    if (typeof ralPickerLabels === "object") {
+        used.forEach(hex => {
+            if (!table[hex] && !getRal(hex) && ralPickerLabels[hex]) table[hex] = ralPickerLabels[hex];
+        });
+    }
     return table;
 }
 

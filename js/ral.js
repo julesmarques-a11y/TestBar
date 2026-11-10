@@ -239,6 +239,24 @@ function findRal(code) {
     return ralByCode[digits] || null;
 }
 
+// Normalise un texte pour la recherche : minuscules, sans accents, espaces réduits.
+function normalizeText(text) {
+    return String(text === null || text === undefined ? "" : text)
+        .normalize("NFD").replace(/[̀-ͯ]/g, "")
+        .toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+// Teintes du nuancier correspondant à `query` : un numéro ou un début de numéro (« 6018 », « RAL 60 »),
+// ou un bout du nom français (« vert », « bleu ciel »). Au plus `limit` entrées, dans l'ordre du nuancier.
+function searchRal(query, limit = 40) {
+    const q = normalizeText(query).replace(/^ral\s*/, "");
+    if (!q) return [];
+    const digits = /^[\d ]+$/.test(q) ? q.replace(/ /g, "") : null;
+    const matches = RAL_CLASSIC.filter(([code, name]) =>
+        digits ? code.startsWith(digits) : normalizeText(name).includes(q));
+    return matches.slice(0, limit).map(([code]) => ralByCode[code]);
+}
+
 // Couleurs de la palette standard des configurateurs, dans l'ordre d'affichage.
 const PALETTE_CODES = ["1001", "1014", "1015", "1016", "2000", "3018", "3020", "4002", "4010", "5002", "5013", "5014", "5022", "6005", "6018", "6019", "6021", "6034", "7012", "7015", "7016", "7021", "7022", "7035", "7037", "7042", "7045", "8011", "8012", "8014", "9001", "9004", "9005", "9010", "9016"];
 
