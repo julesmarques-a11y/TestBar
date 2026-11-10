@@ -6,6 +6,36 @@
 //   #customRalInput, #customRalColor et #addCustomRalBtn (saisie libre d'une teinte hors nuancier).
 // La page appelle initRalPicker({ onSelect }) une fois la palette standard construite ;
 // onSelect(hex) est appelé quand une pastille de « Mes RAL » est choisie.
+// Les couleurs de « Mes RAL » sont mémorisées dans localStorage (clé "myRals") : elles réapparaissent,
+// après les couleurs standard, dans les quatre configurateurs, jusqu'à ce qu'on les retire une par une.
+
+// Couleurs mémorisées : [{ hex, label, name }], dans l'ordre d'ajout.
+function readMyRals() {
+    let list;
+    try {
+        list = JSON.parse(localStorage.getItem("myRals"));
+    } catch (error) {
+        list = null;
+    }
+    if (!Array.isArray(list)) return [];
+    return list.filter(entry => entry && /^#[0-9a-f]{6}$/i.test(entry.hex) && entry.label)
+        .map(entry => ({ hex: String(entry.hex).toLowerCase(), label: String(entry.label), name: String(entry.name || "") }));
+}
+
+function writeMyRals(list) {
+    localStorage.setItem("myRals", JSON.stringify(list));
+}
+
+// Mémorise une couleur (ou met à jour son libellé si elle l'est déjà).
+function rememberMyRal({ hex, label, name }) {
+    const list = readMyRals().filter(entry => entry.hex !== hex);
+    list.push({ hex, label, name: name || "" });
+    writeMyRals(list);
+}
+
+function forgetMyRal(hex) {
+    writeMyRals(readMyRals().filter(entry => entry.hex !== hex));
+}
 
 // Libellés de toutes les couleurs ajoutées à « Mes RAL » pendant la session, { hex: libellé }, y compris
 // celles retirées depuis : une rayure déjà peinte garde sa couleur, son libellé doit la suivre au panier.
@@ -32,7 +62,8 @@ function findSwatch(hex) {
         `#colorPalette .color-swatch[data-color="${hex}"], #myRalPalette .color-swatch[data-color="${hex}"]`);
 }
 
-// Ajoute une couleur à « Mes RAL » et la sélectionne (sauf options.select === false).
+// Ajoute une couleur à « Mes RAL », la mémorise (sauf options.remember === false) et la sélectionne
+// (sauf options.select === false).
 // `label` est le libellé enregistré dans l'article (« RAL 6018 », ou la référence saisie librement),
 // `name` le nom du nuancier (« Vert jaune »), facultatif. Une couleur de la palette standard n'est pas
 // dupliquée : sa pastille est simplement sélectionnée. Une couleur déjà dans « Mes RAL » non plus :
@@ -65,9 +96,19 @@ function addMyRal({ hex, label, name }, options = {}) {
         const nameEl = document.createElement("div");
         nameEl.classList.add("color-name");
 
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.classList.add("my-ral-remove");
+        remove.textContent = "×";
+        remove.addEventListener("click", event => {
+            event.stopPropagation();
+            removeMyRal(hex);
+        });
+
         wrapper.appendChild(swatch);
         wrapper.appendChild(labelEl);
         wrapper.appendChild(nameEl);
+        wrapper.appendChild(remove);
         wrapper.addEventListener("click", () => selectSwatch(swatch));
 
         document.getElementById("myRalPalette").appendChild(wrapper);
@@ -76,6 +117,10 @@ function addMyRal({ hex, label, name }, options = {}) {
 
     swatch.dataset.customRal = label;
     swatch.title = name ? `${label} – ${name}` : label;
+    const remove = swatch.parentElement.querySelector(".my-ral-remove");
+    remove.title = `Retirer ${label} de Mes RAL`;
+    remove.setAttribute("aria-label", remove.title);
+    if (options.remember !== false) rememberMyRal({ hex, label, name });
     swatch.parentElement.querySelector(".color-label").textContent = label;
     swatch.parentElement.querySelector(".color-name").textContent = name || "";
 
@@ -86,23 +131,40 @@ function addMyRal({ hex, label, name }, options = {}) {
     return swatch;
 }
 
+// Retire une couleur de « Mes RAL » (palette et mémoire). Les rayures déjà peintes avec la gardent,
+// et son libellé reste connu (ralPickerLabels) pour le panier. Si elle était la couleur active,
+// la première couleur standard la remplace.
+function removeMyRal(hex) {
+    forgetMyRal(hex);
+    const swatch = document.querySelector(`#myRalPalette .color-swatch[data-color="${hex}"]`);
+    if (!swatch) return;
+    const wasSelected = swatch.classList.contains("selected");
+    swatch.parentElement.remove();
+    document.getElementById("myRals").hidden = !document.querySelector("#myRalPalette .color-swatch");
+    if (wasSelected) selectSwatch(document.querySelector("#colorPalette .color-swatch"));
+}
+
 // Entrée du nuancier désignée par un libellé qui n'est qu'un numéro RAL Classic (« 3027 », « RAL 3027 »),
 // sinon null : « Pantone 3005 » ou « NCS S 1050-R » ne sont pas des RAL Classic.
 function classicFromLabel(label) {
     return /^(ral\s*)?\d{4}$/i.test(String(label || "").trim()) ? findRal(label) : null;
 }
 
-// Remet dans « Mes RAL » les couleurs hors palette standard d'un article en cours de modification.
+// Remet dans « Mes RAL » les couleurs hors palette standard d'un article en cours de modification,
+// sans les mémoriser : « Mes RAL » reste la liste des couleurs que l'utilisateur a ajoutées lui-même.
 function restoreMyRals(item) {
     Object.entries(getCustomRals(item)).forEach(([hex, label]) => {
         const classic = classicFromLabel(label);
-        addMyRal({ hex, label, name: classic ? classic.name : "" }, { select: false });
+        addMyRal({ hex, label, name: classic ? classic.name : "" }, { select: false, remember: false });
     });
 }
 
 // Branche la recherche dans le nuancier et la saisie libre.
 function initRalPicker({ onSelect } = {}) {
     ralPickerOnSelect = onSelect || (() => {});
+
+    // Couleurs mémorisées lors d'une visite précédente, sur ce configurateur ou un autre.
+    readMyRals().forEach(entry => addMyRal(entry, { select: false, remember: false }));
 
     const input = document.getElementById("ralSearchInput");
     const results = document.getElementById("ralSearchResults");

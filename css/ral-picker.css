@@ -146,6 +146,33 @@
     margin-bottom: 8px;
 }
 
+.my-ral-item {
+    position: relative;
+}
+
+/* Bouton « retirer » d'une couleur de « Mes RAL », en haut à droite de la pastille. */
+.my-ral-remove {
+    position: absolute;
+    top: -8px;
+    right: calc(50% - 32px);
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 2px solid white;
+    border-radius: 50%;
+    background: #2c3e50;
+    color: white;
+    font-size: 15px;
+    line-height: 1;
+    font-family: inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.my-ral-remove:hover {
+    background: #e74c3c;
+}
+
 .my-ral-item .color-name {
     font-size: 0.65em;
     color: #95a5a6;
