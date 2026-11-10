@@ -2,42 +2,99 @@
    Chaque page garde dans son propre <style>, après ce fichier, ce qui lui est propre et ses
    écarts par rapport aux valeurs ci-dessous. Le thème (couleurs, police) se règle dans :root. */
 
-:root {
-    /* Police */
-    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* Polices embarquées (fonts/, licence SIL OFL 1.1, voir DESIGN.md § 4) : aucun appel réseau.
+   Nunito et Inter sont des polices variables (un fichier couvre toutes les graisses). */
 
-    /* Couleurs de la charte */
-    --color-dark: #2c3e50;          /* en-tête, titres, texte courant */
-    --color-text: var(--color-dark);
-    --color-accent: #e74c3c;        /* rouge : liserés, sélection, boutons « danger » */
-    --color-accent-dark: #c0392b;
-    --color-accent-tint: #fdf1ef;   /* survol d'une ligne du nuancier */
-    --color-success: #27ae60;       /* vert : actions principales */
-    --color-success-dark: #229954;
-    --color-orange: #e67e22;        /* orange : accès aux configurateurs personnalisés */
-    --color-orange-dark: #d35400;
-    --color-grey: #95a5a6;          /* gris : boutons secondaires, texte estompé */
-    --color-grey-dark: #7f8c8d;
-    --color-text-muted: var(--color-grey-dark);
-    --color-light: #ecf0f1;         /* texte clair sur fond sombre, fonds de badge */
-    --color-white: #ffffff;
+@font-face {
+    font-family: 'Nunito';
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url('../fonts/nunito.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Crimson Pro';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/crimson-pro-700.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Crimson Pro';
+    font-style: italic;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/crimson-pro-700italic.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('../fonts/inter.woff2') format('woff2');
+}
+
+:root {
+    /* Polices embarquées (fonts/, voir DESIGN.md § 4) */
+    --font-family: 'Nunito', 'Segoe UI', Tahoma, Arial, sans-serif;
+    --font-family-headings: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+    --font-family-ui: 'Inter', 'Segoe UI', Tahoma, Arial, sans-serif;   /* menu, boutons */
+    --font-size-base: 16px;
+    --line-height-base: 1.5;
+    --font-weight-headings: 700;
+
+    /* Couleurs de la charte EQUINOX (relevées sur horsequinox.com, DESIGN.md § 3) */
+    --color-dark: #203049;              /* marine : en-tête, titres sur fond sombre, bouton principal */
+    --color-dark-hover: #101926;
+    --color-text: #212529;
+    --color-text-headings: #242424;
+    --color-text-muted: rgba(33, 37, 41, 0.7);
+    --color-text-on-dark: #F7F6F6;
+    --color-accent: #E18244;            /* orange : appel à l'action, sélection, mise en avant */
+    --color-accent-hover: #D16721;
+    --color-accent-dark: #D16721;       /* ancien nom conservé */
+    --color-accent-tint: #FBEADC;       /* orange très clair pour les survols de lignes (dérivé, pas mesuré) */
+    --color-success: #203049;           /* les actions « valider » sont marine */
+    --color-success-dark: #101926;
+    --color-orange: #E18244;
+    --color-orange-dark: #D16721;
+    --color-grey: rgba(0, 0, 0, 0.05);  /* bouton neutre */
+    --color-grey-dark: rgba(0, 0, 0, 0.1);
+    --color-light: #F7F6F6;
+    --color-white: #FFFFFF;
 
     /* Fonds et bordures */
-    --color-page-bg: #f5f5f5;
-    --color-surface: var(--color-white);
-    --color-bg-soft: #fafafa;
-    --color-bg-panel: #f8f9fa;
-    --color-bg-disabled: #f0f0f0;
-    --color-border: #e0e0e0;
-    --color-border-light: #ececec;
-    --color-border-soft: #ddd;
-    --color-border-faint: #eee;
-    --color-input-border: #bdc3c7;
-
-    /* Neutres du devis et du panier */
+    --color-page-bg: #FFFFFF;
+    --color-surface: #FFFFFF;
+    --color-bg-soft: #F7F6F6;
+    --color-bg-panel: #F7F6F6;
+    --color-bg-disabled: #F7F6F6;
+    --color-border: rgba(33, 37, 41, 0.15);
+    --color-border-light: rgba(33, 37, 41, 0.15);
+    --color-border-soft: rgba(33, 37, 41, 0.15);
+    --color-border-faint: rgba(33, 37, 41, 0.1);
+    --color-input-border: rgba(33, 37, 41, 0.15);
     --color-ink: #000;
-    --color-text-strong: #333;
-    --color-text-soft: #666;
+    --color-text-strong: #212529;
+    --color-text-soft: rgba(33, 37, 41, 0.7);
+
+    /* Formes */
+    --radius: 6.4px;                    /* images, cartes, champs */
+    --radius-pill: 100px;               /* boutons */
+    --shadow-card: 0 8px 16px rgba(225, 130, 68, 0.35);  /* halo orange des cartes, atténué */
+    --shadow-image: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --transition: 0.15s ease-in-out;
+
+    /* Mise en page */
+    --container-max: 1140px;
+    --container-gutter: 15px;
+    --section-padding-top: 56px;
+    --section-padding-bottom: 72px;
+    --logo-height: 120px;
+    --logo-height-mobile: 80px;
 
     /* Anneau de la pastille RAL sélectionnée */
     --swatch-ring: 0 0 0 2px var(--color-white), 0 0 0 4px var(--color-accent);
@@ -51,71 +108,225 @@
     box-sizing: border-box;
 }
 
+/* L'en-tête reste visible au défilement : les ancres s'arrêtent dessous. */
+html {
+    scroll-padding-top: 130px;
+}
+
 body {
     font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
     background: var(--color-page-bg);
     color: var(--color-text);
 }
 
-/* En-tête sombre */
-
-header {
-    background: var(--color-dark);
-    color: var(--color-white);
-    padding: 24px 60px;
-    border-bottom: 4px solid var(--color-accent);
+h1,
+h2,
+h3,
+h4,
+.section-title {
+    font-family: var(--font-family-headings);
+    font-weight: var(--font-weight-headings);
+    line-height: 1.2;
 }
 
-header h1 {
-    font-size: 2em;
-    font-weight: 300;
-    letter-spacing: 1px;
+/* En-tête commun (injecté par js/layout.js) : logo, bouton Panier, étapes du parcours */
+
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--color-white);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.site-header-bar {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 10px var(--container-gutter);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.site-logo {
+    display: block;
+    line-height: 0;
+}
+
+.site-logo img {
+    height: 64px;
+    width: auto;
+}
+
+/* Bouton Panier : pilule orange, indépendante des styles de boutons des pages */
+.site-cart-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px 6px 20px;
+    font-family: var(--font-family-ui);
+    font-size: 1em;
+    line-height: 1.5;
+    background: var(--color-accent);
+    color: var(--color-dark);
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--transition), color var(--transition);
+}
+
+.site-cart-btn:hover {
+    background: var(--color-accent-hover);
+    color: var(--color-ink);
+}
+
+.site-cart-count {
+    display: inline-block;
+    min-width: 26px;
+    padding: 0 8px;
+    border-radius: var(--radius-pill);
+    background: var(--color-dark);
+    color: var(--color-text-on-dark);
+    font-size: 0.85em;
+    line-height: 26px;
+    text-align: center;
+}
+
+.site-steps {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-gutter) 10px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    list-style: none;
+    font-family: var(--font-family-ui);
+    font-size: 0.875em;
+}
+
+.site-steps li {
+    display: flex;
+    align-items: center;
+}
+
+.site-steps li + li::before {
+    content: "›";
+    margin: 0 10px 0 4px;
+    color: var(--color-text-muted);
+}
+
+.site-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.site-step-num {
+    width: 24px;
+    height: 24px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+    line-height: 1;
+}
+
+.site-step-current {
+    color: var(--color-dark);
+    font-weight: 700;
+}
+
+.site-step-current .site-step-num {
+    background: var(--color-dark);
+    border-color: var(--color-dark);
+    color: var(--color-text-on-dark);
+}
+
+.site-step-done {
+    color: var(--color-dark);
+}
+
+.site-step-done:hover {
+    text-decoration: underline;
+}
+
+.site-step-todo {
+    color: rgba(33, 37, 41, 0.4);
+}
+
+/* Titre de page, sous l'en-tête */
+
+.page-intro {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 28px var(--container-gutter) 0;
+}
+
+.page-intro h1 {
+    font-size: 2.375em;              /* 38 px, comme les titres du site EQUINOX */
+    color: var(--color-text-headings);
     margin-bottom: 8px;
 }
 
-header p {
-    color: var(--color-light);
-    font-size: 0.9em;
-    line-height: 1.5;
+.page-intro p {
+    color: var(--color-text-muted);
     max-width: 800px;
+    margin-bottom: 8px;
 }
 
-.brand-line {
-    font-size: 0.9em;
-    margin-bottom: 4px;
-    opacity: 0.9;
+.page-intro .btn {
+    margin-bottom: 16px;
 }
 
-.brand-line span {
-    font-weight: 600;
-}
-
-.btn-retour {
-    display: inline-block;
-    margin-bottom: 14px;
-    padding: 8px 20px;
-    font-size: 0.8em;
-    background-color: var(--color-grey);
-    color: var(--color-white);
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.2s;
-}
-
-.btn-retour:hover {
-    background-color: var(--color-grey-dark);
+@media (max-width: 768px) {
+    .site-header-bar {
+        padding: 8px var(--container-gutter);
+    }
+    .site-logo img {
+        height: 48px;
+    }
+    .site-cart-btn {
+        padding: 4px 6px 4px 14px;
+        font-size: 0.9em;
+    }
+    .site-steps {
+        font-size: 0.8em;
+        padding-bottom: 8px;
+    }
+    .site-steps li + li::before {
+        margin: 0 6px 0 2px;
+    }
+    .site-step {
+        gap: 5px;
+    }
+    .site-step-num {
+        width: 20px;
+        height: 20px;
+    }
+    .page-intro {
+        padding-top: 20px;
+    }
+    .page-intro h1 {
+        font-size: 1.75em;           /* 28 px sur téléphone */
+    }
 }
 
 /* Conteneur principal et sections */
 
 .container {
-    max-width: 1400px;
+    max-width: var(--container-max);
     margin: 0 auto;
     background: var(--color-surface);
-    padding: 30px 40px 40px;
+    padding: 20px var(--container-gutter) 40px;
 }
 
 .section {
@@ -129,72 +340,63 @@ header p {
 }
 
 .section-title {
-    font-size: 1.4em;
-    font-weight: 300;
-    color: var(--color-text);
-    margin-bottom: 18px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid var(--color-accent);
+    font-size: 1.5em;                /* 24 px, sans filet */
+    color: var(--color-text-headings);
+    margin-bottom: 16px;
 }
 
-/* Boutons */
+/* Boutons : trois classes seulement.
+   .btn-primary   pilule marine  : l'action qui fait avancer (ajouter au panier, générer le devis, PDF)
+   .btn-secondary pilule orange  : ouvrir ou continuer (voir le panier, configurer, mettre à jour)
+   .btn-neutral   gris clair, coins carrés : revenir, vider, supprimer */
 
 .btn {
-    padding: 12px 24px;
-    font-size: 0.85em;
-    color: var(--color-white);
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.2s;
-    font-weight: 400;
     display: inline-block;
+    padding: 8px 22px;
+    font-family: var(--font-family-ui);
+    font-size: 1em;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: color var(--transition), background-color var(--transition), border-color var(--transition);
 }
 
-.btn-primary,
-.btn-success,
-.btn-green {
-    background: var(--color-success);
-    color: var(--color-white);
+.btn-primary {
+    background: var(--color-dark);
+    color: var(--color-text-on-dark);
 }
 
-.btn-primary:hover,
-.btn-success:hover,
-.btn-green:hover {
-    background: var(--color-success-dark);
+.btn-primary:hover:not(:disabled) {
+    background: var(--color-dark-hover);
 }
 
-.btn-secondary,
-.btn-grey {
+.btn-secondary {
+    background: var(--color-accent);
+    color: var(--color-dark);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+    color: var(--color-ink);
+}
+
+.btn-neutral {
     background: var(--color-grey);
-    color: var(--color-white);
+    color: var(--color-text);
+    border-radius: 1px;
 }
 
-.btn-secondary:hover,
-.btn-grey:hover {
+.btn-neutral:hover:not(:disabled) {
     background: var(--color-grey-dark);
 }
 
-.btn-danger,
-.btn-update {
-    background: var(--color-accent);
-    color: var(--color-white);
-}
-
-.btn-danger:hover,
-.btn-update:hover {
-    background: var(--color-accent-dark);
-}
-
-.btn-orange {
-    background: var(--color-orange);
-    color: var(--color-white);
-}
-
-.btn-orange:hover {
-    background: var(--color-orange-dark);
+.btn:disabled {
+    opacity: 0.65;
+    cursor: default;
 }
 
 /* Rangée de boutons en bas d'un configurateur */
@@ -235,6 +437,8 @@ header p {
 .control-group input[type="number"] {
     padding: 8px 12px;
     border: 1px solid var(--color-input-border);
+    border-radius: var(--radius);
+    font-family: inherit;
     font-size: 1em;
     background: var(--color-white);
 }
@@ -304,11 +508,45 @@ header p {
     font-weight: 500;
 }
 
-/* Pied de page */
+/* Pied de page commun (injecté par js/layout.js) */
 
-footer {
-    text-align: center;
-    padding: 12px 20px 18px;
+.site-footer {
+    margin-top: 48px;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-white);
+}
+
+.site-footer-inner {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 20px var(--container-gutter) 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+}
+
+.site-footer-logo {
+    display: block;
+    line-height: 0;
+}
+
+.site-footer-logo img {
+    height: 48px;
+    width: auto;
+}
+
+.site-footer-text {
     color: var(--color-text-muted);
-    font-size: 0.85em;
+    font-size: 0.875em;
+}
+
+.site-footer-text a {
+    color: var(--color-dark);
+    text-decoration: none;
+}
+
+.site-footer-text a:hover {
+    text-decoration: underline;
 }

@@ -6,24 +6,12 @@
     <title>EQUINOX - Catalogue des barres de CSO</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Catalogue des barres d'obstacles EQUINOX : choisissez un modèle de barre de CSO, personnalisez ses couleurs RAL et préparez votre devis.">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="img/icone-equinox.png" type="image/png">
     <link rel="stylesheet" href="css/site.css">
+    <script src="js/layout.js" defer></script>
     <style>
-        /* Catalogue : conteneur en carte, en-tête légèrement plus haut que sur les configurateurs. */
+        /* Catalogue des modèles. */
 
-        header {
-            padding: 24px 60px 26px;
-        }
-
-        header h1 {
-            margin-bottom: 6px;
-        }
-
-        .container {
-            max-width: 1300px;
-            margin: 25px auto 40px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
-        }
         /* Boutons principaux */
 
         .top-actions {
@@ -33,19 +21,6 @@
             margin-bottom: 25px;
         }
 
-        .btn-main {
-            padding: 12px 24px;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-weight: 500;
-            display: inline-block;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
         /* Titre catalogue */
 
         .catalog-header {
@@ -53,9 +28,7 @@
             margin-bottom: 15px;
         }
 
-        .catalog-header h2 {
-            font-size: 1.4em;
-            font-weight: 300;
+        .catalog-header .section-title {
             margin-bottom: 4px;
         }
 
@@ -114,56 +87,44 @@
         }
 
         @media (max-width: 768px) {
-            header {
-                padding: 18px 20px 20px;
-            }
-            .container {
-                padding: 20px 16px 28px;
-                margin: 15px auto 30px;
-            }
             .top-actions {
                 flex-direction: column;
             }
-            .btn-main {
+            .btn {
                 width: 100%;
-                text-align: center;
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- Header simple, sans menu -->
-    <header>
-        <div class="brand-line">
-            <span>EQUINOX</span> – Créateur d'espaces équestres
-        </div>
+    <section class="page-intro">
         <h1>Catalogue des barres de CSO</h1>
         <p>
             Découvrez nos modèles de barres et personnalisez-les selon vos couleurs RAL. Vous pouvez aussi créer une barre ou une palanque 100% personnalisée.
         </p>
-    </header>
+    </section>
 
     <!-- Contenu principal -->
     <main class="container">
         <!-- Boutons principaux -->
         <div class="top-actions">
-            <a href="config_personnalisee.html" class="btn-main btn-orange">
+            <a href="config_personnalisee.html" class="btn btn-secondary">
                 Créer une barre 100% personnalisée
             </a>
-            <a href="config_bar_octo.html" class="btn-main btn-orange">
+            <a href="config_bar_octo.html" class="btn btn-secondary">
                 Créer une barre octo 100% personnalisée
             </a>
-            <a href="config_personnalisee_forme2.html" class="btn-main btn-grey">
+            <a href="config_personnalisee_forme2.html" class="btn btn-secondary">
                 Créer une palanque 100% personnalisée
             </a>
-            <a href="panier.html" class="btn-main btn-green">
+            <a href="panier.html" class="btn btn-secondary">
                 Panier
             </a>
         </div>
 
         <div class="catalog-header">
-            <h2>Modèles de barres</h2>
+            <h2 class="section-title">Modèles de barres</h2>
             <p>Cliquez sur un modèle pour choisir ses couleurs et l'ajouter à votre panier.</p>
         </div>
 
@@ -227,7 +188,7 @@
         </div>
 
         <div class="catalog-header catalog-header-second" id="plein-coeur">
-            <h2>Barres plein cœur 3 m</h2>
+            <h2 class="section-title">Barres plein cœur 3 m</h2>
             <p>Ces modèles existent aussi en version plein cœur, en 3 m uniquement. Cliquez sur un modèle pour choisir ses couleurs.</p>
         </div>
 
@@ -263,14 +224,9 @@
         </div>
     </main>
 
-    <!-- Pied de page -->
-    <footer>
-        © <span id="footerYear">2026</span> EQUINOX - Créateur d'espaces équestres
-    </footer>
 
     <script>
         // Année du pied de page : toujours l'année courante.
-        document.getElementById("footerYear").textContent = new Date().getFullYear();
     </script>
 </body>
 

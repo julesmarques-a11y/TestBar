@@ -6,31 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panier</title>
     <meta name="description" content="Votre panier EQUINOX : vérifiez vos barres d'obstacles, modifiez les quantités ou les couleurs, puis générez votre devis.">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="img/icone-equinox.png" type="image/png">
     <link rel="stylesheet" href="css/site.css">
+    <script src="js/layout.js" defer></script>
     <style>
-        /* Panier : l'en-tête est dans le conteneur, le texte par défaut reste noir. */
+        /* Panier : compteurs, articles et actions. */
 
         body {
             min-height: 100vh;
-            color: var(--color-ink);
-        }
-
-        .container {
-            padding: 0;
-        }
-
-        header {
-            padding: 30px 60px;
-        }
-
-        header h1 {
-            font-size: 2.2em;
-            margin: 0;
-        }
-
-        .main-content {
-            padding: 40px 60px;
         }
 
         .stats-card {
@@ -66,9 +49,7 @@
         }
 
         .section-title {
-            font-size: 1.6em;
             margin: 40px 0 20px;
-            padding-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -168,11 +149,6 @@
             font-size: 1em;
         }
 
-        .btn {
-            padding: 12px 28px;
-            font-size: 0.9em;
-        }
-
         .action-buttons {
             display: flex;
             gap: 10px;
@@ -215,10 +191,6 @@
             .btn {
                 width: 100%;
             }
-            header,
-            .main-content {
-                padding: 20px 30px;
-            }
         }
 
         /* Sur téléphone, les quatre compteurs se rangent sur deux lignes sans dépasser de l'écran. */
@@ -242,11 +214,11 @@
 </head>
 
 <body>
-    <div class="container">
-        <header>
-            <h1>🛒 Votre Panier</h1>
-        </header>
+    <section class="page-intro">
+        <h1>Votre panier</h1>
+    </section>
 
+    <div class="container">
         <div class="main-content">
             <div class="stats-card">
                 <div class="stat-item">
@@ -268,7 +240,7 @@
             </div>
 
             <div id="individualSection" style="display: none;">
-                <h2 class="section-title">🔹 Barres Individuelles</h2>
+                <h2 class="section-title">Barres individuelles</h2>
                 <div class="cart-section" id="individualBarsContainer"></div>
             </div>
 
@@ -279,9 +251,9 @@
             </div>
 
             <div class="bottom-actions">
-                <a href="index.html" class="btn btn-secondary">← Retour à l'accueil</a>
-                <button class="btn btn-danger" id="clearCartBtn" onclick="if (clearCart()) loadCart()">Vider le panier</button>
-                <a href="devis.html" class="btn btn-success">Générer le devis →</a>
+                <a href="index.html" class="btn btn-neutral">← Retour à l'accueil</a>
+                <button class="btn btn-neutral" id="clearCartBtn" onclick="if (clearCart()) loadCart()">Vider le panier</button>
+                <a href="devis.html" class="btn btn-primary">Générer le devis →</a>
             </div>
         </div>
     </div>
@@ -380,7 +352,7 @@
                         </div>
                         <div class="action-buttons">
                             <button class="btn btn-secondary" onclick="redirectToConfig(${index})">Modifier</button>
-                            <button class="btn btn-danger" onclick="removeFromCart(${index})">Supprimer</button>
+                            <button class="btn btn-neutral" onclick="removeFromCart(${index})">Supprimer</button>
                         </div>
                     </div>
                 </div>
@@ -403,9 +375,10 @@
         }
 
         function removeFromCart(index) {
+            if (!confirm("Supprimer cet article du panier ?")) return;
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
             cart.splice(index, 1);
-            localStorage.setItem("cart", JSON.stringify(cart));
+            writeCart(cart);
             loadCart();
         }
 
