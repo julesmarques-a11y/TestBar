@@ -850,21 +850,32 @@ h4,
     line-height: 1.3;
 }
 
-/* Couleur sélectionnée, toujours affichée au-dessus de la palette : pastille, numéro, nom. */
+/* Couleur sélectionnée, toujours affichée au-dessus de la palette : pastille, numéro, nom.
+   Sa hauteur ne dépend pas de la couleur (un libellé trop long est tronqué, il reste lisible en
+   infobulle sur la pastille) : la palette ne bouge pas quand on change de couleur. */
 .current-color {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 4px 8px;
-    min-height: 26px;
+    gap: 2px 8px;
     margin-bottom: 8px;
 }
 
 .current-color-title {
+    flex: 0 0 auto;
     font-size: 0.8em;
     color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+.current-color-value {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 26px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .current-color-swatch {
@@ -874,6 +885,14 @@ h4,
     border: 1px solid var(--color-input-border);
 }
 
+.current-color-code,
+.current-color-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .current-color-code {
     font-weight: 700;
     color: var(--color-dark);
@@ -881,6 +900,14 @@ h4,
 
 .current-color-name {
     color: var(--color-text-muted);
+}
+
+/* Téléphone : le titre sur une ligne, la couleur sur la suivante. */
+@media (max-width: 480px) {
+    .current-color-title,
+    .current-color-value {
+        flex-basis: 100%;
+    }
 }
 
 @media (min-width: 900px) {
