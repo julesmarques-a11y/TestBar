@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Demandes de devis - EQUINOX</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Page réservée à EQUINOX : elle n'est liée depuis aucune page du site. -->
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="img/icone-equinox.png" type="image/png">
+    <link rel="stylesheet" href="css/site.css">
+    <script src="js/layout.js" defer></script>
+    <style>
+        /* Demandes de devis enregistrées sur l'appareil : liste, exports, suppression. */
+
+        /* Hors du parcours de commande : pas de barre d'étapes. */
+        .site-steps-nav {
+            display: none;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .toolbar-spacer {
+            flex: 1 1 0;
+        }
+
+        .summary {
+            margin-bottom: 20px;
+            color: var(--color-text-muted);
+        }
+
+        .demande {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 12px 24px;
+            margin-top: 14px;
+            padding: 16px;
+            border: 1px solid var(--color-border-soft);
+            border-radius: var(--radius);
+            background: var(--color-white);
+        }
+
+        .demande-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 4px 16px;
+        }
+
+        .demande-number {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--color-accent-dark);
+        }
+
+        .demande-status {
+            color: var(--color-text-muted);
+            font-size: 0.9em;
+        }
+
+        .demande-client {
+            margin-top: 6px;
+            font-size: 1.1em;
+            font-weight: 600;
+            overflow-wrap: anywhere;
+        }
+
+        .demande-lines {
+            margin-top: 2px;
+            overflow-wrap: anywhere;
+        }
+
+        .demande-lines a {
+            color: var(--color-dark);
+        }
+
+        .demande-comment {
+            margin-top: 6px;
+            padding-left: 10px;
+            border-left: 3px solid var(--color-accent);
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .demande-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        /* Articles : un petit aperçu et la désignation, sur toute la largeur de la demande. */
+        .demande-articles {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 10px 20px;
+            padding-top: 12px;
+            border-top: 1px solid var(--color-border-faint);
+            list-style: none;
+        }
+
+        .demande-article img {
+            display: block;
+            max-width: 100%;
+            max-height: 40px;
+            width: auto;
+            height: auto;
+            margin-bottom: 4px;
+        }
+
+        .demande-article-colors {
+            color: var(--color-text-muted);
+            font-size: 0.9em;
+        }
+
+        .empty {
+            margin-top: 14px;
+            padding: 48px 20px;
+            border: 1px solid var(--color-border-soft);
+            text-align: center;
+            color: var(--color-text-muted);
+        }
+
+        @media (max-width: 640px) {
+            .demande {
+                grid-template-columns: minmax(0, 1fr);
+            }
+            .toolbar .btn {
+                flex: 1 1 100%;
+            }
+            .toolbar-spacer {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <section class="page-intro">
+        <h1>Demandes de devis</h1>
+        <p>
+            Les devis générés sur cet appareil y sont enregistrés. Exportez la liste (CSV pour Excel, ou JSON), vérifiez le fichier, puis supprimez les demandes de l'appareil.
+        </p>
+    </section>
+
+    <main class="container">
+        <div class="toolbar">
+            <button type="button" class="btn btn-primary" id="exportCsvBtn">Exporter en CSV (Excel)</button>
+            <button type="button" class="btn btn-secondary" id="exportJsonBtn">Exporter en JSON</button>
+            <span class="toolbar-spacer"></span>
+            <button type="button" class="btn btn-neutral" id="deleteAllBtn">Supprimer toutes les demandes</button>
+        </div>
+        <p class="summary" id="summary" aria-live="polite"></p>
+
+        <div id="demandeList"></div>
+    </main>
+
+    <script src="js/notify.js"></script>
+    <script src="js/demandes.js"></script>
+    <script>
+        // Demandes affichées, de la plus récente à la plus ancienne.
+        let demandes = [];
+
+        // Crée un élément : el("p", "classe", "texte").
+        function el(tag, className, text) {
+            const node = document.createElement(tag);
+            if (className) node.className = className;
+            if (text !== undefined) node.textContent = text;
+            return node;
+        }
+
+        const plural = (count, one, many) => `${count} ${count > 1 ? many : one}`;
+
+        function renderDemande(demande) {
+            const client = demande.client || {};
+            const { jour, heure } = demandeDateParts(demande.date);
+            const card = el("article", "demande");
+
+            const info = el("div");
+            const head = el("div", "demande-head");
+            head.append(
+                el("span", "demande-number", demande.numero),
+                el("span", "", `${jour} à ${heure}`),
+                el("span", "demande-status", `Envoyée : ${demande.envoyee ? "oui" : "non"} · Exportée : ${demande.exportee ? "oui" : "non"}`)
+            );
+            info.append(head);
+            info.append(el("div", "demande-client", [client.nom, client.prenom].filter(Boolean).join(" ") +
+                (client.societe ? ` – ${client.societe}` : "")));
+
+            const contact = el("div", "demande-lines");
+            const addContact = node => {
+                if (contact.childNodes.length) contact.append(" · ");
+                contact.append(node);
+            };
+            if (client.telephone) {
+                const link = el("a", "", client.telephone);
+                link.href = "tel:" + client.telephone.replace(/[^\d+]/g, "");
+                addContact(link);
+            }
+            if (client.email) {
+                const link = el("a", "", client.email);
+                link.href = "mailto:" + client.email;
+                addContact(link);
+            }
+            if (client.ville) addContact(client.ville);
+            info.append(contact);
+
+            const order = [
+                client.numeroCommande ? `Commande n° ${client.numeroCommande}` : "",
+                client.dateLivraison ? `Livraison souhaitée : ${isoDayToFr(client.dateLivraison)}` : "",
+                demande.statistiques ? plural(demande.statistiques.total, "barre", "barres") : ""
+            ].filter(Boolean).join(" · ");
+            info.append(el("div", "demande-lines", order));
+            if (client.commentaire) info.append(el("div", "demande-comment", client.commentaire));
+
+            const actions = el("div", "demande-actions");
+            const pdfBtn = el("button", "btn btn-secondary", "Télécharger le PDF");
+            pdfBtn.type = "button";
+            pdfBtn.addEventListener("click", () => downloadPdf(demande));
+            const deleteBtn = el("button", "btn btn-neutral", "Supprimer");
+            deleteBtn.type = "button";
+            deleteBtn.addEventListener("click", guarded(() => removeOne(demande)));
+            actions.append(pdfBtn, deleteBtn);
+
+            const articles = el("ul", "demande-articles");
+            (demande.articles || []).forEach(article => {
+                const item = el("li", "demande-article");
+                // L'aperçu est une image SVG : affichée dans un <img>, elle n'exécute aucun script.
+                if (/^data:image\/svg\+xml[;,]/.test(article.apercu || "")) {
+                    const img = el("img");
+                    img.src = article.apercu;
+                    img.alt = "";
+                    img.loading = "lazy";
+                    item.append(img);
+                }
+                const details = [article.longueur, article.hauteur, article.diametre].filter(Boolean).join(", ");
+                item.append(el("div", "", `${article.quantite} × ${article.designation}${details ? ` (${details})` : ""}`));
+                const colors = (article.couleurs || []).map(couleur => couleur.ral || couleur.hex).join(", ");
+                if (colors) item.append(el("div", "demande-article-colors", colors));
+                articles.append(item);
+            });
+
+            card.append(info, actions, articles);
+            return card;
+        }
+
+        async function refresh() {
+            const list = document.getElementById("demandeList");
+            try {
+                demandes = await listDemandes();
+            } catch (err) {
+                console.error("Lecture des demandes impossible :", err);
+                demandes = [];
+                list.replaceChildren(el("p", "empty", "Les demandes enregistrées sur cet appareil ne peuvent pas être lues (stockage du navigateur indisponible, par exemple en navigation privée)."));
+                document.getElementById("summary").textContent = "";
+                return;
+            }
+
+            const pending = demandes.filter(demande => !demande.exportee).length;
+            document.getElementById("summary").textContent = demandes.length === 0 ? "" :
+                `${plural(demandes.length, "demande enregistrée", "demandes enregistrées")} sur cet appareil, dont ${pending} non ${pending > 1 ? "exportées" : "exportée"}.`;
+            ["exportCsvBtn", "exportJsonBtn", "deleteAllBtn"].forEach(id => {
+                document.getElementById(id).disabled = demandes.length === 0;
+            });
+
+            if (demandes.length === 0) {
+                list.replaceChildren(el("p", "empty", "Aucune demande enregistrée sur cet appareil."));
+            } else {
+                list.replaceChildren(...demandes.map(renderDemande));
+            }
+        }
+
+        function downloadPdf(demande) {
+            if (!demande.pdf) {
+                showToast("Le PDF de cette demande n'a pas été conservé.", { type: "error" });
+                return;
+            }
+            downloadBlob(new Blob([demande.pdf], { type: "application/pdf" }), demandePdfFileName(demande));
+        }
+
+        // Exporte toutes les demandes, puis les marque « exportées ».
+        async function exportAll(format) {
+            if (!demandes.length) return;
+            const now = new Date();
+            const stamp = `${now.getFullYear()}${pad2(now.getMonth() + 1)}${pad2(now.getDate())}-${pad2(now.getHours())}${pad2(now.getMinutes())}`;
+            const blob = format === "csv"
+                ? new Blob([demandesToCsv(demandes)], { type: "text/csv;charset=utf-8" })
+                : new Blob([demandesToJson(demandes)], { type: "application/json" });
+            downloadBlob(blob, `Demandes_EQUINOX_${stamp}.${format}`);
+
+            await updateDemandes(demandes.map(demande => demande.id), { exportee: true });
+            await refresh();
+            showToast(`${plural(demandes.length, "demande exportée", "demandes exportées")}. Vérifiez le fichier avant de supprimer les demandes.`, { type: "success" });
+        }
+
+        async function removeOne(demande) {
+            const who = [demande.client && demande.client.nom, demande.client && demande.client.prenom].filter(Boolean).join(" ");
+            const ok = await confirmDialog(
+                `Supprimer la demande ${demande.numero}${who ? ` de ${who}` : ""} ? ` +
+                (demande.exportee ? "" : "Elle n'a pas encore été exportée. ") + "Cette suppression est définitive.",
+                { okLabel: "Supprimer" });
+            if (!ok) return;
+            await deleteDemande(demande.id);
+            await refresh();
+            showToast("Demande supprimée.");
+        }
+
+        async function removeAll() {
+            if (!demandes.length) return;
+            const pending = demandes.filter(demande => !demande.exportee).length;
+            const count = plural(demandes.length, "demande", "demandes");
+            const ok = await confirmDialog(
+                pending
+                    ? `Attention : ${pending === 1 ? "1 demande n'a pas encore été exportée" : pending + " demandes n'ont pas encore été exportées"} et ${pending === 1 ? "sera perdue" : "seront perdues"}. Supprimer quand même les ${count} de cet appareil ? Cette suppression est définitive.`
+                    : `Supprimer de cet appareil les ${count}, déjà exportées ? Assurez-vous d'avoir ouvert le fichier exporté : cette suppression est définitive.`,
+                { okLabel: "Tout supprimer", title: "Supprimer toutes les demandes" });
+            if (!ok) return;
+            await deleteAllDemandes();
+            await refresh();
+            showToast("Toutes les demandes ont été supprimées de cet appareil.");
+        }
+
+        // Une erreur de la base (stockage plein, base fermée…) est signalée plutôt que silencieuse.
+        const guarded = action => () => action().catch(err => {
+            console.error(err);
+            showToast("L'opération a échoué : " + (err && err.message ? err.message : "erreur inconnue"), { type: "error" });
+        });
+
+        document.getElementById("exportCsvBtn").addEventListener("click", guarded(() => exportAll("csv")));
+        document.getElementById("exportJsonBtn").addEventListener("click", guarded(() => exportAll("json")));
+        document.getElementById("deleteAllBtn").addEventListener("click", guarded(removeAll));
+
+        refresh();
+    </script>
+</body>
+
+</html>

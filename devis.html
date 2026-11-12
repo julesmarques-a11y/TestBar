@@ -405,6 +405,7 @@
     <script src="js/ral.js"></script>
     <script src="js/notify.js"></script>
     <script src="js/cart.js"></script>
+    <script src="js/demandes.js"></script>
     <script>
         // Page du PDF, en millimètres. Portrait : les aperçus occupent toute la largeur utile
         // (190 mm) en restant bas (barre 11 mm, palanque 19 mm, première vue d'un modèle du
@@ -611,6 +612,16 @@
                     <div class="color-box">${makeColorsHtml(item)}</div>
                 </div>
             `;
+            // L'article tel qu'il est enregistré dans l'historique des demandes (js/demandes.js).
+            article.demandeArticle = {
+                designation: label,
+                quantite: parseInt(item.quantity, 10) || 1,
+                longueur: formatLength(item.length),
+                hauteur: item.height || "",
+                diametre: item.diameter || "",
+                couleurs: getDisplayColors(item).map(({ hex, label: ral }) => ({ hex, ral: ral || "" })),
+                apercu: image ? image.src : ""
+            };
             return article;
         }
 
@@ -851,8 +862,30 @@
                         pdf.addPage();
                     }).from(page).toContainer().toCanvas().toPdf();
                 });
-                await worker.save();
-                showToast("Devis téléchargé.", { type: "success" });
+                const pdf = await worker.get("pdf");
+
+                // La demande est enregistrée sur l'appareil avant le téléchargement : elle se
+                // retrouve dans demandes.html même si le fichier PDF est égaré.
+                const saved = await saveDemande({
+                    numero: devisNumber,
+                    date: now.toISOString(),
+                    client,
+                    statistiques: countBars(readCart()),
+                    articles: Array.from(document.querySelectorAll("#orderList .article"), el => el.demandeArticle),
+                    envoyee: false,
+                    exportee: false,
+                    pdf: pdf.output("arraybuffer")
+                }).then(() => true, err => {
+                    console.error("Demande non enregistrée :", err);
+                    return false;
+                });
+
+                await pdf.save(opt.filename, { returnPromise: true });
+                if (saved) {
+                    showToast("Devis téléchargé.", { type: "success" });
+                } else {
+                    showToast("Devis téléchargé, mais la demande n'a pas pu être enregistrée sur cet appareil : conservez le PDF.", { type: "error", duration: 12000 });
+                }
                 document.getElementById("newQuoteBtn").hidden = false;
             } catch (err) {
                 console.error("Erreur lors de la génération du PDF :", err);
