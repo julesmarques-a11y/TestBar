@@ -505,10 +505,6 @@ h4,
 
 /* Aperçu de la barre */
 
-.preview-options {
-    margin-top: 12px;
-}
-
 #svgContainer {
     background: var(--color-white);
     padding: 20px;

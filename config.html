@@ -25,6 +25,21 @@
             opacity: 1;
         }
 
+        /* Titre de l'aperçu et, sur la même ligne si la place le permet, l'option de coloriage. */
+        .preview-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0 16px;
+            margin-bottom: 4px;
+        }
+
+        .preview-head .section-title {
+            margin-bottom: 0;
+        }
+
+        .preview-head .check-option,
         .control-group .check-option {
             display: flex;
             align-items: center;
@@ -87,10 +102,11 @@
         }
 
         /* Deux colonnes : l'aperçu prend la hauteur que laissent, dans la fenêtre, l'en-tête, le
-           titre, les options et la barre d'action (511 px en tout), sans descendre sous 300 px de large. */
+           titre, les options et la barre d'action (499 px en tout, marge de 12 px en bas comprise),
+           sans descendre sous 300 px de large : à 1280 x 720, tout le configurateur est à l'écran. */
         @media (min-width: 900px) {
             .configurator #svgContainer {
-                max-width: min(100%, max(300px, calc((100vh - 511px) * 430 / 191)));
+                max-width: min(100%, max(300px, calc((100vh - 499px) * 430 / 191)));
             }
         }
     </style>
@@ -99,25 +115,20 @@
 <body>
     <section class="page-intro">
         <h1>Configurateur de barre CSO</h1>
-        <p>
-            Choisissez une couleur RAL dans la palette, puis cliquez sur chaque bande de la barre pour la colorer.
-        </p>
+        <p>Choisissez une couleur, puis cliquez sur les bandes de la barre pour les colorer.</p>
     </section>
 
     <div class="container configurator">
         <div class="config-main">
-            <h2 class="section-title">Aperçu de la barre</h2>
+            <div class="preview-head">
+                <h2 class="section-title">Aperçu de la barre</h2>
+                <label class="check-option" title="Un clic colore aussi les bandes liées à celle cliquée : plus rapide sur les modèles à beaucoup de bandes.">
+                    <input type="checkbox" id="linkedBands">
+                    Colorer les bandes liées ensemble
+                </label>
+            </div>
             <div class="config-preview">
                 <div id="svgContainer"></div>
-            </div>
-            <div class="controls preview-options">
-                <div class="control-group">
-                    <label for="linkedBands">Coloriage</label>
-                    <label class="check-option" title="Un clic colore aussi les bandes liées à celle cliquée : plus rapide sur les modèles à beaucoup de bandes.">
-                        <input type="checkbox" id="linkedBands">
-                        Colorer les bandes liées ensemble
-                    </label>
-                </div>
             </div>
 
             <div class="section config-options">
@@ -191,14 +202,11 @@
                         <div class="color-palette" id="myRalPalette"></div>
                     </div>
                     <div class="custom-ral-box">
-                        <strong>Vous ne trouvez pas votre RAL dans la palette ? Cherchez-le dans le nuancier RAL Classic (216 teintes).</strong>
                         <div class="ral-search">
                             <input type="search" id="ralSearchInput" placeholder="Numéro ou nom, ex : 6018 ou vert" autocomplete="off" aria-label="Rechercher une teinte dans le nuancier RAL">
                             <ul id="ralSearchResults" class="ral-search-results" hidden></ul>
                         </div>
-                        <small>
-                            Choisissez une teinte dans la liste : elle s'ajoute à « Mes RAL », ci-dessus, et son numéro figurera dans votre panier et votre devis.
-                        </small>
+                        <small>Nuancier RAL Classic (216 teintes) : la teinte choisie s'ajoute à « Mes RAL ».</small>
                         <details class="ral-free">
                             <summary>Teinte hors nuancier RAL Classic (saisie libre)</summary>
                             <div class="custom-ral-row">
@@ -208,9 +216,7 @@
                                     Ajouter à la palette
                                 </button>
                             </div>
-                            <small>
-                                Indiquez la référence de la teinte et choisissez la couleur d'écran la plus proche : la référence sera reprise telle quelle dans votre panier et votre devis.
-                            </small>
+                            <small>La référence est reprise telle quelle sur le devis. Choisissez la couleur d'écran la plus proche.</small>
                         </details>
                     </div>
                 </div>
