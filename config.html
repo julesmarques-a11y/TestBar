@@ -85,11 +85,6 @@
                 max-width: min(100%, max(300px, calc((100vh - 511px) * 430 / 191)));
             }
         }
-
-        .color-item {
-            cursor: pointer;
-            touch-action: manipulation;
-        }
     </style>
 </head>
 
@@ -171,6 +166,12 @@
 
         <div class="section config-side">
             <h2 class="section-title">Couleurs RAL</h2>
+            <p class="current-color" id="currentColor" aria-live="polite">
+                <span class="current-color-title">Couleur sélectionnée</span>
+                <span class="current-color-swatch"></span>
+                <strong class="current-color-code"></strong>
+                <span class="current-color-name"></span>
+            </p>
             <div class="color-palette" id="colorPalette"></div>
             <div class="my-rals" id="myRals" hidden>
                 <h3 class="my-rals-title">Mes RAL</h3>
@@ -208,40 +209,9 @@
     <script src="js/ral-picker.js"></script>
     <script>
         let selectedColor = ralColors[0];
-        const colorPalette = document.getElementById("colorPalette");
 
-        // Pour chaque couleur, on crée un conteneur cliquable qui regroupe la pastille et le nom RAL
-        ralColors.forEach(color => {
-            const swatchContainer = document.createElement("div");
-            swatchContainer.classList.add("color-item");
-
-            // Création de la pastille de couleur
-            const swatch = document.createElement("div");
-            swatch.classList.add("color-swatch");
-            swatch.style.backgroundColor = color;
-            swatch.dataset.color = color;
-            swatchContainer.appendChild(swatch);
-
-            // Création du label pour afficher le code RAL correspondant
-            const label = document.createElement("div");
-            label.classList.add("color-label");
-            label.innerText = getRal(color) || "RAL inconnu";
-            swatchContainer.appendChild(label);
-
-            swatchContainer.addEventListener("click", () => {
-                // Retirer la classe "selected" à toutes les pastilles
-                document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("selected"));
-                swatch.classList.add("selected");
-                selectedColor = color;
-            });
-
-            colorPalette.appendChild(swatchContainer);
-        });
-
-        // La première couleur est la couleur active au chargement : on l'affiche comme sélectionnée.
-        colorPalette.querySelector(".color-swatch").classList.add("selected");
-
-        // Recherche dans le nuancier, saisie libre et « Mes RAL » (js/ral-picker.js).
+        // Palette standard, couleur sélectionnée, recherche dans le nuancier, saisie libre et « Mes RAL »
+        // (js/ral-picker.js).
         initRalPicker({ onSelect: hex => { selectedColor = hex; } });
 
         // Groupes de bandes liées, utilisés quand « Colorer les bandes liées ensemble » est coché :

@@ -182,11 +182,14 @@
     background: var(--color-accent);
 }
 
-.my-ral-item .color-name {
-    font-size: 0.65em;
-    color: var(--color-grey);
-    text-align: center;
-    line-height: 1.2;
+/* Pastilles de 32 px à partir de 900 px (css/site.css) : le bouton suit. */
+@media (min-width: 900px) {
+    .my-ral-remove {
+        right: calc(50% - 27px);
+        width: 20px;
+        height: 20px;
+        font-size: 13px;
+    }
 }
 
 @media (max-width: 768px) {

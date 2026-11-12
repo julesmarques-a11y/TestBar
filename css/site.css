@@ -785,6 +785,74 @@ h4,
     font-weight: 500;
 }
 
+/* Palette compacte des configurateurs (js/ral-picker.js) : le numéro RAL seul sous la pastille, le
+   libellé complet en infobulle. Pastilles de 44 px au doigt, de 32 px et 8 par ligne à partir de 900 px. */
+
+.configurator .color-palette {
+    grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+    gap: 10px 4px;
+}
+
+.configurator .color-item {
+    gap: 2px;
+    min-width: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.configurator .color-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.6875em;             /* 11 px */
+    line-height: 1.3;
+}
+
+/* Couleur sélectionnée, toujours affichée au-dessus de la palette : pastille, numéro, nom. */
+.current-color {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    min-height: 26px;
+    margin-bottom: 8px;
+}
+
+.current-color-title {
+    font-size: 0.8em;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.current-color-swatch {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--color-input-border);
+}
+
+.current-color-code {
+    font-weight: 700;
+    color: var(--color-dark);
+}
+
+.current-color-name {
+    color: var(--color-text-muted);
+}
+
+@media (min-width: 900px) {
+    .configurator .color-palette {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: 8px 4px;
+    }
+    .configurator .color-swatch {
+        width: 32px;
+        height: 32px;
+    }
+}
+
 /* Notifications dans la page (js/notify.js) : toast, boîte de confirmation, erreur de champ */
 
 .toast-container {

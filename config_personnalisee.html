@@ -53,6 +53,12 @@
 
         <div class="section config-side">
             <h2 class="section-title">Couleurs RAL</h2>
+            <p class="current-color" id="currentColor" aria-live="polite">
+                <span class="current-color-title">Couleur sélectionnée</span>
+                <span class="current-color-swatch"></span>
+                <strong class="current-color-code"></strong>
+                <span class="current-color-name"></span>
+            </p>
             <div class="color-palette" id="colorPalette"></div>
             <div class="my-rals" id="myRals" hidden>
                 <h3 class="my-rals-title">Mes RAL</h3>
@@ -117,42 +123,6 @@
                 widths,
                 total_length_cm: barLengthCm
             };
-        }
-
-        // Palette de couleurs AVEC numéro RAL
-        function generateColorPalette() {
-            const colorPalette = document.getElementById("colorPalette");
-            colorPalette.innerHTML = "";
-
-            ralColors.forEach(color => {
-                const ral = getRal(color) || "";
-
-                const wrapper = document.createElement("div");
-                wrapper.classList.add("color-item");
-
-                const swatch = document.createElement("div");
-                swatch.classList.add("color-swatch");
-                swatch.style.backgroundColor = color;
-                swatch.dataset.color = color;
-
-                const label = document.createElement("div");
-                label.classList.add("color-label");
-                label.textContent = ral;
-
-                wrapper.appendChild(swatch);
-                wrapper.appendChild(label);
-
-                wrapper.addEventListener("click", () => {
-                    document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("selected"));
-                    swatch.classList.add("selected");
-                    selectedColor = color;
-                });
-
-                colorPalette.appendChild(wrapper);
-            });
-
-            const firstSwatch = colorPalette.querySelector(".color-swatch");
-            if (firstSwatch) firstSwatch.classList.add("selected");
         }
 
         // Génération de la barre (30 ou 35 rayures de 10 cm)
@@ -274,7 +244,6 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            generateColorPalette();
             initRalPicker({ onSelect: hex => { selectedColor = hex; } });
             enableFingerStripes(rect => rect.setAttribute("fill", selectedColor));
 

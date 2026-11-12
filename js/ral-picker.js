@@ -1,11 +1,13 @@
-// Recherche dans le nuancier RAL Classic, saisie libre de secours et section « Mes RAL » des configurateurs.
+// Palette RAL des configurateurs : palette standard, couleur sélectionnée, recherche dans le nuancier
+// RAL Classic, saisie libre de secours et section « Mes RAL ».
 // À charger après js/ral.js et js/cart.js, sur une page qui contient :
-//   #colorPalette (palette standard : pastilles .color-swatch avec data-color),
+//   #currentColor (couleur sélectionnée : pastille, numéro et nom, au-dessus de la palette),
+//   #colorPalette (palette standard, remplie ici : pastilles .color-swatch avec data-color),
 //   #myRals et #myRalPalette (section « Mes RAL », sous la palette standard),
 //   #ralSearchInput et #ralSearchResults (recherche dans le nuancier),
 //   #customRalInput, #customRalColor et #addCustomRalBtn (saisie libre d'une teinte hors nuancier).
-// La page appelle initRalPicker({ onSelect }) une fois la palette standard construite ;
-// onSelect(hex) est appelé quand une pastille de « Mes RAL » est choisie.
+// La page appelle initRalPicker({ onSelect }) ; onSelect(hex) est appelé à chaque fois qu'une
+// pastille est choisie, et d'abord pour la première couleur de la palette, sélectionnée au chargement.
 // Les couleurs de « Mes RAL » sont mémorisées dans localStorage (clé "myRals") : elles réapparaissent,
 // après les couleurs standard, dans les quatre configurateurs, jusqu'à ce qu'on les retire une par une.
 
@@ -48,10 +50,63 @@ function knownColorLabel(hex) {
     return getRal(hex) || ralPickerLabels[normalizeHex(hex)] || null;
 }
 
+// Texte sous une pastille : le numéro seul pour un RAL Classic (« RAL 6018 » → « 6018 »),
+// le libellé entier pour une teinte saisie librement.
+function shortRalLabel(label) {
+    const match = /^RAL\s*(\d{4})$/i.exec(String(label).trim());
+    return match ? match[1] : String(label);
+}
+
+// Élément d'une palette : la pastille, le numéro dessous, et le libellé complet (« RAL 6018 –
+// Vert jaune ») en infobulle. Renvoie { wrapper, swatch }.
+function makeColorItem({ hex, label, name }) {
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("color-item");
+
+    const swatch = document.createElement("div");
+    swatch.classList.add("color-swatch");
+    swatch.style.backgroundColor = hex;
+    swatch.dataset.color = hex;
+
+    const labelEl = document.createElement("div");
+    labelEl.classList.add("color-label");
+
+    wrapper.appendChild(swatch);
+    wrapper.appendChild(labelEl);
+    wrapper.addEventListener("click", () => selectSwatch(swatch));
+    describeColorItem(swatch, label, name);
+    return { wrapper, swatch };
+}
+
+// Écrit le libellé et le nom d'une couleur sur son élément de palette.
+function describeColorItem(swatch, label, name) {
+    swatch.dataset.label = label;
+    swatch.dataset.name = name || "";
+    swatch.parentElement.title = name ? `${label} – ${name}` : label;
+    swatch.parentElement.querySelector(".color-label").textContent = shortRalLabel(label);
+}
+
+// Remplit la palette standard (#colorPalette).
+function buildStandardPalette() {
+    const palette = document.getElementById("colorPalette");
+    palette.innerHTML = "";
+    PALETTE_CODES.forEach(code => palette.appendChild(makeColorItem(ralByCode[code]).wrapper));
+}
+
+// Affiche la couleur sélectionnée (pastille, numéro, nom) au-dessus de la palette.
+function showCurrentColor(swatch) {
+    const box = document.getElementById("currentColor");
+    if (!box) return;
+    box.querySelector(".current-color-swatch").style.backgroundColor = swatch.dataset.color;
+    box.querySelector(".current-color-code").textContent = swatch.dataset.label;
+    box.querySelector(".current-color-name").textContent = swatch.dataset.name;
+}
+
 // Sélectionne une pastille (palette standard ou « Mes RAL ») comme couleur active.
 function selectSwatch(swatch) {
     document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("selected"));
     swatch.classList.add("selected");
+    showCurrentColor(swatch);
     ralPickerOnSelect(swatch.dataset.color);
 }
 
@@ -81,19 +136,9 @@ function addMyRal({ hex, label, name }, options = {}) {
     let swatch = findSwatch(hex);
 
     if (!swatch) {
-        const wrapper = document.createElement("div");
-        wrapper.classList.add("color-item", "my-ral-item");
-
-        swatch = document.createElement("div");
-        swatch.classList.add("color-swatch");
-        swatch.style.backgroundColor = hex;
-        swatch.dataset.color = hex;
-
-        const labelEl = document.createElement("div");
-        labelEl.classList.add("color-label");
-
-        const nameEl = document.createElement("div");
-        nameEl.classList.add("color-name");
+        const item = makeColorItem({ hex, label, name });
+        swatch = item.swatch;
+        item.wrapper.classList.add("my-ral-item");
 
         const remove = document.createElement("button");
         remove.type = "button";
@@ -103,25 +148,19 @@ function addMyRal({ hex, label, name }, options = {}) {
             event.stopPropagation();
             removeMyRal(hex);
         });
+        item.wrapper.appendChild(remove);
 
-        wrapper.appendChild(swatch);
-        wrapper.appendChild(labelEl);
-        wrapper.appendChild(nameEl);
-        wrapper.appendChild(remove);
-        wrapper.addEventListener("click", () => selectSwatch(swatch));
-
-        document.getElementById("myRalPalette").appendChild(wrapper);
+        document.getElementById("myRalPalette").appendChild(item.wrapper);
         document.getElementById("myRals").hidden = false;
     }
 
     swatch.dataset.customRal = label;
-    swatch.title = name ? `${label} – ${name}` : label;
+    describeColorItem(swatch, label, name);
     const remove = swatch.parentElement.querySelector(".my-ral-remove");
     remove.title = `Retirer ${label} de Mes RAL`;
     remove.setAttribute("aria-label", remove.title);
     if (options.remember !== false) rememberMyRal({ hex, label, name });
-    swatch.parentElement.querySelector(".color-label").textContent = label;
-    swatch.parentElement.querySelector(".color-name").textContent = name || "";
+    if (swatch.classList.contains("selected")) showCurrentColor(swatch);
 
     if (select) {
         selectSwatch(swatch);
@@ -161,6 +200,10 @@ function restoreMyRals(item) {
 // Branche la recherche dans le nuancier et la saisie libre.
 function initRalPicker({ onSelect } = {}) {
     ralPickerOnSelect = onSelect || (() => {});
+
+    // Palette standard ; sa première couleur est la couleur active au chargement.
+    buildStandardPalette();
+    selectSwatch(document.querySelector("#colorPalette .color-swatch"));
 
     // Couleurs mémorisées lors d'une visite précédente, sur ce configurateur ou un autre.
     readMyRals().forEach(entry => addMyRal(entry, { select: false, remember: false }));
