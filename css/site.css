@@ -583,6 +583,51 @@ h4,
     margin-bottom: 8px;
 }
 
+/* Options sur une seule ligne, libellés au-dessus des champs. Les champs ne passent jamais à la
+   ligne : si la place manque (téléphone), c'est la liste la plus large qui rétrécit. Seul un
+   message d'erreur (.field-error, js/notify.js) occupe une ligne à lui sous les champs. */
+.configurator .controls {
+    align-items: flex-start;
+    gap: 8px 16px;
+    margin-bottom: 0;
+}
+
+.configurator .control-group {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: max-content;
+}
+
+.configurator .control-group > label:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.configurator .control-group select {
+    max-width: 100%;
+}
+
+.configurator .controls .field-error {
+    order: 1;                        /* sous toute la ligne, quel que soit le champ en erreur */
+    flex: 0 0 100%;
+    margin-top: 0;
+}
+
+/* Téléphone : trois champs tiennent de front sans tronquer « 3,50 m (350 cm) ». */
+@media (max-width: 420px) {
+    .configurator .controls {
+        column-gap: 10px;
+    }
+    .configurator .control-group select {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    .configurator .control-group input[type="number"] {
+        width: 64px;
+    }
+}
+
 /* Cadre de l'aperçu ; #svgContainer ne contient que le dessin. */
 .config-preview {
     display: flex;

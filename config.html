@@ -45,16 +45,24 @@
             cursor: pointer;
         }
 
-        /* Option « palanque assortie », sous la longueur et la quantité de la barre. */
-        .palanque-options {
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid var(--color-border-faint);
+        /* Palanque assortie : la case est dans la ligne d'options ; la hauteur et la quantité de la
+           palanque se déplient dessous quand elle est cochée. */
+        .palanque-fields {
+            margin-top: 10px;
+            padding: 8px 12px 10px;
+            background: var(--color-bg-soft);
+            border-left: 3px solid var(--color-accent);
+        }
+
+        .configurator .palanque-fields .control-group {
+            flex: 0 0 auto;
         }
 
         .palanque-hint {
-            flex-basis: 100%;
-            font-size: 0.9em;
+            flex: 1 1 220px;
+            align-self: center;
+            font-size: 0.85em;
+            line-height: 1.4;
         }
 
         /* Les images Bar_V1xx.svg font 500 x 280 et dessinent quatre vues de la barre avec de larges
@@ -127,32 +135,33 @@
                         <label for="quantity">Quantité</label>
                         <input type="number" id="quantity" min="1" value="1">
                     </div>
-                </div>
 
-                <!-- Palanque assortie : un second article, aux couleurs de la barre (voir addToCart). -->
-                <div class="controls palanque-options" id="palanqueOptions">
-                    <div class="control-group">
-                        <label for="addPalanque">Palanque</label>
+                    <!-- Palanque assortie : un second article, aux couleurs de la barre (voir addToCart). -->
+                    <div class="control-group" id="palanqueOptions">
+                        <label for="addPalanque">Palanque assortie</label>
                         <label class="check-option">
-                            <input type="checkbox" id="addPalanque">
-                            Ajouter une palanque assortie
+                            <input type="checkbox" id="addPalanque" aria-controls="palanqueFields">
+                            Ajouter
                         </label>
                     </div>
+                </div>
 
-                    <div class="control-group" data-palanque-field hidden>
-                        <label for="palanqueHeight">Hauteur de la palanque</label>
-                        <select id="palanqueHeight">
+                <!-- Dépliés sous la ligne d'options quand la case est cochée. -->
+                <div class="controls palanque-fields" id="palanqueFields" data-palanque-field hidden>
+                    <div class="control-group">
+                        <label for="palanqueHeight">Hauteur</label>
+                        <select id="palanqueHeight" aria-label="Hauteur de la palanque">
                             <option value="145">145 mm</option>
                             <option value="95">95 mm</option>
                         </select>
                     </div>
 
-                    <div class="control-group" data-palanque-field hidden>
-                        <label for="palanqueQuantity">Quantité de palanques</label>
-                        <input type="number" id="palanqueQuantity" min="1" value="1">
+                    <div class="control-group">
+                        <label for="palanqueQuantity">Quantité</label>
+                        <input type="number" id="palanqueQuantity" min="1" value="1" aria-label="Quantité de palanques">
                     </div>
 
-                    <p class="palanque-hint text-muted" data-palanque-field hidden>
+                    <p class="palanque-hint text-muted">
                         La palanque reprend la longueur de la barre et ses couleurs, dans le même ordre. Elle figure à part dans le panier et le devis.
                     </p>
                 </div>
