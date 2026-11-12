@@ -68,34 +68,39 @@
                 <span class="current-color-name"></span>
             </p>
             <div class="color-palette" id="colorPalette"></div>
-            <div class="my-rals" id="myRals" hidden>
-                <h3 class="my-rals-title">Mes RAL</h3>
-                <div class="color-palette" id="myRalPalette"></div>
-            </div>
             <p class="ral-notice">Les couleurs affichées à l'écran sont indicatives : seule la référence RAL fait foi.</p>
-            <div class="custom-ral-box">
-                <strong>Vous ne trouvez pas votre RAL dans la palette ? Cherchez-le dans le nuancier RAL Classic (216 teintes).</strong>
-                <div class="ral-search">
-                    <input type="search" id="ralSearchInput" placeholder="Numéro ou nom, ex : 6018 ou vert" autocomplete="off" aria-label="Rechercher une teinte dans le nuancier RAL">
-                    <ul id="ralSearchResults" class="ral-search-results" hidden></ul>
-                </div>
-                <small>
-                    Choisissez une teinte dans la liste : elle s'ajoute à « Mes RAL », sous la palette, et son numéro figurera dans votre panier et votre devis.
-                </small>
-                <details class="ral-free">
-                    <summary>Teinte hors nuancier RAL Classic (saisie libre)</summary>
-                    <div class="custom-ral-row">
-                        <input type="text" id="customRalInput" placeholder="Référence, ex : RAL Design 180 50 15">
-                        <input type="color" id="customRalColor" value="#ff0000" aria-label="Couleur d'écran la plus proche">
-                        <button type="button" class="btn btn-secondary" id="addCustomRalBtn">
-                            Ajouter à la palette
-                        </button>
+            <details class="ral-more" id="ralMore">
+                <summary>Autres couleurs RAL · Mes RAL (<span id="myRalCount">0</span>)</summary>
+                <div class="ral-more-body">
+                    <div class="my-rals" id="myRals" hidden>
+                        <h3 class="my-rals-title">Mes RAL</h3>
+                        <div class="color-palette" id="myRalPalette"></div>
                     </div>
-                    <small>
-                        Indiquez la référence de la teinte et choisissez la couleur d'écran la plus proche : la référence sera reprise telle quelle dans votre panier et votre devis.
-                    </small>
-                </details>
-            </div>
+                    <div class="custom-ral-box">
+                        <strong>Vous ne trouvez pas votre RAL dans la palette ? Cherchez-le dans le nuancier RAL Classic (216 teintes).</strong>
+                        <div class="ral-search">
+                            <input type="search" id="ralSearchInput" placeholder="Numéro ou nom, ex : 6018 ou vert" autocomplete="off" aria-label="Rechercher une teinte dans le nuancier RAL">
+                            <ul id="ralSearchResults" class="ral-search-results" hidden></ul>
+                        </div>
+                        <small>
+                            Choisissez une teinte dans la liste : elle s'ajoute à « Mes RAL », ci-dessus, et son numéro figurera dans votre panier et votre devis.
+                        </small>
+                        <details class="ral-free">
+                            <summary>Teinte hors nuancier RAL Classic (saisie libre)</summary>
+                            <div class="custom-ral-row">
+                                <input type="text" id="customRalInput" placeholder="Référence, ex : RAL Design 180 50 15">
+                                <input type="color" id="customRalColor" value="#ff0000" aria-label="Couleur d'écran la plus proche">
+                                <button type="button" class="btn btn-secondary" id="addCustomRalBtn">
+                                    Ajouter à la palette
+                                </button>
+                            </div>
+                            <small>
+                                Indiquez la référence de la teinte et choisissez la couleur d'écran la plus proche : la référence sera reprise telle quelle dans votre panier et votre devis.
+                            </small>
+                        </details>
+                    </div>
+                </div>
+            </details>
         </div>
     </div>
     <script src="js/ral.js"></script>

@@ -1,11 +1,33 @@
 /* Recherche dans le nuancier RAL, saisie libre et section « Mes RAL » des configurateurs (js/ral-picker.js).
    Couleurs : variables de css/site.css, à charger avant. */
 
+/* Accordéon « Autres couleurs RAL · Mes RAL », sous la palette, replié par défaut. */
+.ral-more {
+    margin-top: 8px;
+    border: 1px solid var(--color-border-light);
+}
+
+.ral-more > summary {
+    padding: 9px 12px;
+    cursor: pointer;
+    color: var(--color-dark);
+    font-family: var(--font-family-ui);
+    font-size: 0.95em;
+    touch-action: manipulation;
+}
+
+.ral-more > summary:hover {
+    background: var(--color-bg-soft);
+}
+
+.ral-more-body {
+    padding: 4px 12px 12px;
+}
+
 .custom-ral-box {
     background: var(--color-bg-panel);
-    padding: 20px;
+    padding: 16px;
     border-left: 4px solid var(--color-accent);
-    margin-bottom: 20px;
 }
 
 .custom-ral-box strong {
@@ -135,15 +157,15 @@
 
 /* Mention sous la palette : l'écran ne reproduit pas fidèlement les teintes. */
 .ral-notice {
-    margin-top: 12px;
+    margin-top: 6px;
     color: var(--color-text-muted);
     font-size: 0.8em;
     line-height: 1.5;
 }
 
-/* Section « Mes RAL », sous la palette standard. */
+/* Section « Mes RAL », en tête de l'accordéon. */
 .my-rals {
-    margin-top: 16px;
+    margin: 8px 0 16px;
 }
 
 .my-rals-title {
