@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>EQUINOX - Catalogue des barres hors cœur</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Catalogue des barres d'obstacles EQUINOX : choisissez un modèle de barre hors cœur ou plein cœur 3 m, puis personnalisez ses couleurs RAL.">
+    <link rel="icon" href="img/icone-equinox.png" type="image/png">
+    <link rel="stylesheet" href="css/site.css">
+    <script src="js/layout.js" defer></script>
+    <style>
+        /* Catalogue d'une gamme (catalogue.html?gamme=hors-coeur ou plein-coeur) : sélecteur de
+           gamme, puis grille compacte de vignettes. */
+
+        /* Sélecteur de gamme : deux boutons accolés, celui de la gamme affichée est marine. */
+        .gamme-switch {
+            display: inline-flex;
+            max-width: 100%;
+            margin-bottom: 20px;
+            border: 1px solid var(--color-dark);
+            border-radius: var(--radius-pill);
+            overflow: hidden;
+            font-family: var(--font-family-ui);
+        }
+
+        .gamme-switch-btn {
+            padding: 8px 22px;
+            color: var(--color-dark);
+            text-align: center;
+            text-decoration: none;
+            transition: background-color var(--transition), color var(--transition);
+        }
+
+        .gamme-switch-btn:hover {
+            background: var(--color-grey-dark);
+        }
+
+        .gamme-switch-btn[aria-current="page"] {
+            background: var(--color-dark);
+            color: var(--color-text-on-dark);
+        }
+
+        /* Grille : 6 vignettes par ligne sur grand écran, 2 sur téléphone. */
+        .catalog {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .catalog-item {
+            display: block;
+            padding: 22px 12px 12px;
+            background: var(--color-white);
+            border: 1px solid var(--color-border-light);
+            border-radius: var(--radius);
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+        }
+
+        .catalog-item:hover,
+        .catalog-item:focus-visible {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-card);
+            border-color: transparent;
+        }
+
+        .catalog-name {
+            display: block;
+            margin-top: 18px;
+            font-family: var(--font-family-headings);
+            font-weight: var(--font-weight-headings);
+            font-size: 1.0625em;
+            color: var(--color-text);
+        }
+
+        @media (max-width: 1100px) {
+            .catalog {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .catalog {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px;
+            }
+            .gamme-switch {
+                display: flex;
+            }
+            .gamme-switch-btn {
+                flex: 1 1 0;
+                padding: 8px 10px;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .catalog {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .catalog-item {
+                padding: 18px 10px 10px;
+            }
+            .catalog-name {
+                margin-top: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <section class="page-intro">
+        <a href="index.html" class="btn btn-neutral">← Toutes les gammes</a>
+        <h1 id="gammeTitle">Barres hors cœur</h1>
+        <p id="gammeIntro">Barres de compétition, en 3&nbsp;m ou 3,50&nbsp;m. Choisissez un modèle pour le mettre à vos couleurs RAL.</p>
+    </section>
+
+    <main class="container">
+        <nav class="gamme-switch" aria-label="Gamme affichée">
+            <a class="gamme-switch-btn" href="catalogue.html?gamme=hors-coeur" data-gamme="hors-coeur" aria-current="page">Hors cœur</a>
+            <a class="gamme-switch-btn" href="catalogue.html?gamme=plein-coeur" data-gamme="plein-coeur">Plein cœur 3&nbsp;m</a>
+        </nav>
+
+        <div class="catalog" id="catalog"></div>
+    </main>
+
+    <!-- js/cart.js : liste des modèles de chaque gamme (CATALOGUE). -->
+    <script src="js/cart.js"></script>
+    <script>
+        // Gamme demandée dans l'adresse ; hors cœur si elle est absente ou inconnue.
+        const requested = new URLSearchParams(window.location.search).get("gamme");
+        const gamme = CATALOGUE[requested] ? requested : HORS_COEUR;
+        const range = CATALOGUE[gamme];
+
+        document.title = `EQUINOX - Catalogue des ${range.label.toLowerCase()}`;
+        document.getElementById("gammeTitle").textContent = range.label;
+        document.getElementById("gammeIntro").textContent = range.intro;
+        document.querySelectorAll(".gamme-switch-btn").forEach(button => {
+            if (button.dataset.gamme === gamme) button.setAttribute("aria-current", "page");
+            else button.removeAttribute("aria-current");
+        });
+
+        // Une vignette par modèle : la première vue de la barre (.bar-view, css/site.css) et son nom.
+        document.getElementById("catalog").innerHTML = range.models.map(model => `
+            <a class="catalog-item" href="config.html?model=${model}&amp;gamme=${gamme}">
+                <span class="bar-view"><img src="Bar_V${model}.svg" alt=""></span>
+                <span class="catalog-name">Modèle ${model}</span>
+            </a>`).join("");
+    </script>
+</body>
+
+</html>

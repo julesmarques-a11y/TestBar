@@ -19,6 +19,21 @@ const HORS_COEUR = "hors-coeur";
 const PLEIN_COEUR = "plein-coeur";
 const SUR_MESURE = "sur-mesure";
 
+// Modèles proposés dans chaque gamme (catalogue.html?gamme=...), dans l'ordre d'affichage.
+// Le modèle 114 n'est plus proposé : Bar_V114.svg reste pour les paniers qui en contiennent un.
+const CATALOGUE = {
+    [HORS_COEUR]: {
+        label: "Barres hors cœur",
+        intro: "Barres de compétition, en 3 m ou 3,50 m. Choisissez un modèle pour le mettre à vos couleurs RAL.",
+        models: [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 115]
+    },
+    [PLEIN_COEUR]: {
+        label: "Barres plein cœur 3 m",
+        intro: "Barres économiques pour l'entraînement, en 3 m uniquement. Choisissez un modèle pour le mettre à vos couleurs RAL.",
+        models: [101, 102, 104, 105, 108, 110, 111, 113, 115]
+    }
+};
+
 function isPleinCoeur(item) {
     return Boolean(item) && item.gamme === PLEIN_COEUR;
 }

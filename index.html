@@ -10,185 +10,24 @@
     <link rel="stylesheet" href="css/site.css">
     <script src="js/layout.js" defer></script>
     <style>
-        /* Accueil : écran de choix à trois tuiles, qui tient sans défilement sur grand écran. */
+        /* Accueil : écran de choix à trois tuiles (.choices, css/site.css). Les marges du bas sont
+           resserrées pour que la page tienne sans défilement sur un écran de 1280 x 720. */
 
         .page-intro h1 {
             margin-bottom: 4px;
         }
 
-        .choices {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
+        .container {
+            padding-bottom: 24px;
         }
 
-        .choice {
-            display: flex;
-            flex-direction: column;
-            background: var(--color-white);
-            border: 1px solid var(--color-border-light);
-            border-radius: var(--radius);
-            overflow: hidden;
-            text-decoration: none;
-            color: inherit;
-            transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+        .site-footer {
+            margin-top: 0;
         }
 
-        .choice:hover,
-        .choice:focus-visible {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-card);
-            border-color: transparent;
-        }
-
-        /* Visuel : trois barres de la gamme, l'une sous l'autre. */
-        .choice-visual {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 14px;
-            min-height: 170px;
-            padding: 20px 22px;
-            background: var(--color-bg-soft);
-        }
-
-        .choice-visual > img {
-            display: block;
-            width: 100%;
-            height: auto;
-        }
-
-        .choice-body {
-            padding: 18px 22px 22px;
-        }
-
-        .choice-body h2 {
-            font-size: 1.5em;
-            color: var(--color-text-headings);
-            margin-bottom: 6px;
-        }
-
-        .choice-body p {
-            color: var(--color-text-muted);
-        }
-
-        @media (max-width: 768px) {
-            .choices {
-                grid-template-columns: minmax(0, 1fr);
-                gap: 16px;
-            }
-            .choice-visual {
-                min-height: 0;
-                gap: 10px;
-                padding: 16px;
-            }
-            .choice-body {
-                padding: 14px 16px 16px;
-            }
-        }
-
-        /* Catalogue des modèles : trois groupes de cartes. */
-
-        /* Titre de groupe */
-
-        .catalog-header {
-            margin-top: 48px;
-            margin-bottom: 15px;
-        }
-
-        .catalog-header .section-title {
-            margin-bottom: 4px;
-        }
-
-        .catalog-header p {
-            font-size: 0.9em;
-            color: var(--color-text-muted);
-        }
-
-        .catalog-header-second {
-            margin-top: 48px;
-            padding-top: 32px;
-            border-top: 1px solid var(--color-border);
-        }
-        /* Catalogue */
-
-        .catalog {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .catalog-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 16px 16px 14px;
-            background: var(--color-white);
-            border-radius: var(--radius);
-            border: 1px solid var(--color-border-light);
-            transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .catalog-item:hover,
-        .catalog-item:focus-visible {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-card);
-            border-color: transparent;
-        }
-
-        .catalog-item img {
-            width: 100%;
-            max-width: 400px;
-            height: auto;
-            object-fit: contain;
-            margin-bottom: 12px;
-        }
-
-        .catalog-item p {
-            font-family: var(--font-family-headings);
-            font-size: 1.125em;
-            font-weight: var(--font-weight-headings);
-            color: var(--color-text);
-        }
-
-        /* « Configurer » apparaît au survol ; toujours visible quand il n'y a pas de survol (tactile). */
-        .catalog-cta {
-            margin-top: 12px;
-            padding: 6px 18px;
-            font-size: 0.9em;
-            opacity: 0;
-            transform: translateY(4px);
-            transition: opacity var(--transition), transform var(--transition);
-        }
-
-        .catalog-item:hover .catalog-cta,
-        .catalog-item:focus-visible .catalog-cta {
-            opacity: 1;
-            transform: none;
-        }
-
-        @media (hover: none), (max-width: 768px) {
-            .catalog-cta {
-                opacity: 1;
-                transform: none;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .catalog {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 12px;
-            }
-            .catalog-item {
-                padding: 12px 10px 10px;
-            }
-            .catalog-item p {
-                font-size: 1em;
-            }
+        .site-footer-inner {
+            padding-top: 12px;
+            padding-bottom: 12px;
         }
     </style>
 </head>
@@ -201,10 +40,10 @@
         </p>
     </section>
 
-    <!-- Contenu principal -->
+    <!-- Contenu principal : une tuile par gamme -->
     <main class="container">
         <div class="choices">
-            <a class="choice" href="#hors-coeur">
+            <a class="choice" href="catalogue.html?gamme=hors-coeur">
                 <div class="choice-visual">
                     <span class="bar-view"><img src="Bar_V103.svg" alt=""></span>
                     <span class="bar-view"><img src="Bar_V107.svg" alt=""></span>
@@ -215,7 +54,7 @@
                     <p>Barres de compétition, en 3 m ou 3,50 m.</p>
                 </div>
             </a>
-            <a class="choice" href="#plein-coeur">
+            <a class="choice" href="catalogue.html?gamme=plein-coeur">
                 <div class="choice-visual">
                     <span class="bar-view"><img src="Bar_V102.svg" alt=""></span>
                     <span class="bar-view"><img src="Bar_V105.svg" alt=""></span>
@@ -226,7 +65,7 @@
                     <p>Barres économiques pour l'entraînement.</p>
                 </div>
             </a>
-            <a class="choice" href="#sur-mesure">
+            <a class="choice" href="sur-mesure.html">
                 <div class="choice-visual">
                     <img src="img/apercu-barre-personnalisee.svg" alt="">
                     <img src="img/apercu-barre-octo.svg" alt="">
@@ -238,161 +77,7 @@
                 </div>
             </a>
         </div>
-
-        <div class="catalog-header" id="hors-coeur">
-            <h2 class="section-title">Barres hors cœur</h2>
-            <p>13 modèles de barres de compétition en 3 m ou 3,50 m : choisissez les couleurs RAL de chaque bande.</p>
-        </div>
-
-        <div class="catalog">
-            <a class="catalog-item" href="config.html?model=101&amp;gamme=hors-coeur">
-                <img src="Bar_V101.svg" alt="Modèle 101">
-                <p>Modèle 101</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=102&amp;gamme=hors-coeur">
-                <img src="Bar_V102.svg" alt="Modèle 102">
-                <p>Modèle 102</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=103&amp;gamme=hors-coeur">
-                <img src="Bar_V103.svg" alt="Modèle 103">
-                <p>Modèle 103</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=104&amp;gamme=hors-coeur">
-                <img src="Bar_V104.svg" alt="Modèle 104">
-                <p>Modèle 104</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=105&amp;gamme=hors-coeur">
-                <img src="Bar_V105.svg" alt="Modèle 105">
-                <p>Modèle 105</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=106&amp;gamme=hors-coeur">
-                <img src="Bar_V106.svg" alt="Modèle 106">
-                <p>Modèle 106</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=107&amp;gamme=hors-coeur">
-                <img src="Bar_V107.svg" alt="Modèle 107">
-                <p>Modèle 107</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=108&amp;gamme=hors-coeur">
-                <img src="Bar_V108.svg" alt="Modèle 108">
-                <p>Modèle 108</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=109&amp;gamme=hors-coeur">
-                <img src="Bar_V109.svg" alt="Modèle 109">
-                <p>Modèle 109</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=110&amp;gamme=hors-coeur">
-                <img src="Bar_V110.svg" alt="Modèle 110">
-                <p>Modèle 110</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=111&amp;gamme=hors-coeur">
-                <img src="Bar_V111.svg" alt="Modèle 111">
-                <p>Modèle 111</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=112&amp;gamme=hors-coeur">
-                <img src="Bar_V112.svg" alt="Modèle 112">
-                <p>Modèle 112</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=115&amp;gamme=hors-coeur">
-                <img src="Bar_V115.svg" alt="Modèle 115">
-                <p>Modèle 115</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-        </div>
-
-        <div class="catalog-header catalog-header-second" id="plein-coeur">
-            <h2 class="section-title">Barres plein cœur 3 m</h2>
-            <p>9 modèles en bois plein cœur, en 3 m uniquement, aux mêmes couleurs RAL.</p>
-        </div>
-
-        <div class="catalog">
-            <a class="catalog-item" href="config.html?model=101&amp;gamme=plein-coeur">
-                <img src="Bar_V101.svg" alt="Modèle 101 plein cœur">
-                <p>Modèle 101 – Plein cœur</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=102&amp;gamme=plein-coeur">
-                <img src="Bar_V102.svg" alt="Modèle 102 plein cœur">
-                <p>Modèle 102 – Plein cœur</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=104&amp;gamme=plein-coeur">
-                <img src="Bar_V104.svg" alt="Modèle 104 plein cœur">
-                <p>Modèle 104 – Plein cœur</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=105&amp;gamme=plein-coeur">
-                <img src="Bar_V105.svg" alt="Modèle 105 plein cœur">
-                <p>Modèle 105 – Plein cœur</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=108&amp;gamme=plein-coeur">
-                <img src="Bar_V108.svg" alt="Modèle 108 plein cœur">
-                <p>Modèle 108 – Plein cœur</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=110&amp;gamme=plein-coeur">
-                <img src="Bar_V110.svg" alt="Modèle 110 plein cœur">
-                <p>Modèle 110 – Plein cœur</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=111&amp;gamme=plein-coeur">
-                <img src="Bar_V111.svg" alt="Modèle 111 plein cœur">
-                <p>Modèle 111 – Plein cœur</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=113&amp;gamme=plein-coeur">
-                <img src="Bar_V113.svg" alt="Modèle 113 plein cœur">
-                <p>Modèle 113 – Plein cœur</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config.html?model=115&amp;gamme=plein-coeur">
-                <img src="Bar_V115.svg" alt="Modèle 115 plein cœur">
-                <p>Modèle 115 – Plein cœur</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-        </div>
-
-        <div class="catalog-header catalog-header-second" id="sur-mesure">
-            <h2 class="section-title">Sur mesure</h2>
-            <p>Composez votre barre rayure par rayure (rayures de 10 cm), en 3 m ou 3,50 m.</p>
-        </div>
-
-        <div class="catalog">
-            <a class="catalog-item" href="config_personnalisee.html">
-                <img src="img/apercu-barre-personnalisee.svg" alt="Barre personnalisée">
-                <p>Barre personnalisée</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config_bar_octo.html">
-                <img src="img/apercu-barre-octo.svg" alt="Barre octo personnalisée">
-                <p>Barre octo personnalisée</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-            <a class="catalog-item" href="config_personnalisee_forme2.html">
-                <img src="img/apercu-palanque.svg" alt="Palanque personnalisée">
-                <p>Palanque personnalisée</p>
-                <span class="btn btn-primary catalog-cta">Configurer</span>
-            </a>
-        </div>
     </main>
-
-
-    <script>
-        // Année du pied de page : toujours l'année courante.
-    </script>
 </body>
 
 </html>

@@ -7,7 +7,7 @@
 
 ## Parcours principal à ne jamais casser
 
-`index.html` → `config.html?model=1xx` (ou les 3 configurateurs personnalisés : `config_personnalisee.html`, `config_bar_octo.html`, `config_personnalisee_forme2.html`) → `panier.html` → `devis.html` (PDF via html2pdf).
+`index.html` (choix de la gamme) → `catalogue.html?gamme=hors-coeur` ou `plein-coeur` → `config.html?model=1xx&gamme=...` (ou `sur-mesure.html` → les 3 configurateurs personnalisés : `config_personnalisee.html`, `config_bar_octo.html`, `config_personnalisee_forme2.html`) → `panier.html` → `devis.html` (PDF via html2pdf).
 
 ## Tester en local
 

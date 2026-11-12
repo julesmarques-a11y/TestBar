@@ -1,4 +1,4 @@
-// En-tête et pied de page communs aux 7 pages, injectés au chargement (script chargé avec defer).
+// En-tête et pied de page communs à toutes les pages, injectés au chargement (script chargé avec defer).
 // En-tête : logo, bouton « Panier » avec le nombre de barres, barre d'étapes du parcours.
 // Pied de page : logo, copyright avec l'année courante, lien vers le site du client.
 (function () {
