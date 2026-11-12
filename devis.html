@@ -208,6 +208,11 @@
             margin-top: 8px;
         }
 
+        /* Cinq compteurs sur une seule ligne. */
+        .pdf-stats {
+            column-gap: 14px;
+        }
+
         .pdf-page .article {
             margin-top: 10px;
             padding: 8px 10px;
@@ -334,10 +339,10 @@
     <script src="js/cart.js"></script>
     <script>
         // Page du PDF, en millimètres. Portrait : les aperçus occupent toute la largeur utile
-        // (190 mm) en restant bas (barre 11 mm, palanque 19 mm, modèle de série en 2 x 2 : 13 mm),
-        // ce qui met six articles par page. En paysage, ils seraient plus larges (277 mm) mais
-        // leur hauteur devrait être plafonnée vers 13 mm pour rester aussi bas, donc réduite en
-        // largeur sous les 190 mm du portrait pour la palanque et les modèles de série.
+        // (190 mm) en restant bas (barre 11 mm, palanque 19 mm, première vue d'un modèle du
+        // catalogue : 11 mm), ce qui met six articles par page. En paysage, ils seraient plus
+        // larges (277 mm) mais leur hauteur devrait être plafonnée vers 13 mm pour rester aussi
+        // bas, donc réduite en largeur sous les 190 mm du portrait pour la palanque.
         const PDF_PAGE = {
             orientation: "portrait",
             width: 210,
@@ -462,13 +467,13 @@
 
         // Image d'aperçu d'un article, cadrée sur le dessin de la barre. Le SVG enregistré dans le
         // panier ne l'est pas :
-        // - les modèles de série dessinent quatre vues de la barre, l'une sous l'autre, dans une
-        //   image de 500 x 280 dont elles n'occupent qu'une partie ;
+        // - les modèles du catalogue (hors cœur et plein cœur) dessinent quatre vues de la barre,
+        //   l'une sous l'autre, dans une image de 500 x 280 dont elles n'occupent qu'une partie ;
         // - les barres personnalisées ont width="100%" et pas de hauteur : sans taille propre,
         //   elles sortaient tronquées dans le PDF. On leur donne la taille de leur viewBox.
         // On repère donc les zones réellement peintes et on en fait le cadre d'un SVG englobant, de
-        // PREVIEW_WIDTH pixels de large. Quatre vues superposées sont réparties sur deux colonnes
-        // (2 x 2), chacune dans un SVG imbriqué cadré sur sa vue, pour un aperçu moins haut.
+        // PREVIEW_WIDTH pixels de large. De quatre vues superposées, seule la première est gardée :
+        // elle occupe toute la largeur de l'aperçu, qui n'a que la hauteur d'une barre.
         // Le SVG du panier n'est jamais inséré dans la page : il n'est lu qu'à travers une image,
         // qui n'exécute aucun script.
         // Renvoie { src, width, height }, ou null si le SVG est inexploitable.
@@ -496,36 +501,23 @@
             if (!img) return null;
 
             const bands = paintedBands(img, width, height);
-            const view = (frame, x, y, w, h) =>
-                `<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${frame.x} ${frame.y} ${frame.width} ${frame.height}">${sized}</svg>`;
-            let content, frameWidth, frameHeight;
 
+            // Cadre de l'aperçu : la première des quatre vues d'un modèle du catalogue ; sinon
+            // toutes les bandes peintes (toute l'image si rien n'est peint).
+            let frame = { x: 0, y: 0, width, height };
             if (bands.length === 4) {
-                const tileWidth = Math.max(...bands.map(b => b.width));
-                const tileHeight = Math.max(...bands.map(b => b.height));
-                const gapX = tileWidth * 0.04;
-                const gapY = tileHeight * 0.35;
-                frameWidth = 2 * tileWidth + gapX;
-                frameHeight = 2 * tileHeight + gapY;
-                content = bands.map((band, i) =>
-                    view(band, (i % 2) * (tileWidth + gapX), Math.floor(i / 2) * (tileHeight + gapY), tileWidth, tileHeight)).join("");
-            } else {
-                // Une seule vue : le cadre englobe toutes les bandes (toute l'image si rien n'est peint).
-                let frame = { x: 0, y: 0, width, height };
-                if (bands.length) {
-                    const x = Math.min(...bands.map(b => b.x));
-                    const right = Math.max(...bands.map(b => b.x + b.width));
-                    const last = bands[bands.length - 1];
-                    frame = { x, y: bands[0].y, width: right - x, height: last.y + last.height - bands[0].y };
-                }
-                frameWidth = frame.width;
-                frameHeight = frame.height;
-                content = view(frame, 0, 0, frame.width, frame.height);
+                frame = bands[0];
+            } else if (bands.length) {
+                const x = Math.min(...bands.map(b => b.x));
+                const right = Math.max(...bands.map(b => b.x + b.width));
+                const last = bands[bands.length - 1];
+                frame = { x, y: bands[0].y, width: right - x, height: last.y + last.height - bands[0].y };
             }
 
-            const previewHeight = Math.round(PREVIEW_WIDTH * frameHeight / frameWidth);
-            const framed = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${frameWidth} ${frameHeight}" ` +
-                `width="${PREVIEW_WIDTH}" height="${previewHeight}">${content}</svg>`;
+            const previewHeight = Math.round(PREVIEW_WIDTH * frame.height / frame.width);
+            const framed = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${frame.width} ${frame.height}" ` +
+                `width="${PREVIEW_WIDTH}" height="${previewHeight}">` +
+                `<svg width="${frame.width}" height="${frame.height}" viewBox="${frame.x} ${frame.y} ${frame.width} ${frame.height}">${sized}</svg></svg>`;
             return { src: svgDataUrl(framed), width: PREVIEW_WIDTH, height: previewHeight };
         }
 
@@ -618,10 +610,10 @@
                 </div>
                 <div class="pdf-stats">
                     <span>Statistiques :</span>
-                    <span><strong>${count("countHorsCoeur3m")}</strong> <strong>hors cœur 3 m</strong></span>
-                    <span><strong>${count("countHorsCoeur35m")}</strong> <strong>hors cœur 3,50 m</strong></span>
-                    <span><strong>${count("countPleinCoeur")}</strong> <strong>plein cœur 3 m</strong></span>
-                    <span><strong>${count("countSurMesure")}</strong> <strong>sur mesure</strong></span>
+                    <span><strong>${count("countHorsCoeur3m")}</strong> hors cœur 3 m</span>
+                    <span><strong>${count("countHorsCoeur35m")}</strong> hors cœur 3,50 m</span>
+                    <span><strong>${count("countPleinCoeur")}</strong> plein cœur 3 m</span>
+                    <span><strong>${count("countSurMesure")}</strong> sur mesure</span>
                     <span>Total : <strong>${count("countTotal")} barres</strong></span>
                 </div>
                 <div class="pdf-notice">Les couleurs reproduites sont indicatives : seule la référence RAL fait foi.</div>
