@@ -525,6 +525,28 @@ h4,
     display: block;
 }
 
+/* Vue unique d'un modèle du catalogue. Les fichiers Bar_V1xx.svg sont des images de 500 x 280
+   qui dessinent quatre vues de la barre, l'une sous l'autre, toutes sur le même gabarit :
+   on ne montre que la première (x 43,5 à 460,5 et y 48,5 à 76,5 de l'image, soit 417 x 28).
+   Usage : <span class="bar-view"><img src="Bar_V101.svg" alt="..."></span> */
+
+.bar-view {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    height: 0;
+    padding-top: calc(100% * 28 / 417);
+}
+
+.bar-view img {
+    position: absolute;
+    left: calc(-100% * 43.5 / 417);
+    top: calc(-100% * 48.5 / 28);
+    width: calc(100% * 500 / 417);
+    max-width: none;
+    height: auto;
+}
+
 /* Palette RAL : pastilles et libellés (aussi utilisés par le panier et le devis) */
 
 .color-palette {

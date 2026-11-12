@@ -3,19 +3,96 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>EQUINOX - Catalogue des barres de CSO</title>
+    <title>EQUINOX - Configurateur de barres d'obstacles</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Catalogue des barres d'obstacles EQUINOX : choisissez un modèle de barre de CSO, personnalisez ses couleurs RAL et préparez votre devis.">
+    <meta name="description" content="Configurateur de barres d'obstacles EQUINOX : barres hors cœur, barres plein cœur 3 m ou sur mesure, à vos couleurs RAL, avec votre devis en PDF.">
     <link rel="icon" href="img/icone-equinox.png" type="image/png">
     <link rel="stylesheet" href="css/site.css">
     <script src="js/layout.js" defer></script>
     <style>
+        /* Accueil : écran de choix à trois tuiles, qui tient sans défilement sur grand écran. */
+
+        .page-intro h1 {
+            margin-bottom: 4px;
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .choice {
+            display: flex;
+            flex-direction: column;
+            background: var(--color-white);
+            border: 1px solid var(--color-border-light);
+            border-radius: var(--radius);
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+        }
+
+        .choice:hover,
+        .choice:focus-visible {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-card);
+            border-color: transparent;
+        }
+
+        /* Visuel : trois barres de la gamme, l'une sous l'autre. */
+        .choice-visual {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 14px;
+            min-height: 170px;
+            padding: 20px 22px;
+            background: var(--color-bg-soft);
+        }
+
+        .choice-visual > img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .choice-body {
+            padding: 18px 22px 22px;
+        }
+
+        .choice-body h2 {
+            font-size: 1.5em;
+            color: var(--color-text-headings);
+            margin-bottom: 6px;
+        }
+
+        .choice-body p {
+            color: var(--color-text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .choices {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 16px;
+            }
+            .choice-visual {
+                min-height: 0;
+                gap: 10px;
+                padding: 16px;
+            }
+            .choice-body {
+                padding: 14px 16px 16px;
+            }
+        }
+
         /* Catalogue des modèles : trois groupes de cartes. */
 
         /* Titre de groupe */
 
         .catalog-header {
-            margin-top: 4px;
+            margin-top: 48px;
             margin-bottom: 15px;
         }
 
@@ -118,14 +195,50 @@
 
 <body>
     <section class="page-intro">
-        <h1>Catalogue des barres de CSO</h1>
+        <h1>Configurateur de barres d'obstacles</h1>
         <p>
-            Choisissez une barre hors cœur, une barre plein cœur ou une barre sur mesure, puis personnalisez ses couleurs RAL.
+            Choisissez votre gamme, personnalisez les couleurs RAL, puis générez votre devis.
         </p>
     </section>
 
     <!-- Contenu principal -->
     <main class="container">
+        <div class="choices">
+            <a class="choice" href="#hors-coeur">
+                <div class="choice-visual">
+                    <span class="bar-view"><img src="Bar_V103.svg" alt=""></span>
+                    <span class="bar-view"><img src="Bar_V107.svg" alt=""></span>
+                    <span class="bar-view"><img src="Bar_V112.svg" alt=""></span>
+                </div>
+                <div class="choice-body">
+                    <h2>Barres hors cœur</h2>
+                    <p>Barres de compétition, en 3 m ou 3,50 m.</p>
+                </div>
+            </a>
+            <a class="choice" href="#plein-coeur">
+                <div class="choice-visual">
+                    <span class="bar-view"><img src="Bar_V102.svg" alt=""></span>
+                    <span class="bar-view"><img src="Bar_V105.svg" alt=""></span>
+                    <span class="bar-view"><img src="Bar_V113.svg" alt=""></span>
+                </div>
+                <div class="choice-body">
+                    <h2>Barres plein cœur 3 m</h2>
+                    <p>Barres économiques pour l'entraînement.</p>
+                </div>
+            </a>
+            <a class="choice" href="#sur-mesure">
+                <div class="choice-visual">
+                    <img src="img/apercu-barre-personnalisee.svg" alt="">
+                    <img src="img/apercu-barre-octo.svg" alt="">
+                    <img src="img/apercu-palanque.svg" alt="">
+                </div>
+                <div class="choice-body">
+                    <h2>Sur mesure</h2>
+                    <p>Barre, barre octo ou palanque à vos couleurs.</p>
+                </div>
+            </a>
+        </div>
+
         <div class="catalog-header" id="hors-coeur">
             <h2 class="section-title">Barres hors cœur</h2>
             <p>13 modèles de barres de compétition en 3 m ou 3,50 m : choisissez les couleurs RAL de chaque bande.</p>
