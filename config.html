@@ -11,7 +11,7 @@
     <script src="js/layout.js" defer></script>
     <link rel="stylesheet" href="css/ral-picker.css">
     <style>
-        /* Configurateur des modèles de série : écarts par rapport à css/site.css. */
+        /* Configurateur des modèles du catalogue (hors cœur et plein cœur) : écarts par rapport à css/site.css. */
 
         .control-group select,
         .control-group input[type="number"] {
@@ -326,8 +326,12 @@
 
         // Gamme « plein cœur » (config.html?model=1xx&gamme=plein-coeur) : même configurateur,
         // mais longueur fixée à 3 m ; l'article en garde la mention jusqu'au PDF.
+        // Toute autre adresse (gamme=hors-coeur ou pas de gamme) est une barre hors cœur.
         const gamme = urlParams.get("gamme") === PLEIN_COEUR ? PLEIN_COEUR : null;
-        if (gamme) {
+        if (!gamme) {
+            document.title = "Configurateur de barre hors cœur";
+            document.querySelector("h1").textContent = "Configurateur de barre hors cœur";
+        } else {
             document.title = "Configurateur de barre plein cœur 3 m";
             document.querySelector("h1").textContent = "Configurateur de barre plein cœur 3 m";
             document.getElementById("backLink").href = "index.html#plein-coeur";

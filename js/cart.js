@@ -10,11 +10,52 @@ const CONFIG_PAGES = [
     "config_personnalisee_forme2.html"
 ];
 
-// Gamme « plein cœur » des modèles de série (champ gamme des articles) : longueur 3 m uniquement.
+// Gammes des modèles du catalogue (config.html?model=1xx&gamme=...) :
+// - « hors cœur » (anciennement « barres de série ») : 3 m ou 3,50 m. Un article sans champ gamme
+//   est hors cœur : c'est le cas de tous ceux ajoutés avant que la gamme porte ce nom ;
+// - « plein cœur » (champ gamme des articles) : 3 m uniquement.
+// Les articles des trois configurateurs à rayures sont « sur mesure ».
+const HORS_COEUR = "hors-coeur";
 const PLEIN_COEUR = "plein-coeur";
+const SUR_MESURE = "sur-mesure";
 
 function isPleinCoeur(item) {
     return Boolean(item) && item.gamme === PLEIN_COEUR;
+}
+
+// Gamme d'un article du panier : HORS_COEUR, PLEIN_COEUR ou SUR_MESURE.
+function getGamme(item) {
+    if (getConfigPage(item) !== "config.html") return SUR_MESURE;
+    return isPleinCoeur(item) ? PLEIN_COEUR : HORS_COEUR;
+}
+
+// Statistiques du panier et du devis : nombre de barres (somme des quantités) par gamme, les
+// barres hors cœur étant séparées par longueur. Une barre hors cœur sans longueur connue ne
+// compte que dans le total.
+function countBars(cart) {
+    const counts = { horsCoeur3m: 0, horsCoeur35m: 0, pleinCoeur: 0, surMesure: 0, total: 0 };
+    cart.forEach(item => {
+        const qty = parseInt(item.quantity, 10) > 0 ? parseInt(item.quantity, 10) : 1;
+        const gamme = getGamme(item);
+        if (gamme === SUR_MESURE) counts.surMesure += qty;
+        else if (gamme === PLEIN_COEUR) counts.pleinCoeur += qty;
+        else if (item.length === "3m") counts.horsCoeur3m += qty;
+        else if (item.length === "3.5m") counts.horsCoeur35m += qty;
+        counts.total += qty;
+    });
+    return counts;
+}
+
+// Écrit ces statistiques dans les éléments #countHorsCoeur3m, #countHorsCoeur35m,
+// #countPleinCoeur, #countSurMesure et #countTotal de la page.
+function showBarCounts(cart) {
+    const counts = countBars(cart);
+    const set = (id, value) => { document.getElementById(id).textContent = value; };
+    set("countHorsCoeur3m", counts.horsCoeur3m);
+    set("countHorsCoeur35m", counts.horsCoeur35m);
+    set("countPleinCoeur", counts.pleinCoeur);
+    set("countSurMesure", counts.surMesure);
+    set("countTotal", counts.total);
 }
 
 function readCart() {
@@ -77,7 +118,7 @@ function getModelLabel(item) {
     if (page === "config_personnalisee_forme2.html") return "Palanque personnalisée";
     if (page === "config_bar_octo.html") return "Barre octo personnalisée";
     if (page === "config_personnalisee.html") return "Barre personnalisée";
-    return `Modèle ${item.model}` + (isPleinCoeur(item) ? " – Plein cœur" : "");
+    return `Modèle ${item.model}` + (isPleinCoeur(item) ? " – Plein cœur" : " – Hors cœur");
 }
 
 // Configurateurs à rayures : une rayure non peinte y reste blanche (#ffffff, hors palette).
@@ -110,8 +151,7 @@ function getEditUrl(item, index) {
     const page = getConfigPage(item);
     if (!page) return null;
     if (page === "config.html") {
-        const gamme = isPleinCoeur(item) ? `&gamme=${PLEIN_COEUR}` : "";
-        return `config.html?model=${encodeURIComponent(item.model)}${gamme}&edit=${index}`;
+        return `config.html?model=${encodeURIComponent(item.model)}&gamme=${getGamme(item)}&edit=${index}`;
     }
     return `${page}?edit=${index}`;
 }

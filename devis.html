@@ -305,9 +305,10 @@
 
             <div id="statsContainer">
                 <strong>📊 Statistiques :</strong><br>
-                <span id="count3m">0</span> barres de <strong>3 m</strong><br>
-                <span id="count35m">0</span> barres de <strong>3,5 m</strong><br>
-                <span id="countPleinCoeur">0</span> barres <strong>plein cœur 3 m</strong><br> Total : <strong><span id="countTotal">0</span> barres</strong>
+                <span id="countHorsCoeur3m">0</span> barres <strong>hors cœur 3 m</strong><br>
+                <span id="countHorsCoeur35m">0</span> barres <strong>hors cœur 3,50 m</strong><br>
+                <span id="countPleinCoeur">0</span> barres <strong>plein cœur 3 m</strong><br>
+                <span id="countSurMesure">0</span> <strong>sur mesure</strong><br> Total : <strong><span id="countTotal">0</span> barres</strong>
             </div>
 
             <div class="order-summary">
@@ -384,27 +385,6 @@
                         <span class="color-ref">${escapeHtml(label || "RAL inconnu")}</span>
                     </div>
                 `).join("");
-        }
-
-        // Les barres plein cœur (toujours en 3 m) sont comptées à part des barres de 3 m.
-        function updateStats(cart) {
-            let count3m = 0;
-            let count35m = 0;
-            let countPleinCoeur = 0;
-
-            cart.forEach(item => {
-                const qty = item.quantity || 1;
-                if (isPleinCoeur(item)) countPleinCoeur += qty;
-                else if (item.length === "3m") count3m += qty;
-                else if (item.length === "3.5m") count35m += qty;
-            });
-
-            const total = count3m + count35m + countPleinCoeur;
-
-            document.getElementById("count3m").textContent = count3m;
-            document.getElementById("count35m").textContent = count35m;
-            document.getElementById("countPleinCoeur").textContent = countPleinCoeur;
-            document.getElementById("countTotal").textContent = total;
         }
 
         // "3.5m" (valeur enregistrée dans le panier) → "3,5 m".
@@ -580,7 +560,8 @@
             const orderList = document.getElementById("orderList");
 
             orderList.innerHTML = "";
-            updateStats(cart);
+            // Statistiques par gamme (js/cart.js).
+            showBarCounts(cart);
 
             if (cart.length === 0) {
                 orderList.innerHTML = "<p>Aucun article dans le panier.</p>";
@@ -637,9 +618,10 @@
                 </div>
                 <div class="pdf-stats">
                     <span>Statistiques :</span>
-                    <span><strong>${count("count3m")}</strong> barres de <strong>3 m</strong></span>
-                    <span><strong>${count("count35m")}</strong> barres de <strong>3,5 m</strong></span>
-                    <span><strong>${count("countPleinCoeur")}</strong> barres <strong>plein cœur 3 m</strong></span>
+                    <span><strong>${count("countHorsCoeur3m")}</strong> <strong>hors cœur 3 m</strong></span>
+                    <span><strong>${count("countHorsCoeur35m")}</strong> <strong>hors cœur 3,50 m</strong></span>
+                    <span><strong>${count("countPleinCoeur")}</strong> <strong>plein cœur 3 m</strong></span>
+                    <span><strong>${count("countSurMesure")}</strong> <strong>sur mesure</strong></span>
                     <span>Total : <strong>${count("countTotal")} barres</strong></span>
                 </div>
                 <div class="pdf-notice">Les couleurs reproduites sont indicatives : seule la référence RAL fait foi.</div>
