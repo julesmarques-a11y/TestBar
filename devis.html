@@ -835,7 +835,8 @@
 
             const opt = {
                 margin: PDF_PAGE.margin,
-                filename: `Devis_EQX_${devisNumber}.pdf`,
+                // Nom du client et numéro de devis, ex. Devis_EQX_Dupont_DV-20261112-101500.pdf (js/demandes.js).
+                filename: devisPdfFileName(client.nom, devisNumber),
                 image: {
                     type: 'jpeg',
                     quality: 0.95
@@ -897,11 +898,17 @@
             }
         }
 
-        // Après téléchargement : vider le panier (avec confirmation) et repartir de l'accueil.
+        // Après téléchargement, pour passer au visiteur suivant : vider (avec confirmation) le panier
+        // et les coordonnées saisies, puis repartir de l'accueil. Les couleurs de « Mes RAL »
+        // (clé "myRals", js/ral-picker.js) sont conservées.
         async function startNewQuote() {
-            const ok = await confirmDialog("Commencer un nouveau devis ? Le panier sera vidé.", { okLabel: "Nouveau devis" });
+            const ok = await confirmDialog("Commencer un nouveau devis ? Le panier et les coordonnées saisies seront effacés.", { okLabel: "Nouveau devis" });
             if (!ok) return;
             writeCart([]);
+            document.getElementById("devisForm").reset();
+            clearErrors();
+            // Dernier configurateur ouvert par le visiteur précédent (étape « Configurer », js/layout.js).
+            try { localStorage.removeItem("lastConfigUrl"); } catch (e) { /* stockage indisponible */ }
             window.location.href = "index.html";
         }
 
@@ -913,6 +920,12 @@
             updateDevisNumber(new Date());
             updateDevisDate(new Date());
             summaryReady = loadOrderSummary();
+        });
+
+        // Page réaffichée par « Retour » telle que le navigateur l'avait gardée en mémoire : elle
+        // montrerait encore la sélection du visiteur précédent. On la recharge depuis le panier.
+        window.addEventListener("pageshow", event => {
+            if (event.persisted) window.location.reload();
         });
     </script>
 </body>

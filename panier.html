@@ -303,6 +303,15 @@
             loadCart();
         });
 
+        // Page réaffichée par « Retour » telle que le navigateur l'avait gardée en mémoire : le
+        // panier a pu être vidé entre-temps (« Nouveau devis »), on le relit.
+        window.addEventListener("pageshow", event => {
+            if (event.persisted) {
+                loadCart();
+                if (typeof window.updateCartCount === "function") window.updateCartCount();
+            }
+        });
+
         function makeColorsHtml(item) {
             return getDisplayColors(item).map(({ hex, label }) => `
                     <div class="color-item">
