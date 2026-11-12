@@ -141,7 +141,7 @@
 
         <div class="action-bar">
             <button class="btn btn-primary" id="addToCartBtn" onclick="addToCart()">Ajouter au panier</button>
-            <a href="index.html" class="btn btn-neutral" id="backLink">Retour au catalogue</a>
+            <a href="catalogue.html" class="btn btn-neutral" id="backLink">Retour au catalogue</a>
         </div>
     </div>
     <script src="js/ral.js"></script>
@@ -331,13 +331,14 @@
         // mais longueur fixée à 3 m ; l'article en garde la mention jusqu'au PDF.
         // Toute autre adresse (gamme=hors-coeur ou pas de gamme) est une barre hors cœur.
         const gamme = urlParams.get("gamme") === PLEIN_COEUR ? PLEIN_COEUR : null;
+        // « Retour au catalogue » ramène au catalogue de la gamme.
+        document.getElementById("backLink").href = `catalogue.html?gamme=${gamme || HORS_COEUR}`;
         if (!gamme) {
             document.title = "Configurateur de barre hors cœur";
             document.querySelector("h1").textContent = "Configurateur de barre hors cœur";
         } else {
             document.title = "Configurateur de barre plein cœur 3 m";
             document.querySelector("h1").textContent = "Configurateur de barre plein cœur 3 m";
-            document.getElementById("backLink").href = "index.html#plein-coeur";
             const lengthSelect = document.getElementById("length");
             Array.from(lengthSelect.options).filter(option => option.value !== "3m").forEach(option => option.remove());
             lengthSelect.value = "3m";

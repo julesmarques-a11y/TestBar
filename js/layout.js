@@ -5,8 +5,11 @@
     "use strict";
 
     const PAGE = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
+    // Étape 1 « Choisir » : l'accueil, le catalogue d'une gamme et la page sur mesure.
     const STEP_OF_PAGE = {
         "index.html": 1,
+        "catalogue.html": 1,
+        "sur-mesure.html": 1,
         "config.html": 2,
         "config_personnalisee.html": 2,
         "config_bar_octo.html": 2,
@@ -17,7 +20,7 @@
     const currentStep = STEP_OF_PAGE[PAGE] || 1;
 
     // Le dernier configurateur ouvert est mémorisé : depuis le panier ou le devis, l'étape
-    // « Configurer » y ramène (sinon vers le catalogue).
+    // « Configurer » y ramène (sinon vers l'accueil).
     const LAST_CONFIG_KEY = "lastConfigUrl";
     if (currentStep === 2) {
         try { localStorage.setItem(LAST_CONFIG_KEY, PAGE + window.location.search); } catch (e) { /* stockage indisponible */ }
