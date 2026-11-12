@@ -20,7 +20,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 16px 24px;
-            margin-bottom: 25px;
+            margin-bottom: 10px;
         }
 
         .form-group {
@@ -35,12 +35,36 @@
             margin-bottom: 4px;
         }
 
-        input {
+        input,
+        textarea {
             padding: 9px 10px;
             border: 1px solid var(--color-input-border);
             border-radius: var(--radius);
             font-size: 0.95em;
             font-family: inherit;
+        }
+
+        textarea {
+            min-height: 72px;
+            line-height: 1.4;
+            resize: vertical;
+        }
+
+        /* Commentaire : toute la largeur du formulaire. */
+        .form-group-wide {
+            flex-basis: 100%;
+        }
+
+        /* Sous les champs : rappel des champs obligatoires, puis mention sur l'usage des données. */
+        .form-hint,
+        .privacy-notice {
+            color: var(--color-text-muted);
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+
+        .privacy-notice {
+            margin: 4px 0 25px;
         }
 
         .devis-info {
@@ -208,6 +232,13 @@
             margin-top: 8px;
         }
 
+        /* Commentaire du client : sur toute la largeur, retours à la ligne conservés. */
+        .pdf-comment {
+            margin-top: 4px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
         /* Cinq compteurs sur une seule ligne. */
         .pdf-stats {
             column-gap: 14px;
@@ -275,7 +306,7 @@
         <a href="panier.html" class="btn btn-neutral">← Retour au panier</a>
         <h1>Devis</h1>
         <p>
-            Renseignez le nom, le numéro de commande et la date de livraison souhaitée. Téléchargez ensuite votre devis en PDF. Le numéro de devis est établi à partir de la date et de l'heure de génération.
+            Renseignez vos coordonnées et la date de livraison souhaitée. Téléchargez ensuite votre devis en PDF. Le numéro de devis est établi à partir de la date et de l'heure de génération.
         </p>
     </section>
 
@@ -288,25 +319,62 @@
             <div id="devisDateDisplay"></div>
         </div>
 
-        <form id="devisForm" onsubmit="return false;">
-            <div class="section-title">Informations client</div>
+        <!-- autocomplete="off" : sur une tablette partagée (salon), le navigateur ne doit pas proposer
+             à un visiteur les coordonnées des précédents. -->
+        <form id="devisForm" onsubmit="return false;" autocomplete="off">
+            <div class="section-title">Vos coordonnées</div>
 
             <div class="form-grid">
                 <div class="form-group">
                     <label for="lastName">Nom *</label>
-                    <input type="text" id="lastName" name="lastName" required>
+                    <input type="text" id="lastName" name="lastName" maxlength="80" autocapitalize="words" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="orderNumber">Numéro de commande *</label>
-                    <input type="text" id="orderNumber" name="orderNumber" required>
+                    <label for="firstName">Prénom</label>
+                    <input type="text" id="firstName" name="firstName" maxlength="80" autocapitalize="words">
+                </div>
+
+                <div class="form-group">
+                    <label for="company">Société ou club</label>
+                    <input type="text" id="company" name="company" maxlength="120">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Téléphone</label>
+                    <input type="tel" id="phone" name="phone" maxlength="30" inputmode="tel">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" maxlength="120" inputmode="email" autocapitalize="off" spellcheck="false">
+                </div>
+
+                <div class="form-group">
+                    <label for="city">Ville</label>
+                    <input type="text" id="city" name="city" maxlength="80" autocapitalize="words">
+                </div>
+
+                <div class="form-group">
+                    <label for="orderNumber">Numéro de commande</label>
+                    <input type="text" id="orderNumber" name="orderNumber" maxlength="40">
                 </div>
 
                 <div class="form-group">
                     <label for="deliveryDate">Date de livraison souhaitée *</label>
                     <input type="date" id="deliveryDate" name="deliveryDate" required>
                 </div>
+
+                <div class="form-group form-group-wide">
+                    <label for="comment">Commentaire</label>
+                    <textarea id="comment" name="comment" rows="3" maxlength="600"></textarea>
+                </div>
             </div>
+
+            <p class="form-hint">* Champs obligatoires. Indiquez aussi au moins un moyen de contact : téléphone ou email.</p>
+            <p class="privacy-notice">
+                Vos coordonnées sont utilisées par EQUINOX uniquement pour établir ce devis et assurer son suivi commercial. Elles ne sont transmises à aucun tiers.
+            </p>
 
             <div id="statsContainer">
                 <strong>📊 Statistiques :</strong><br>
@@ -580,14 +648,17 @@
         // simple, puis les statistiques ; les suivantes rappellent le numéro de devis et le client.
         function pdfHeaderHtml(info, isFirstPage) {
             const number = escapeHtml(info.devisNumber);
-            const name = escapeHtml(info.lastName);
-            const order = escapeHtml(info.orderNumber);
+            const client = info.client;
             const pageNumber = `<span class="pdf-page-number"></span>`;
+            // « Libellé : valeur », seulement pour les champs renseignés.
+            const field = (label, value) => value ? `<span>${label} : <strong>${escapeHtml(value)}</strong></span>` : "";
 
             if (!isFirstPage) {
+                const fullName = escapeHtml([client.nom, client.prenom].filter(Boolean).join(" "));
+                const order = client.numeroCommande ? ` – Commande n° <strong>${escapeHtml(client.numeroCommande)}</strong>` : "";
                 return `
                     <div class="pdf-running">
-                        <span>EQUINOX – Devis n° <strong>${number}</strong> – Client : <strong>${name}</strong> – Commande n° <strong>${order}</strong></span>
+                        <span>EQUINOX – Devis n° <strong>${number}</strong> – Client : <strong>${fullName}</strong>${order}</span>
                         ${pageNumber}
                     </div>
                 `;
@@ -604,10 +675,16 @@
                     <span>Date du devis : <strong>${escapeHtml(info.devisDate)}</strong></span>
                 </div>
                 <div class="pdf-client">
-                    <span>Nom : <strong>${name}</strong></span>
-                    <span>Numéro de commande : <strong>${order}</strong></span>
-                    <span>Date de livraison souhaitée : <strong>${escapeHtml(formatDateFr(info.deliveryDate))}</strong></span>
+                    ${field("Nom", client.nom)}
+                    ${field("Prénom", client.prenom)}
+                    ${field("Société ou club", client.societe)}
+                    ${field("Téléphone", client.telephone)}
+                    ${field("Email", client.email)}
+                    ${field("Ville", client.ville)}
+                    ${field("Numéro de commande", client.numeroCommande)}
+                    ${field("Date de livraison souhaitée", formatDateFr(client.dateLivraison))}
                 </div>
+                ${client.commentaire ? `<div class="pdf-comment">Commentaire : <strong>${escapeHtml(client.commentaire)}</strong></div>` : ""}
                 <div class="pdf-stats">
                     <span>Statistiques :</span>
                     <span><strong>${count("countHorsCoeur3m")}</strong> hors cœur 3 m</span>
@@ -677,18 +754,52 @@
             return pages;
         }
 
+        // Coordonnées saisies dans le formulaire, telles qu'elles sont imprimées dans le PDF.
+        function readClient() {
+            const value = id => document.getElementById(id).value.trim();
+            return {
+                nom: value("lastName"),
+                prenom: value("firstName"),
+                societe: value("company"),
+                telephone: value("phone"),
+                email: value("email"),
+                ville: value("city"),
+                numeroCommande: value("orderNumber"),
+                dateLivraison: value("deliveryDate"),
+                commentaire: value("comment")
+            };
+        }
+
+        // Première erreur de saisie : { id du champ, message }, ou null si tout est correct.
+        // Obligatoires : le nom, un moyen de contact (téléphone ou email) et la date de livraison.
+        function findClientError(client) {
+            if (!client.nom) {
+                return { id: "lastName", message: "Indiquez votre nom." };
+            }
+            if (!client.telephone && !client.email) {
+                return { id: "phone", message: "Indiquez au moins un moyen de contact : téléphone ou email." };
+            }
+            if (client.telephone && client.telephone.replace(/\D/g, "").length < 6) {
+                return { id: "phone", message: "Ce numéro de téléphone semble incomplet." };
+            }
+            if (client.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(client.email)) {
+                return { id: "email", message: "Cette adresse email semble incorrecte (exemple : nom@domaine.fr)." };
+            }
+            if (!client.dateLivraison) {
+                return { id: "deliveryDate", message: "Indiquez la date de livraison souhaitée." };
+            }
+            return null;
+        }
+
         async function generatePdf() {
-            const lastName = document.getElementById("lastName").value.trim();
-            const orderNumber = document.getElementById("orderNumber").value.trim();
-            const deliveryDate = document.getElementById("deliveryDate").value.trim();
+            const client = readClient();
             const downloadBtn = document.getElementById("downloadBtn");
             const loadingText = document.getElementById("loading");
 
             clearErrors();
-            if (!lastName || !orderNumber || !deliveryDate) {
-                const missing = ["lastName", "orderNumber", "deliveryDate"].find(id => !document.getElementById(id).value.trim());
-                showError("downloadBtn", "Renseignez le nom, le numéro de commande et la date de livraison souhaitée.");
-                document.getElementById(missing).focus();
+            const error = findClientError(client);
+            if (error) {
+                showError(error.id, error.message);
                 return;
             }
 
@@ -730,7 +841,7 @@
             };
 
             try {
-                const pages = await buildPdfPages(sheet, { devisNumber, devisDate, lastName, orderNumber, deliveryDate });
+                const pages = await buildPdfPages(sheet, { devisNumber, devisDate, client });
 
                 // Chaque page est dessinée séparément puis ajoutée au PDF : html2pdf dessinerait
                 // sinon tout le devis en une seule image, trop grande pour un long panier.
