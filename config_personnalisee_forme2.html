@@ -102,11 +102,6 @@
         let editContext = null;
         let savedWidths = null; // largeurs de rayures de l'article en cours de modification
 
-        const SHAPE_X_MIN = 200.3155;
-        const SHAPE_WIDTH = 400.522;
-        const SHAPE_Y_MIN = 200.3155;
-        const SHAPE_HEIGHT = 40.05364;
-
         function getBarLengthCm() {
             const lengthValue = document.getElementById("length").value;
             return lengthValue === "3.5m" ? 350 : 300;
@@ -166,41 +161,8 @@
                 widths,
                 total_length_cm
             } = getStripeConfig();
-            const barLengthCm = total_length_cm;
-            const svgTotalUnits = SHAPE_WIDTH;
-            let xUnits = SHAPE_X_MIN;
-            let stripesMarkup = "";
-
-            widths.forEach((wCm, i) => {
-                const stripeUnitsWidth = (wCm / barLengthCm) * svgTotalUnits;
-                stripesMarkup += `<rect data-stripe="${i}" x="${xUnits}" y="${SHAPE_Y_MIN}" width="${stripeUnitsWidth}" height="${SHAPE_HEIGHT}" fill="#ffffff" stroke="#bdc3c7" stroke-width="0.2" shape-rendering="crispEdges" />`;
-                xUnits += stripeUnitsWidth;
-            });
-
-            const svgMarkup = `<svg viewBox="${SHAPE_X_MIN} ${SHAPE_Y_MIN} ${SHAPE_WIDTH} ${SHAPE_HEIGHT}" width="100%" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <clipPath id="barShapeClip">
-      <path d="m 220.64959,220.49723 360.31916,-0.18284 -3.22536,3.60346 -2.32709,3.98622 -1.33592,3.03815 -1.5083,6.85199 -0.10774,2.6072 -343.77008,-0.0667 -1.02082,-8.15132 -3.18435,-6.65819 z" />
-      <path d="m 200.56075,220.47031 c 0.0862,-0.68951 -0.15997,-20.06953 -0.15997,-20.06953 l 400.41959,-0.0986 0.0163,20.05791 z" />
-      <path d="m 219.39295,218.72499 2.80113,3.63069 357.1007,-0.37707 3.18898,-3.66302 z" />
-    </clipPath>
-  </defs>
-  <g clip-path="url(#barShapeClip)">
-    ${stripesMarkup}
-  </g>
-  <g fill="none" stroke="#000000" stroke-width="0.631" stroke-linecap="round">
-    <path d="m 228.63699,240.36812 a 28.321171,28.321171 0 0 0 -8.29508,-20.02609" />
-    <path d="m 220.3415,220.3425 h -20.026" />
-    <path d="m 200.3155,220.3425 v -20.027" />
-    <path d="m 200.3155,200.3155 h 400.522" />
-    <path d="m 600.8375,220.3425 v -20.027" />
-    <path d="m 600.8375,220.3425 h -20.026" />
-    <path d="m 580.81157,220.34203 a 28.321171,28.321171 0 0 0 -8.29508,20.02609" />
-    <path d="M 228.63672 240.36914 L 572.51562 240.36914 L 228.63672 240.36914 z" />
-  </g>
-</svg>`;
-
-            svgContainer.innerHTML = svgMarkup;
+            // Dessin commun avec la palanque assortie des modèles du catalogue (js/cart.js).
+            svgContainer.innerHTML = buildPalanqueSvg(widths.map(width => ({ width, fill: "#ffffff" })), total_length_cm);
 
             svgContainer.querySelectorAll("rect[data-stripe]").forEach(rect => {
                 rect.style.cursor = "pointer";

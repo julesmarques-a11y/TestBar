@@ -129,6 +129,7 @@ function getConfigPage(item) {
 // la barre octo sous "BARRE_OCTO_PERSONNALISABLE" : ces identifiants sont conservés pour que les
 // articles déjà au panier restent reconnus et modifiables.
 function getModelLabel(item) {
+    if (isMatchingPalanque(item)) return `Palanque assortie au modèle ${item.matchedModel}`;
     const page = getConfigPage(item);
     if (page === "config_personnalisee_forme2.html") return "Palanque personnalisée";
     if (page === "config_bar_octo.html") return "Barre octo personnalisée";
@@ -196,14 +197,17 @@ function getEditContext(page, model, gamme) {
 }
 
 // Bandeau en tête du configurateur quand un article du panier est en cours de modification,
-// avec un lien « Annuler » qui revient au panier sans rien changer.
+// avec un lien « Annuler » qui revient au panier sans rien changer. Si la barre a une palanque
+// assortie dans le panier, le bandeau le rappelle.
 function showEditBanner(editContext) {
     if (!editContext) return;
+    const palanque = findLinkedPalanque(readCart(), editContext.item);
     const banner = document.createElement("div");
     banner.className = "edit-banner";
     banner.setAttribute("role", "status");
     banner.innerHTML = `
-        <span class="edit-banner-text">Vous modifiez un article du panier : <strong></strong> (ligne ${editContext.index + 1}).
+        <span class="edit-banner-text">Vous modifiez un article du panier : <strong></strong> (ligne ${editContext.index + 1})${
+        palanque ? ` et sa palanque assortie (ligne ${palanque.index + 1})` : ""}.
         Vos changements seront enregistrés avec « Mettre à jour l'article ».</span>
         <a class="btn btn-neutral" href="panier.html">Annuler</a>`;
     banner.querySelector("strong").textContent = getModelLabel(editContext.item);
@@ -240,6 +244,118 @@ async function saveCartItem(newItem, editContext) {
     }
     writeCart(cart);
     return "updated";
+}
+
+// ---- Palanque : dessin commun à config_personnalisee_forme2.html et à la palanque assortie ----
+
+// Cadre du dessin de la palanque, en unités du SVG.
+const PALANQUE_SHAPE = { x: 200.3155, y: 200.3155, width: 400.522, height: 40.05364 };
+
+// SVG d'une palanque de `totalCm` de long. `stripes` : ses rayures de gauche à droite,
+// [{ width: largeur en cm, fill: couleur }]. Les rayures sont rognées sur la forme de la palanque.
+function buildPalanqueSvg(stripes, totalCm) {
+    const shape = PALANQUE_SHAPE;
+    let xUnits = shape.x;
+    let stripesMarkup = "";
+
+    stripes.forEach((stripe, i) => {
+        const stripeUnitsWidth = (stripe.width / totalCm) * shape.width;
+        stripesMarkup += `<rect data-stripe="${i}" x="${xUnits}" y="${shape.y}" width="${stripeUnitsWidth}" height="${shape.height}" fill="${stripe.fill}" stroke="#bdc3c7" stroke-width="0.2" shape-rendering="crispEdges" />`;
+        xUnits += stripeUnitsWidth;
+    });
+
+    return `<svg viewBox="${shape.x} ${shape.y} ${shape.width} ${shape.height}" width="100%" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="barShapeClip">
+      <path d="m 220.64959,220.49723 360.31916,-0.18284 -3.22536,3.60346 -2.32709,3.98622 -1.33592,3.03815 -1.5083,6.85199 -0.10774,2.6072 -343.77008,-0.0667 -1.02082,-8.15132 -3.18435,-6.65819 z" />
+      <path d="m 200.56075,220.47031 c 0.0862,-0.68951 -0.15997,-20.06953 -0.15997,-20.06953 l 400.41959,-0.0986 0.0163,20.05791 z" />
+      <path d="m 219.39295,218.72499 2.80113,3.63069 357.1007,-0.37707 3.18898,-3.66302 z" />
+    </clipPath>
+  </defs>
+  <g clip-path="url(#barShapeClip)">
+    ${stripesMarkup}
+  </g>
+  <g fill="none" stroke="#000000" stroke-width="0.631" stroke-linecap="round">
+    <path d="m 228.63699,240.36812 a 28.321171,28.321171 0 0 0 -8.29508,-20.02609" />
+    <path d="m 220.3415,220.3425 h -20.026" />
+    <path d="m 200.3155,220.3425 v -20.027" />
+    <path d="m 200.3155,200.3155 h 400.522" />
+    <path d="m 600.8375,220.3425 v -20.027" />
+    <path d="m 600.8375,220.3425 h -20.026" />
+    <path d="m 580.81157,220.34203 a 28.321171,28.321171 0 0 0 -8.29508,20.02609" />
+    <path d="M 228.63672 240.36914 L 572.51562 240.36914 L 228.63672 240.36914 z" />
+  </g>
+</svg>`;
+}
+
+// ---- Palanque assortie à une barre du catalogue (option de config.html) ----
+// C'est un article à part du panier, du devis et du PDF. Il porte le modèle de sa barre
+// (matchedModel) et, tant que cette barre est au panier, son identifiant (linkedTo = champ id de
+// la barre) : « Modifier » et « Supprimer » sur la barre proposent alors d'en faire autant sur
+// la palanque. Son dessin est celui de la palanque personnalisée, avec une rayure par bande de la
+// barre : sans barre liée, elle se modifie donc dans config_personnalisee_forme2.html.
+
+function isMatchingPalanque(item) {
+    return Boolean(item) && Boolean(item.matchedModel);
+}
+
+// Identifiant donné à une barre quand on lui associe une palanque.
+function newItemId() {
+    return "a" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+// Palanque assortie à la barre `bar` dans `cart` : { index, item }, ou null.
+function findLinkedPalanque(cart, bar) {
+    if (!bar || !bar.id) return null;
+    const index = cart.findIndex(item => item && item.linkedTo === bar.id);
+    return index === -1 ? null : { index, item: cart[index] };
+}
+
+// Barre à laquelle la palanque `palanque` est assortie dans `cart` : { index, item }, ou null.
+function findLinkedBar(cart, palanque) {
+    if (!palanque || !palanque.linkedTo) return null;
+    const index = cart.findIndex(item => item && item.id === palanque.linkedTo);
+    return index === -1 ? null : { index, item: cart[index] };
+}
+
+// Article « palanque assortie » de la barre `bar` (qui doit avoir un id). `bands` : les bandes de
+// la barre de gauche à droite, [{ share: part de la longueur, fill: couleur }] ; la palanque a la
+// longueur de la barre, les mêmes couleurs dans le même ordre et les mêmes RAL personnalisés.
+function makeMatchingPalanque(bar, bands, heightMm, quantity) {
+    const totalCm = bar.length === "3.5m" ? 350 : 300;
+    const widths = bands.map(band => band.share * totalCm);
+    return {
+        model: "PALANQUE ASSORTIE",
+        matchedModel: String(bar.model),
+        linkedTo: bar.id,
+        colors: [...new Set(bands.map(band => band.fill))],
+        quantity: quantity,
+        length: bar.length,
+        height: heightMm + " mm",
+        svg: buildPalanqueSvg(bands.map((band, i) => ({ width: widths[i], fill: band.fill })), totalCm),
+        stripes: bands.length,
+        widths_cm: widths,
+        total_length_cm: totalCm,
+        custom_rals: { ...(bar.custom_rals || {}) },
+        sourcePage: "config_personnalisee_forme2.html"
+    };
+}
+
+// Enregistre la palanque assortie de la barre `bar` : remplace celle du panier, sinon l'ajoute
+// juste après la barre. `palanque` à null : retire celle du panier.
+function saveLinkedPalanque(bar, palanque) {
+    if (!bar.id) return;
+    const cart = readCart();
+    const existing = findLinkedPalanque(cart, bar);
+    if (existing && palanque) {
+        cart[existing.index] = palanque;
+    } else if (existing) {
+        cart.splice(existing.index, 1);
+    } else if (palanque) {
+        const barIndex = cart.findIndex(item => item && item.id === bar.id);
+        cart.splice(barIndex === -1 ? cart.length : barIndex + 1, 0, palanque);
+    }
+    writeCart(cart);
 }
 
 // Message après enregistrement d'un article : « Continuer » reste sur la page, « Voir le panier » y va.

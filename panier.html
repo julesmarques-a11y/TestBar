@@ -393,18 +393,30 @@
             }
         }
 
+        // Supprimer une barre qui a une palanque assortie propose de supprimer aussi la palanque.
+        // Si elle est gardée, elle n'est plus liée à une barre et devient modifiable seule.
         async function removeFromCart(index) {
             const ok = await confirmDialog("Supprimer cet article du panier ?", { okLabel: "Supprimer" });
             if (!ok) return;
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            cart.splice(index, 1);
+            const palanque = findLinkedPalanque(cart, cart[index]);
+            const removePalanque = palanque && await confirmDialog(
+                "Cette barre a une palanque assortie dans le panier. La supprimer aussi ?",
+                { okLabel: "Supprimer aussi la palanque", cancelLabel: "Garder la palanque" });
+
+            if (palanque && !removePalanque) delete palanque.item.linkedTo;
+            cart = cart.filter((item, i) => i !== index && !(removePalanque && i === palanque.index));
             writeCart(cart);
             loadCart();
         }
 
+        // « Modifier » rouvre l'article dans son configurateur. Une palanque assortie se modifie
+        // avec sa barre (mêmes couleurs) : on ouvre donc le configurateur de la barre, qui
+        // reprend la hauteur et la quantité de la palanque.
         function redirectToConfig(index) {
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const editUrl = getEditUrl(cart[index], index);
+            const bar = findLinkedBar(cart, cart[index]);
+            const editUrl = bar ? getEditUrl(bar.item, bar.index) : getEditUrl(cart[index], index);
 
             if (editUrl) {
                 window.location.href = editUrl;

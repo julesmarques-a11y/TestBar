@@ -45,6 +45,18 @@
             cursor: pointer;
         }
 
+        /* Option « palanque assortie », sous la longueur et la quantité de la barre. */
+        .palanque-options {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--color-border-faint);
+        }
+
+        .palanque-hint {
+            flex-basis: 100%;
+            font-size: 0.9em;
+        }
+
         #svgContainer svg {
             width: 100%;
             max-width: 760px;
@@ -136,6 +148,34 @@
                     <label for="quantity">Quantité</label>
                     <input type="number" id="quantity" min="1" value="1">
                 </div>
+            </div>
+
+            <!-- Palanque assortie : un second article, aux couleurs de la barre (voir addToCart). -->
+            <div class="controls palanque-options" id="palanqueOptions">
+                <div class="control-group">
+                    <label for="addPalanque">Palanque</label>
+                    <label class="check-option">
+                        <input type="checkbox" id="addPalanque">
+                        Ajouter une palanque assortie
+                    </label>
+                </div>
+
+                <div class="control-group" data-palanque-field hidden>
+                    <label for="palanqueHeight">Hauteur de la palanque</label>
+                    <select id="palanqueHeight">
+                        <option value="145">145 mm</option>
+                        <option value="95">95 mm</option>
+                    </select>
+                </div>
+
+                <div class="control-group" data-palanque-field hidden>
+                    <label for="palanqueQuantity">Quantité de palanques</label>
+                    <input type="number" id="palanqueQuantity" min="1" value="1">
+                </div>
+
+                <p class="palanque-hint text-muted" data-palanque-field hidden>
+                    La palanque reprend la longueur de la barre et ses couleurs, dans le même ordre. Elle figure à part dans le panier et le devis.
+                </p>
             </div>
         </div>
 
@@ -324,8 +364,42 @@
             });
         }
 
+        // Bandes de la barre de gauche à droite, relevées sur la première des quatre vues du dessin :
+        // [{ share: part de la longueur de la barre, fill: couleur affichée }]. Sert à dessiner la
+        // palanque assortie avec les mêmes couleurs, dans le même ordre et aux mêmes proportions.
+        function barBands() {
+            const sections = document.querySelectorAll(`#svgContainer ${SECTION_SELECTOR}`);
+            const shapes = new Set(Array.from(sections).flatMap(section => {
+                const pieces = section.querySelectorAll(SHAPES);
+                return Array.from(pieces.length ? pieces : [section]);
+            }));
+            const pieces = Array.from(shapes, shape => ({
+                rect: shape.getBoundingClientRect(),
+                fill: rgbToHex(getComputedStyle(shape).fill)
+            })).filter(piece => piece.rect.width > 0 && piece.rect.height > 0);
+            if (!pieces.length) return [];
+
+            const top = Math.min(...pieces.map(piece => piece.rect.top));
+            const firstView = pieces
+                .filter(piece => piece.rect.top < top + piece.rect.height / 2)
+                .sort((a, b) => a.rect.left - b.rect.left);
+            const total = firstView.reduce((sum, piece) => sum + piece.rect.width, 0);
+            return firstView.map(piece => ({ share: piece.rect.width / total, fill: piece.fill }));
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const model = urlParams.get("model");
+
+        // Option « palanque assortie » : la case affiche la hauteur et la quantité de la palanque.
+        // Elle n'est pas proposée pour l'ancien modèle 114, qui est lui-même une palanque.
+        const palanqueAllowed = model !== "114";
+        document.getElementById("palanqueOptions").hidden = !palanqueAllowed;
+
+        function showPalanqueFields() {
+            const checked = document.getElementById("addPalanque").checked;
+            document.querySelectorAll("[data-palanque-field]").forEach(field => { field.hidden = !checked; });
+        }
+        document.getElementById("addPalanque").addEventListener("change", showPalanqueFields);
 
         // Gamme « plein cœur » (config.html?model=1xx&gamme=plein-coeur) : même configurateur,
         // mais longueur fixée à 3 m ; l'article en garde la mention jusqu'au PDF.
@@ -378,6 +452,37 @@
             restoreSectionColors(item.svg);
             restoreMyRals(item);
             document.getElementById("addToCartBtn").textContent = "Mettre à jour l'article";
+
+            // La barre a une palanque assortie dans le panier : ses options sont reprises.
+            const palanque = findLinkedPalanque(readCart(), item);
+            if (palanque && palanqueAllowed) {
+                document.getElementById("addPalanque").checked = true;
+                setSelectValue("palanqueHeight", parseInt(palanque.item.height)); // "145 mm" → "145"
+                document.getElementById("palanqueQuantity").value = palanque.item.quantity || 1;
+                showPalanqueFields();
+            }
+        }
+
+        // Ce qu'il faut faire de la palanque assortie à l'enregistrement de la barre `bar` :
+        // { save: true, item } pour l'ajouter ou la remplacer, { save: true, item: null } pour la
+        // retirer, { save: false } pour ne pas y toucher. Quand la barre modifiée a déjà une
+        // palanque au panier, on propose de lui appliquer le changement plutôt que de l'imposer.
+        async function palanqueDecision(bar, wanted) {
+            const existing = editContext ? findLinkedPalanque(readCart(), editContext.item) : null;
+            const item = wanted
+                ? makeMatchingPalanque(bar, barBands(), document.getElementById("palanqueHeight").value,
+                    parseInt(document.getElementById("palanqueQuantity").value))
+                : null;
+
+            if (!existing) return { save: Boolean(item), item };
+            if (item && JSON.stringify(item) === JSON.stringify(existing.item)) return { save: false };
+
+            const ok = item
+                ? await confirmDialog("Cette barre a une palanque assortie dans le panier. La mettre à jour elle aussi (couleurs, longueur, hauteur et quantité) ?",
+                    { okLabel: "Mettre à jour la palanque", cancelLabel: "Ne pas la modifier" })
+                : await confirmDialog("Cette barre a une palanque assortie dans le panier. La retirer du panier ?",
+                    { okLabel: "Retirer la palanque", cancelLabel: "Garder la palanque" });
+            return ok ? { save: true, item } : { save: false };
         }
 
         if (model) {
@@ -442,6 +547,12 @@
                 return;
             }
 
+            const wantsPalanque = palanqueAllowed && document.getElementById("addPalanque").checked;
+            if (wantsPalanque && !(parseInt(document.getElementById("palanqueQuantity").value) > 0)) {
+                showError("palanqueQuantity", "Indiquez une quantité de palanques d'au moins 1.");
+                return;
+            }
+
             // Les couleurs par défaut du SVG ne sont pas des RAL : elles resteraient sur l'image
             // du devis sans figurer dans la liste des couleurs.
             if (hasOffPaletteZone()) {
@@ -472,8 +583,11 @@
                 return;
             }
 
-            // Ajouter l'article (ou remplacer la ligne en cours de modification), avec le SVG enregistré
-            const result = await saveCartItem({
+            // Une barre reçoit un identifiant quand on lui associe une palanque (champ linkedTo de
+            // la palanque) ; elle le garde quand on la modifie.
+            const id = (editContext && editContext.item.id) || (wantsPalanque ? newItemId() : null);
+            const bar = {
+                ...(id ? { id } : {}),
                 model: model,
                 ...(gamme ? { gamme } : {}),
                 colors: colors,
@@ -482,9 +596,15 @@
                 length: length,
                 custom_rals: collectCustomRals(colors),
                 sourcePage: "config.html"
-            }, editContext);
+            };
+            const palanque = await palanqueDecision(bar, wantsPalanque);
 
-            notifyCartSaved(result, "Modèle ajouté au panier.");
+            // Ajouter l'article (ou remplacer la ligne en cours de modification), avec le SVG enregistré,
+            // puis sa palanque assortie, sur la ligne suivante du panier.
+            const result = await saveCartItem(bar, editContext);
+            if (result !== "cancelled" && palanque.save) saveLinkedPalanque(bar, palanque.item);
+
+            notifyCartSaved(result, palanque.save && palanque.item ? "Modèle et palanque assortie ajoutés au panier." : "Modèle ajouté au panier.");
         }
     </script>
 
