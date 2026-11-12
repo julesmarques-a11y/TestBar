@@ -57,22 +57,38 @@
             font-size: 0.9em;
         }
 
-        #svgContainer svg {
-            width: 100%;
-            max-width: 760px;
-            touch-action: manipulation;
+        /* Les images Bar_V1xx.svg font 500 x 280 et dessinent quatre vues de la barre avec de larges
+           marges blanches. L'aperçu ne montre que la zone dessinée (x 37 à 467, y 42 à 233, soit
+           430 x 191) : la barre est plus grande à hauteur égale. Le SVG lui-même n'est pas modifié,
+           c'est lui qui est enregistré dans le panier. */
+        .configurator #svgContainer {
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 430 / 191;
+            /* Empilé : au plus 30 % de la hauteur de la fenêtre, l'aperçu restant collé en haut. */
+            max-width: min(100%, calc(30vh * 430 / 191));
+        }
+
+        .configurator #svgContainer svg {
+            position: absolute;
+            left: calc(-100% * 37 / 430);
+            top: calc(-100% * 42 / 191);
+            width: calc(100% * 500 / 430);
+            max-width: none;
+            height: auto;
+        }
+
+        /* Deux colonnes : l'aperçu prend la hauteur que laissent, dans la fenêtre, l'en-tête, le
+           titre, les options et la barre d'action (511 px en tout), sans descendre sous 300 px de large. */
+        @media (min-width: 900px) {
+            .configurator #svgContainer {
+                max-width: min(100%, max(300px, calc((100vh - 511px) * 430 / 191)));
+            }
         }
 
         .color-item {
             cursor: pointer;
             touch-action: manipulation;
-        }
-
-        @media (max-width: 768px) {
-            #svgContainer {
-                padding: 12px 4px;
-                min-height: 0;
-            }
         }
     </style>
 </head>
@@ -85,10 +101,12 @@
         </p>
     </section>
 
-    <div class="container">
-        <div class="section">
+    <div class="container configurator">
+        <div class="config-main">
             <h2 class="section-title">Aperçu de la barre</h2>
-            <div id="svgContainer"></div>
+            <div class="config-preview">
+                <div id="svgContainer"></div>
+            </div>
             <div class="controls preview-options">
                 <div class="control-group">
                     <label for="linkedBands">Coloriage</label>
@@ -98,9 +116,60 @@
                     </label>
                 </div>
             </div>
+
+            <div class="section config-options">
+                <h2 class="section-title">Options</h2>
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="length">Longueur</label>
+                        <select id="length">
+                            <option value="3m">3m</option>
+                            <option value="3.5m">3,50m</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="quantity">Quantité</label>
+                        <input type="number" id="quantity" min="1" value="1">
+                    </div>
+                </div>
+
+                <!-- Palanque assortie : un second article, aux couleurs de la barre (voir addToCart). -->
+                <div class="controls palanque-options" id="palanqueOptions">
+                    <div class="control-group">
+                        <label for="addPalanque">Palanque</label>
+                        <label class="check-option">
+                            <input type="checkbox" id="addPalanque">
+                            Ajouter une palanque assortie
+                        </label>
+                    </div>
+
+                    <div class="control-group" data-palanque-field hidden>
+                        <label for="palanqueHeight">Hauteur de la palanque</label>
+                        <select id="palanqueHeight">
+                            <option value="145">145 mm</option>
+                            <option value="95">95 mm</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group" data-palanque-field hidden>
+                        <label for="palanqueQuantity">Quantité de palanques</label>
+                        <input type="number" id="palanqueQuantity" min="1" value="1">
+                    </div>
+
+                    <p class="palanque-hint text-muted" data-palanque-field hidden>
+                        La palanque reprend la longueur de la barre et ses couleurs, dans le même ordre. Elle figure à part dans le panier et le devis.
+                    </p>
+                </div>
+            </div>
+
+            <div class="action-bar">
+                <button class="btn btn-primary" id="addToCartBtn" onclick="addToCart()">Ajouter au panier</button>
+                <a href="catalogue.html" class="btn btn-neutral" id="backLink">Retour au catalogue</a>
+            </div>
         </div>
 
-        <div class="section">
+        <div class="section config-side">
             <h2 class="section-title">Couleurs RAL</h2>
             <div class="color-palette" id="colorPalette"></div>
             <div class="my-rals" id="myRals" hidden>
@@ -131,57 +200,6 @@
                     </small>
                 </details>
             </div>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title">Options</h2>
-            <div class="controls">
-                <div class="control-group">
-                    <label for="length">Longueur</label>
-                    <select id="length">
-                        <option value="3m">3m</option>
-                        <option value="3.5m">3,50m</option>
-                    </select>
-                </div>
-
-                <div class="control-group">
-                    <label for="quantity">Quantité</label>
-                    <input type="number" id="quantity" min="1" value="1">
-                </div>
-            </div>
-
-            <!-- Palanque assortie : un second article, aux couleurs de la barre (voir addToCart). -->
-            <div class="controls palanque-options" id="palanqueOptions">
-                <div class="control-group">
-                    <label for="addPalanque">Palanque</label>
-                    <label class="check-option">
-                        <input type="checkbox" id="addPalanque">
-                        Ajouter une palanque assortie
-                    </label>
-                </div>
-
-                <div class="control-group" data-palanque-field hidden>
-                    <label for="palanqueHeight">Hauteur de la palanque</label>
-                    <select id="palanqueHeight">
-                        <option value="145">145 mm</option>
-                        <option value="95">95 mm</option>
-                    </select>
-                </div>
-
-                <div class="control-group" data-palanque-field hidden>
-                    <label for="palanqueQuantity">Quantité de palanques</label>
-                    <input type="number" id="palanqueQuantity" min="1" value="1">
-                </div>
-
-                <p class="palanque-hint text-muted" data-palanque-field hidden>
-                    La palanque reprend la longueur de la barre et ses couleurs, dans le même ordre. Elle figure à part dans le panier et le devis.
-                </p>
-            </div>
-        </div>
-
-        <div class="action-bar">
-            <button class="btn btn-primary" id="addToCartBtn" onclick="addToCart()">Ajouter au panier</button>
-            <a href="catalogue.html" class="btn btn-neutral" id="backLink">Retour au catalogue</a>
         </div>
     </div>
     <script src="js/ral.js"></script>

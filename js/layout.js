@@ -107,8 +107,18 @@
         return footer;
     }
 
-    document.body.prepend(buildHeader());
+    const header = buildHeader();
+    document.body.prepend(header);
     document.body.append(buildFooter());
+
+    // Hauteur de l'en-tête, pour ce qui doit rester collé juste dessous (css/site.css, configurateurs).
+    const setHeaderHeight = () => {
+        document.documentElement.style.setProperty("--header-height", header.offsetHeight + "px");
+    };
+    setHeaderHeight();
+    if (typeof ResizeObserver === "function") new ResizeObserver(setHeaderHeight).observe(header);
+    else window.addEventListener("resize", setHeaderHeight);
+
     updateCartCount();
 
     // Panier modifié dans un autre onglet.

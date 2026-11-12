@@ -455,7 +455,7 @@ h4,
         padding-left: 10px;
         padding-right: 10px;
     }
-    .container:has(> .action-bar) {
+    .container:has(.action-bar) {
         padding-bottom: 0;
     }
 }
@@ -524,6 +524,128 @@ h4,
     max-width: 100%;
     height: auto;
     display: block;
+}
+
+/* Mise en page des quatre configurateurs (.container.configurator).
+   .config-main : aperçu de la barre (.config-preview), options (.config-options) et barre d'action ;
+   .config-side : palette RAL.
+   À partir de 900 px, deux colonnes : .config-main à gauche, fixée sous l'en-tête pendant que la
+   palette défile à droite. En dessous, tout est empilé (aperçu, palette, options, barre d'action)
+   et seul l'aperçu reste collé sous l'en-tête.
+   --header-height : hauteur de l'en-tête, mesurée par js/layout.js. */
+
+.page-intro:has(+ .configurator) {
+    padding-top: 16px;
+}
+
+.page-intro:has(+ .configurator) h1 {
+    margin-bottom: 2px;
+}
+
+.page-intro:has(+ .configurator) p {
+    margin-bottom: 0;
+}
+
+.configurator {
+    display: flex;
+    flex-direction: column;
+    padding-top: 12px;
+}
+
+/* Empilé : les blocs de .config-main se rangent directement dans .configurator, la palette
+   (.config-side) vient s'intercaler entre l'aperçu et les options. */
+.config-main {
+    display: contents;
+}
+
+.config-side {
+    order: 1;
+    margin-top: 20px;
+}
+
+.config-options {
+    order: 2;
+    margin-top: 20px;
+}
+
+.configurator .action-bar {
+    order: 3;
+}
+
+.configurator .section {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.configurator .section-title {
+    font-size: 1.25em;               /* 20 px : les titres de bloc ne doivent pas prendre de hauteur */
+    margin-bottom: 8px;
+}
+
+/* Cadre de l'aperçu ; #svgContainer ne contient que le dessin. */
+.config-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 12px;
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+}
+
+.configurator #svgContainer {
+    display: block;
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.configurator #svgContainer svg {
+    touch-action: manipulation;
+}
+
+/* Empilé : l'aperçu reste collé sous l'en-tête, sur toute la largeur de l'écran, tant que la
+   fenêtre est assez haute pour laisser de la place à la palette. */
+@media (max-width: 899px) and (min-height: 520px) {
+    .config-preview {
+        position: sticky;
+        top: var(--header-height, 93px);
+        z-index: 40;
+        margin: 0 calc(-1 * var(--container-gutter));
+        padding: 10px var(--container-gutter);
+        border-width: 0 0 1px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+    }
+}
+
+@media (min-width: 900px) {
+    .configurator {
+        display: grid;
+        grid-template-columns: minmax(0, 55fr) minmax(0, 45fr);
+        column-gap: 32px;
+        align-items: start;
+    }
+    .config-main {
+        display: block;
+        position: sticky;
+        top: calc(var(--header-height, 119px) + 12px);
+    }
+    .config-side {
+        margin-top: 0;
+    }
+    .config-options {
+        margin-top: 16px;
+    }
+    .configurator .action-bar {
+        justify-content: flex-start;
+        margin-top: 16px;
+        padding-top: 16px;
+    }
+    .configurator .action-bar .field-error {
+        text-align: left;
+    }
 }
 
 /* Grandes tuiles de choix : les trois gammes sur l'accueil, les trois configurateurs sur
