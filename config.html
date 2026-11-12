@@ -367,6 +367,8 @@
         // Bandes de la barre de gauche à droite, relevées sur la première des quatre vues du dessin :
         // [{ share: part de la longueur de la barre, fill: couleur affichée }]. Sert à dessiner la
         // palanque assortie avec les mêmes couleurs, dans le même ordre et aux mêmes proportions.
+        // Les mesures sont prises dans les unités du dessin (getBBox), pas à l'écran : le résultat
+        // est le même quelle que soit la largeur de la fenêtre.
         function barBands() {
             const sections = document.querySelectorAll(`#svgContainer ${SECTION_SELECTOR}`);
             const shapes = new Set(Array.from(sections).flatMap(section => {
@@ -374,17 +376,17 @@
                 return Array.from(pieces.length ? pieces : [section]);
             }));
             const pieces = Array.from(shapes, shape => ({
-                rect: shape.getBoundingClientRect(),
+                box: shape.getBBox(),
                 fill: rgbToHex(getComputedStyle(shape).fill)
-            })).filter(piece => piece.rect.width > 0 && piece.rect.height > 0);
+            })).filter(piece => piece.box.width > 0 && piece.box.height > 0);
             if (!pieces.length) return [];
 
-            const top = Math.min(...pieces.map(piece => piece.rect.top));
+            const top = Math.min(...pieces.map(piece => piece.box.y));
             const firstView = pieces
-                .filter(piece => piece.rect.top < top + piece.rect.height / 2)
-                .sort((a, b) => a.rect.left - b.rect.left);
-            const total = firstView.reduce((sum, piece) => sum + piece.rect.width, 0);
-            return firstView.map(piece => ({ share: piece.rect.width / total, fill: piece.fill }));
+                .filter(piece => piece.box.y < top + piece.box.height / 2)
+                .sort((a, b) => a.box.x - b.box.x);
+            const total = firstView.reduce((sum, piece) => sum + piece.box.width, 0);
+            return firstView.map(piece => ({ share: piece.box.width / total, fill: piece.fill }));
         }
 
         const urlParams = new URLSearchParams(window.location.search);
