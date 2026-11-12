@@ -222,3 +222,30 @@
         width: 100%;
     }
 }
+
+/* Écrans tactiles : cibles d'au moins 44 px (voir la fin de css/site.css). */
+@media (pointer: coarse) {
+    .ral-more > summary {
+        padding-top: 11px;
+        padding-bottom: 11px;
+    }
+
+    .ral-free summary {
+        padding: 11px 0;
+    }
+
+    html .custom-ral-row input[type="color"] {
+        height: 44px;
+    }
+
+    /* Bouton « retirer » : sa surface tactile s'étend vers l'extérieur de la pastille (en haut et
+       à droite), pour atteindre 44 px sans recouvrir la pastille elle-même. */
+    .my-ral-remove::after {
+        content: "";
+        position: absolute;
+        top: -16px;
+        right: -16px;
+        bottom: -8px;
+        left: -8px;
+    }
+}

@@ -981,6 +981,28 @@
             summaryReady = loadOrderSummary();
         });
 
+        // Tablette : quand le clavier virtuel s'ouvre, le champ en cours et son libellé sont ramenés
+        // dans la zone restée visible, entre l'en-tête (collé en haut) et le haut du clavier.
+        function keepFieldVisible() {
+            const field = document.activeElement;
+            const group = field && field.closest("#devisForm .form-group");
+            if (!group) return;
+
+            const viewport = window.visualViewport;
+            const header = document.querySelector(".site-header");
+            const top = Math.max(header ? header.getBoundingClientRect().bottom : 0, viewport ? viewport.offsetTop : 0) + 8;
+            const bottom = (viewport ? viewport.offsetTop + viewport.height : window.innerHeight) - 8;
+            const rect = group.getBoundingClientRect();
+            if (rect.top >= top && rect.bottom <= bottom) return;
+
+            // On remonte le champ juste au-dessus du clavier, sans faire passer son libellé sous l'en-tête.
+            const delta = rect.bottom > bottom ? Math.min(rect.bottom - bottom, rect.top - top) : rect.top - top;
+            window.scrollBy({ top: delta, behavior: "smooth" });
+        }
+        // À la prise de focus (le temps que le clavier s'ouvre), puis à chaque changement de la zone visible.
+        document.getElementById("devisForm").addEventListener("focusin", () => setTimeout(keepFieldVisible, 300));
+        if (window.visualViewport) window.visualViewport.addEventListener("resize", keepFieldVisible);
+
         // Page réaffichée par « Retour » telle que le navigateur l'avait gardée en mémoire : elle
         // montrerait encore la sélection du visiteur précédent. On la recharge depuis le panier.
         window.addEventListener("pageshow", event => {

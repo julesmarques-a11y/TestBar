@@ -62,6 +62,14 @@
             cursor: pointer;
         }
 
+        /* Écrans tactiles : la case et son libellé se touchent sur 44 px de haut. */
+        @media (pointer: coarse) {
+            .preview-head .check-option,
+            .control-group .check-option {
+                min-height: 44px;
+            }
+        }
+
         /* Palanque assortie : la case est dans la ligne d'options ; la hauteur et la quantité de la
            palanque se déplient dessous quand elle est cochée. */
         .palanque-fields {

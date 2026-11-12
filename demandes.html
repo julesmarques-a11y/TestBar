@@ -130,6 +130,14 @@
             color: var(--color-text-muted);
         }
 
+        /* Écrans tactiles : téléphone et email se touchent sur 44 px de haut, sans écarter les lignes. */
+        @media (pointer: coarse) {
+            .demande-lines a {
+                padding: 11px 4px;
+                margin: 0 -4px;
+            }
+        }
+
         @media (max-width: 640px) {
             .demande {
                 grid-template-columns: minmax(0, 1fr);

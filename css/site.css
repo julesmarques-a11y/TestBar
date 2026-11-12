@@ -1098,3 +1098,56 @@ h4,
 .site-footer-text a:hover {
     text-decoration: underline;
 }
+
+/* Écrans tactiles (tablette du salon, téléphone) : toute cible se touche sur au moins 44 px.
+   Rien ne change à la souris. Les sélecteurs commencent par « html » pour l'emporter sur les
+   tailles fixées dans le <style> des pages, chargé après ce fichier. */
+
+@media (pointer: coarse) {
+    html .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+    }
+
+    .site-cart-btn {
+        min-height: 44px;
+    }
+
+    /* Étapes et liens dans le texte : la surface tactile déborde du texte sans déplacer la mise en page. */
+    a.site-step {
+        padding: 12px 6px;
+        margin: -12px -6px;
+    }
+
+    .site-footer-text a {
+        padding: 13px 6px;
+        margin: 0 -6px;
+    }
+
+    /* Champs : 44 px de haut et 16 px de corps (en dessous, iOS zoome sur le champ à la saisie). */
+    html input:not([type="checkbox"]):not([type="radio"]),
+    html select,
+    html .control-group select,
+    html textarea {
+        min-height: 44px;
+        font-size: 16px;
+    }
+
+    html input[type="checkbox"] {
+        width: 24px;
+        height: 24px;
+    }
+
+    .toast-close {
+        top: 0;
+        right: 0;
+        width: 44px;
+        height: 44px;
+    }
+
+    .toast {
+        padding-right: 48px;
+    }
+}
