@@ -125,4 +125,28 @@
     window.addEventListener("storage", event => {
         if (event.key === "cart" || event.key === null) updateCartCount();
     });
+
+    // Fonctionnement sans réseau : sw.js met tout le site en cache (réseau d'abord, cache en
+    // secours). Chemin relatif à la page : le site est servi sous /TestBar/ ou à la racine.
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("sw.js").catch(() => { /* file:// ou navigateur sans service worker */ });
+        });
+    }
+
+    // Site installé sur l'écran d'accueil (plein écran, sans barre d'adresse) : demandes.html,
+    // qui n'est liée nulle part, s'ouvre en touchant cinq fois de suite le copyright du pied de page.
+    const installed = window.matchMedia("(display-mode: fullscreen), (display-mode: standalone)").matches ||
+        window.navigator.standalone === true;
+    if (installed) {
+        let taps = 0;
+        let lastTap = 0;
+        document.querySelector(".site-footer-text").addEventListener("click", event => {
+            if (event.target.closest("a")) return;
+            const now = Date.now();
+            taps = now - lastTap < 1500 ? taps + 1 : 1;
+            lastTap = now;
+            if (taps >= 5) window.location.href = "demandes.html";
+        });
+    }
 })();

@@ -4,6 +4,7 @@
 
 - Site statique du configurateur de barres d'obstacles EQUINOX : HTML + JS vanilla, pas de build, pas de framework, pas de dépendance npm.
 - Le panier vit dans `localStorage` (clé `"cart"`).
+- Le site fonctionne hors ligne (salon) : `sw.js` met tout le site en cache. Tout fichier ajouté au site (page, script, style, image, SVG) doit être ajouté à sa liste `ASSETS`.
 
 ## Parcours principal à ne jamais casser
 

@@ -1,0 +1,20 @@
+{
+    "name": "EQUINOX – Configurateur de barres d'obstacles",
+    "short_name": "EQUINOX",
+    "description": "Configurateur de barres d'obstacles EQUINOX : choix de la gamme, couleurs RAL et devis en PDF, utilisable sans connexion.",
+    "lang": "fr",
+    "start_url": "index.html",
+    "scope": "./",
+    "display": "fullscreen",
+    "orientation": "any",
+    "background_color": "#FFFFFF",
+    "theme_color": "#FFFFFF",
+    "icons": [
+        {
+            "src": "img/icone-equinox.png",
+            "sizes": "256x256",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ]
+}

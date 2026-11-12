@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Générez votre devis EQUINOX en PDF à partir des barres d'obstacles de votre panier.">
     <link rel="icon" href="img/icone-equinox.png" type="image/png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="img/icone-equinox.png">
     <link rel="stylesheet" href="css/site.css">
     <script src="js/layout.js" defer></script>
     <style>
@@ -802,6 +804,62 @@
             return null;
         }
 
+        // html2canvas dessine le PDF à partir d'une copie de la page, placée dans un cadre à part.
+        // Ce cadre n'est pas servi par le service worker (sw.js) : laissé à lui-même, il
+        // redemanderait la feuille de style et les polices au réseau, et le PDF sortirait sans
+        // mise en forme hors ligne (ou attendrait sans fin sur un wifi sans Internet). On lui
+        // fournit donc directement les styles du site, polices incorporées (voir pdfCloneOptions).
+
+        // Texte des feuilles de style de la page, les fichiers qu'elles citent (polices) étant
+        // remplacés par leur contenu en data: URL. Lu une fois, par la page (donc par le cache
+        // hors ligne), puis gardé pour les PDF suivants.
+        let pdfStylesPromise = null;
+        function pdfStyles() {
+            if (!pdfStylesPromise) {
+                const toDataUrl = blob => new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => reject(reader.error);
+                    reader.readAsDataURL(blob);
+                });
+                const load = async url => {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`${url} : réponse ${response.status}`);
+                    return response;
+                };
+                pdfStylesPromise = Promise.all(Array.from(document.querySelectorAll('link[rel="stylesheet"]'), async link => {
+                    let css = await (await load(link.href)).text();
+                    const refs = new Set(Array.from(css.matchAll(/url\(\s*['"]?([^'")]+?)['"]?\s*\)/g), match => match[1]));
+                    for (const ref of refs) {
+                        if (ref.startsWith("data:")) continue;
+                        const dataUrl = await toDataUrl(await (await load(new URL(ref, link.href))).blob());
+                        css = css.split(ref).join(dataUrl);
+                    }
+                    return css;
+                })).then(sheets => sheets.join("\n"));
+                // Échec (fichier manquant) : on réessaiera au prochain PDF.
+                pdfStylesPromise.catch(() => { pdfStylesPromise = null; });
+            }
+            return pdfStylesPromise;
+        }
+
+        // Options de html2canvas pour que la copie de la page ne demande rien au réseau.
+        const pdfCloneOptions = {
+            // Hors de la copie : les feuilles de style liées, les scripts et les images chargées
+            // par adresse (logos de l'en-tête et du pied de page). Les aperçus des barres sont
+            // des images en data: URL, ils restent.
+            ignoreElements: element => element.matches("link, script") ||
+                (element.tagName === "IMG" && !element.src.startsWith("data:")),
+            // Dans la copie : les styles du site en tête du <head>, avant le <style> de la page
+            // comme dans l'original, puis on attend que ses polices soient prêtes.
+            onclone: async clonedDocument => {
+                const style = clonedDocument.createElement("style");
+                style.textContent = await pdfStyles();
+                clonedDocument.head.prepend(style);
+                await Promise.all(Array.from(clonedDocument.fonts, face => face.load().catch(() => null)));
+            }
+        };
+
         async function generatePdf() {
             const client = readClient();
             const downloadBtn = document.getElementById("downloadBtn");
@@ -843,7 +901,8 @@
                 },
                 // Échelle 2 : environ 190 points par pouce, pour un aperçu net à l'impression.
                 html2canvas: {
-                    scale: 2
+                    scale: 2,
+                    ...pdfCloneOptions
                 },
                 jsPDF: {
                     unit: 'mm',
