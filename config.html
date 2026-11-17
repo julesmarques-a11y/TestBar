@@ -84,10 +84,23 @@
         }
 
         .palanque-hint {
+            order: 2;                    /* après la mention .option-notice */
             flex: 1 1 220px;
             align-self: center;
             font-size: 0.85em;
             line-height: 1.4;
+        }
+
+        /* Choix remplacé d'office (hauteur qui n'existe pas dans la nouvelle longueur) : une ligne
+           à elle sous les champs, comme un message d'erreur, mais informative. */
+        .option-notice {
+            order: 1;
+            flex: 0 0 100%;
+            margin: 0;
+            font-size: 0.9em;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--color-text);
         }
 
         /* Les images Bar_V1xx.svg font 500 x 280 et dessinent quatre vues de la barre avec de larges
@@ -172,8 +185,10 @@
                     <div class="control-group">
                         <label for="palanqueHeight">Hauteur</label>
                         <select id="palanqueHeight" aria-label="Hauteur de la palanque">
-                            <option value="145">145 mm</option>
+                            <!-- Liste refaite selon la longueur de la barre (voir updatePalanqueHeights). -->
                             <option value="95">95 mm</option>
+                            <option value="145" selected>145 mm</option>
+                            <option value="220">220 mm</option>
                         </select>
                     </div>
 
@@ -181,6 +196,8 @@
                         <label for="palanqueQuantity">Quantité</label>
                         <input type="number" id="palanqueQuantity" min="1" value="1" aria-label="Quantité de palanques">
                     </div>
+
+                    <p class="option-notice" id="palanqueNotice" role="status" hidden></p>
 
                     <p class="palanque-hint text-muted">
                         La palanque reprend la longueur de la barre et ses couleurs, dans le même ordre. Elle figure à part dans le panier et le devis.
@@ -446,6 +463,63 @@
         const editContext = model ? getEditContext("config.html", model, gamme) : null;
         showEditBanner(editContext);
 
+        // Hauteurs de palanque assortie (mm) proposées selon la longueur de la barre : le 95 mm
+        // n'existe pas en 3,50 m.
+        const PALANQUE_HEIGHTS = { "3m": [95, 145, 220], "3.5m": [145, 220] };
+        const DEFAULT_PALANQUE_HEIGHT = 145;
+
+        // Palanque assortie que la barre en cours de modification a déjà dans le panier. Si sa
+        // hauteur n'est plus proposée pour sa longueur (95 mm en 3,50 m, ajoutée avant cette
+        // règle), elle reste dans la liste pour cette longueur : rouvrir puis enregistrer la barre
+        // ne change pas la palanque à l'insu de l'utilisateur.
+        const savedPalanque = editContext && palanqueAllowed ? findLinkedPalanque(readCart(), editContext.item) : null;
+
+        // Valeurs de `table` pour la longueur `length`, plus celle de l'article lié déjà au panier
+        // (`saved`, valeur lue dans son champ `field` : "95 mm" → 95) s'il a cette longueur.
+        function choicesFor(table, length, saved, field) {
+            const values = [...(table[length] || [])];
+            const kept = saved && saved.item.length === length ? parseInt(saved.item[field]) : NaN;
+            if (kept > 0 && !values.includes(kept)) values.push(kept);
+            return values.sort((a, b) => a - b);
+        }
+
+        // Refait la liste `selectId` avec `values` (suivies de `unit`). La valeur sélectionnée est
+        // gardée si elle est encore proposée ; sinon la liste passe sur `fallback` et la fonction
+        // renvoie la valeur abandonnée (null si rien n'a changé).
+        function fillChoices(selectId, values, unit, fallback) {
+            const select = document.getElementById(selectId);
+            const previous = select.value;
+            select.replaceChildren(...values.map(value => new Option(`${value} ${unit}`, value)));
+            const kept = values.map(String).includes(previous);
+            select.value = kept ? previous : fallback;
+            return kept ? null : previous;
+        }
+
+        // Met la liste des hauteurs de palanque à la longueur de la barre. `announce` : signaler
+        // à l'utilisateur que la hauteur qu'il avait choisie a été remplacée (option cochée).
+        function updatePalanqueHeights(announce) {
+            const lengthSelect = document.getElementById("length");
+            const heights = choicesFor(PALANQUE_HEIGHTS, lengthSelect.value, savedPalanque, "height");
+            const dropped = fillChoices("palanqueHeight", heights, "mm", DEFAULT_PALANQUE_HEIGHT);
+            const lengthLabel = lengthSelect.selectedOptions[0].textContent.replace("m", " m");
+            showOptionNotice("palanqueNotice", dropped && announce && document.getElementById("addPalanque").checked
+                ? `La palanque de ${dropped} mm n'existe pas en ${lengthLabel} : sa hauteur est passée à ${DEFAULT_PALANQUE_HEIGHT} mm.`
+                : "");
+        }
+
+        // Mention affichée dans le bloc déplié d'une option assortie (sous ses champs) quand un
+        // choix a été remplacé d'office ; `message` vide : la retire. Elle s'efface dès que
+        // l'utilisateur choisit lui-même une valeur. Ce n'est pas un message en bas d'écran
+        // (showToast) : sur téléphone, il recouvrirait le bouton « Ajouter au panier ».
+        function showOptionNotice(id, message) {
+            const notice = document.getElementById(id);
+            notice.textContent = message;
+            notice.hidden = !message;
+        }
+        updatePalanqueHeights(false);
+        document.getElementById("length").addEventListener("change", () => updatePalanqueHeights(true));
+        document.getElementById("palanqueHeight").addEventListener("change", () => showOptionNotice("palanqueNotice", ""));
+
         // Recopie, section par section, les couleurs du SVG enregistré dans l'article.
         function restoreSectionColors(savedSvg) {
             const savedDoc = new DOMParser().parseFromString(savedSvg || "", "text/html");
@@ -471,13 +545,14 @@
         function restoreItem(item) {
             document.getElementById("quantity").value = item.quantity || 1;
             setSelectValue("length", item.length);
+            updatePalanqueHeights(false);
             restoreSectionColors(item.svg);
             restoreMyRals(item);
             document.getElementById("addToCartBtn").textContent = "Mettre à jour l'article";
 
             // La barre a une palanque assortie dans le panier : ses options sont reprises.
-            const palanque = findLinkedPalanque(readCart(), item);
-            if (palanque && palanqueAllowed) {
+            const palanque = savedPalanque;
+            if (palanque) {
                 document.getElementById("addPalanque").checked = true;
                 setSelectValue("palanqueHeight", parseInt(palanque.item.height)); // "145 mm" → "145"
                 document.getElementById("palanqueQuantity").value = palanque.item.quantity || 1;
