@@ -246,10 +246,18 @@ async function saveCartItem(newItem, editContext) {
             { okLabel: "Ajouter comme nouvel article" });
         if (!ok) return "cancelled";
         cart.push(newItem);
+        index = cart.length - 1;
     } else {
         cart[index] = newItem;
     }
     writeCart(cart);
+
+    // Le configurateur reste sur l'article qu'il vient d'enregistrer : après « Continuer », un
+    // nouvel enregistrement met à jour cette même ligne (sans cela, l'article d'origine ne
+    // serait plus retrouvé et l'on proposerait à tort de l'ajouter comme nouvel article).
+    editContext.index = index;
+    editContext.item = newItem;
+    editContext.snapshot = JSON.stringify(newItem);
     return "updated";
 }
 

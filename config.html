@@ -800,6 +800,14 @@
             if (result !== "cancelled") {
                 saved.forEach(decision => saveLinkedItem(bar, decision.option.kind.find, decision.item));
             }
+            // En modification, la page reste sur la barre enregistrée : ses articles assortis
+            // sont relus dans le panier, pour les listes de choix (voir `saved`).
+            if (editContext && result !== "cancelled") {
+                matchingOptions.forEach(option => {
+                    option.saved = option.kind.find(readCart(), bar);
+                    updateMatchingChoices(option, false);
+                });
+            }
 
             const added = saved.filter(decision => decision.item).map(decision => decision.option.kind.name);
             notifyCartSaved(result,
