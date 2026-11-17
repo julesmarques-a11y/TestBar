@@ -160,9 +160,9 @@
         <div class="config-main">
             <div class="preview-head">
                 <h2 class="section-title">Aperçu de la barre</h2>
-                <label class="check-option" title="Un clic colore aussi les bandes liées à celle cliquée : plus rapide sur les modèles à beaucoup de bandes.">
+                <label class="check-option" title="Colorer d'un clic toutes les bandes de la même série">
                     <input type="checkbox" id="linkedBands">
-                    Colorer les bandes liées ensemble
+                    Bandes liées
                 </label>
             </div>
             <div class="config-preview">
@@ -192,7 +192,7 @@
                         <label for="addPalanque">Palanque assortie</label>
                         <label class="check-option">
                             <input type="checkbox" id="addPalanque" aria-controls="palanqueFields">
-                            Ajouter
+                            Avec palanque assortie
                         </label>
                     </div>
 
@@ -311,7 +311,7 @@
         // (js/ral-picker.js).
         initRalPicker({ onSelect: hex => { selectedColor = hex; } });
 
-        // Groupes de bandes liées, utilisés quand « Colorer les bandes liées ensemble » est coché :
+        // Groupes de bandes liées, utilisés quand « Bandes liées » est coché :
         // un clic colore alors toutes les bandes du groupe de la bande cliquée. Sinon (réglage par
         // défaut), un clic ne colore que la bande cliquée.
         const groups = {
@@ -416,8 +416,8 @@
             });
         }
 
-        // Applique la couleur sélectionnée à la bande de la section `sectionId` ; si « Colorer les
-        // bandes liées ensemble » est coché, à tout le groupe de cette bande.
+        // Applique la couleur sélectionnée à la bande de la section `sectionId` ; si « Bandes
+        // liées » est coché, à tout le groupe de cette bande.
         function colorFrom(sectionId) {
             const band = bandOf(sectionId);
             const linked = document.getElementById("linkedBands").checked;
