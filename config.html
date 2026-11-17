@@ -70,8 +70,23 @@
             }
         }
 
-        /* Palanque assortie : la case est dans la ligne d'options ; la hauteur et la quantité de la
-           palanque se déplient dessous quand elle est cochée. */
+        /* Palanque assortie et octo assortie : chaque case est dans la ligne d'options ; ses champs
+           (hauteur ou diamètre, quantité) se déplient dessous, dans un bloc à elle, quand elle est
+           cochée. */
+        /* Téléphone : quatre champs ne tiennent pas de front. Les deux cases passent sur une seconde
+           ligne, côte à côte, grâce à ce saut de ligne placé avant elles. */
+        .controls-break {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .controls-break {
+                display: block;
+                flex: 0 0 100%;
+                height: 0;
+            }
+        }
+
         .palanque-fields {
             margin-top: 10px;
             padding: 8px 12px 10px;
@@ -170,6 +185,8 @@
                         <input type="number" id="quantity" min="1" value="1">
                     </div>
 
+                    <span class="controls-break"></span>
+
                     <!-- Palanque assortie : un second article, aux couleurs de la barre (voir addToCart). -->
                     <div class="control-group" id="palanqueOptions">
                         <label for="addPalanque">Palanque assortie</label>
@@ -178,14 +195,23 @@
                             Ajouter
                         </label>
                     </div>
+
+                    <!-- Octo assortie : même principe, un autre article ; les deux se cumulent. -->
+                    <div class="control-group" id="octoOptions">
+                        <label for="addOcto">Octo assortie</label>
+                        <label class="check-option">
+                            <input type="checkbox" id="addOcto" aria-controls="octoFields">
+                            Avec octo assortie
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Dépliés sous la ligne d'options quand la case est cochée. -->
-                <div class="controls palanque-fields" id="palanqueFields" data-palanque-field hidden>
+                <div class="controls palanque-fields" id="palanqueFields" hidden>
                     <div class="control-group">
                         <label for="palanqueHeight">Hauteur</label>
                         <select id="palanqueHeight" aria-label="Hauteur de la palanque">
-                            <!-- Liste refaite selon la longueur de la barre (voir updatePalanqueHeights). -->
+                            <!-- Liste refaite selon la longueur de la barre (voir updateMatchingChoices). -->
                             <option value="95">95 mm</option>
                             <option value="145" selected>145 mm</option>
                             <option value="220">220 mm</option>
@@ -201,6 +227,28 @@
 
                     <p class="palanque-hint text-muted">
                         La palanque reprend la longueur de la barre et ses couleurs, dans le même ordre. Elle figure à part dans le panier et le devis.
+                    </p>
+                </div>
+
+                <div class="controls palanque-fields" id="octoFields" hidden>
+                    <div class="control-group">
+                        <label for="octoDiameter">Diamètre</label>
+                        <select id="octoDiameter" aria-label="Diamètre de l'octo">
+                            <!-- Liste refaite selon la longueur de la barre (voir updateMatchingChoices). -->
+                            <option value="5">5 cm</option>
+                            <option value="8">8 cm</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="octoQuantity">Quantité</label>
+                        <input type="number" id="octoQuantity" min="1" value="1" aria-label="Quantité d'octos">
+                    </div>
+
+                    <p class="option-notice" id="octoNotice" role="status" hidden></p>
+
+                    <p class="palanque-hint text-muted">
+                        L'octo reprend la longueur de la barre et ses couleurs, dans le même ordre. Elle figure à part dans le panier et le devis.
                     </p>
                 </div>
             </div>
@@ -429,16 +477,11 @@
         const urlParams = new URLSearchParams(window.location.search);
         const model = urlParams.get("model");
 
-        // Option « palanque assortie » : la case affiche la hauteur et la quantité de la palanque.
-        // Elle n'est pas proposée pour l'ancien modèle 114, qui est lui-même une palanque.
-        const palanqueAllowed = model !== "114";
-        document.getElementById("palanqueOptions").hidden = !palanqueAllowed;
-
-        function showPalanqueFields() {
-            const checked = document.getElementById("addPalanque").checked;
-            document.querySelectorAll("[data-palanque-field]").forEach(field => { field.hidden = !checked; });
-        }
-        document.getElementById("addPalanque").addEventListener("change", showPalanqueFields);
+        // Options « palanque assortie » et « octo assortie » (voir matchingOptions plus bas). Elles
+        // ne sont pas proposées pour l'ancien modèle 114, qui est lui-même une palanque.
+        const matchingAllowed = model !== "114";
+        document.getElementById("palanqueOptions").hidden = !matchingAllowed;
+        document.getElementById("octoOptions").hidden = !matchingAllowed;
 
         // Gamme « plein cœur » (config.html?model=1xx&gamme=plein-coeur) : même configurateur,
         // mais longueur fixée à 3 m ; l'article en garde la mention jusqu'au PDF.
@@ -463,16 +506,59 @@
         const editContext = model ? getEditContext("config.html", model, gamme) : null;
         showEditBanner(editContext);
 
-        // Hauteurs de palanque assortie (mm) proposées selon la longueur de la barre : le 95 mm
-        // n'existe pas en 3,50 m.
-        const PALANQUE_HEIGHTS = { "3m": [95, 145, 220], "3.5m": [145, 220] };
-        const DEFAULT_PALANQUE_HEIGHT = 145;
+        // Les deux options assorties, cumulables. Pour chacune : sa case, le bloc qu'elle déplie
+        // (liste `select`, quantité, mention), et les valeurs de la liste selon la longueur de la
+        // barre (`choices`) : en 3,50 m, la palanque de 95 mm et l'octo de 8 cm n'existent pas.
+        // `field` : champ de l'article assorti qui porte la valeur ("145 mm", "5 cm").
+        const matchingOptions = [
+            {
+                kind: MATCHING_KINDS.palanque,
+                checkbox: "addPalanque",
+                fields: "palanqueFields",
+                select: "palanqueHeight",
+                quantity: "palanqueQuantity",
+                notice: "palanqueNotice",
+                choices: { "3m": [95, 145, 220], "3.5m": [145, 220] },
+                fallback: 145,
+                unit: "mm",
+                field: "height",
+                make: makeMatchingPalanque,
+                droppedMessage: (value, length) => `La palanque de ${value} mm n'existe pas en ${length} : sa hauteur est passée à 145 mm.`,
+                quantityError: "Indiquez une quantité de palanques d'au moins 1.",
+            },
+            {
+                kind: MATCHING_KINDS.octo,
+                checkbox: "addOcto",
+                fields: "octoFields",
+                select: "octoDiameter",
+                quantity: "octoQuantity",
+                notice: "octoNotice",
+                choices: { "3m": [5, 8], "3.5m": [5] },
+                fallback: 5,
+                unit: "cm",
+                field: "diameter",
+                make: makeMatchingOcto,
+                droppedMessage: (value, length) => `L'octo de ${value} cm n'existe pas en ${length} : son diamètre est passé à 5 cm.`,
+                quantityError: "Indiquez une quantité d'octos d'au moins 1.",
+            }
+        ];
 
-        // Palanque assortie que la barre en cours de modification a déjà dans le panier. Si sa
-        // hauteur n'est plus proposée pour sa longueur (95 mm en 3,50 m, ajoutée avant cette
-        // règle), elle reste dans la liste pour cette longueur : rouvrir puis enregistrer la barre
-        // ne change pas la palanque à l'insu de l'utilisateur.
-        const savedPalanque = editContext && palanqueAllowed ? findLinkedPalanque(readCart(), editContext.item) : null;
+        // `saved` : l'article assorti que la barre en cours de modification a déjà dans le panier.
+        // Si sa valeur n'est plus proposée pour sa longueur (palanque de 95 mm en 3,50 m, ajoutée
+        // avant cette règle), elle reste dans la liste pour cette longueur : rouvrir puis
+        // enregistrer la barre ne change pas l'article à l'insu de l'utilisateur.
+        matchingOptions.forEach(option => {
+            option.saved = editContext && matchingAllowed ? option.kind.find(readCart(), editContext.item) : null;
+        });
+
+        function isWanted(option) {
+            return matchingAllowed && document.getElementById(option.checkbox).checked;
+        }
+
+        // La case d'une option affiche ou replie son bloc.
+        function showMatchingFields(option) {
+            document.getElementById(option.fields).hidden = !document.getElementById(option.checkbox).checked;
+        }
 
         // Valeurs de `table` pour la longueur `length`, plus celle de l'article lié déjà au panier
         // (`saved`, valeur lue dans son champ `field` : "95 mm" → 95) s'il a cette longueur.
@@ -495,16 +581,15 @@
             return kept ? null : previous;
         }
 
-        // Met la liste des hauteurs de palanque à la longueur de la barre. `announce` : signaler
-        // à l'utilisateur que la hauteur qu'il avait choisie a été remplacée (option cochée).
-        function updatePalanqueHeights(announce) {
+        // Met la liste d'une option (hauteurs de palanque, diamètres d'octo) à la longueur de la
+        // barre. `announce` : signaler à l'utilisateur que la valeur qu'il avait choisie a été
+        // remplacée (seulement si l'option est cochée).
+        function updateMatchingChoices(option, announce) {
             const lengthSelect = document.getElementById("length");
-            const heights = choicesFor(PALANQUE_HEIGHTS, lengthSelect.value, savedPalanque, "height");
-            const dropped = fillChoices("palanqueHeight", heights, "mm", DEFAULT_PALANQUE_HEIGHT);
-            const lengthLabel = lengthSelect.selectedOptions[0].textContent.replace("m", " m");
-            showOptionNotice("palanqueNotice", dropped && announce && document.getElementById("addPalanque").checked
-                ? `La palanque de ${dropped} mm n'existe pas en ${lengthLabel} : sa hauteur est passée à ${DEFAULT_PALANQUE_HEIGHT} mm.`
-                : "");
+            const values = choicesFor(option.choices, lengthSelect.value, option.saved, option.field);
+            const dropped = fillChoices(option.select, values, option.unit, option.fallback);
+            const lengthLabel = lengthSelect.selectedOptions[0].textContent.replace("m", " m"); // « 3,50 m »
+            showOptionNotice(option.notice, dropped && announce && isWanted(option) ? option.droppedMessage(dropped, lengthLabel) : "");
         }
 
         // Mention affichée dans le bloc déplié d'une option assortie (sous ses champs) quand un
@@ -516,9 +601,13 @@
             notice.textContent = message;
             notice.hidden = !message;
         }
-        updatePalanqueHeights(false);
-        document.getElementById("length").addEventListener("change", () => updatePalanqueHeights(true));
-        document.getElementById("palanqueHeight").addEventListener("change", () => showOptionNotice("palanqueNotice", ""));
+
+        matchingOptions.forEach(option => {
+            updateMatchingChoices(option, false);
+            document.getElementById(option.checkbox).addEventListener("change", () => showMatchingFields(option));
+            document.getElementById("length").addEventListener("change", () => updateMatchingChoices(option, true));
+            document.getElementById(option.select).addEventListener("change", () => showOptionNotice(option.notice, ""));
+        });
 
         // Recopie, section par section, les couleurs du SVG enregistré dans l'article.
         function restoreSectionColors(savedSvg) {
@@ -545,40 +634,43 @@
         function restoreItem(item) {
             document.getElementById("quantity").value = item.quantity || 1;
             setSelectValue("length", item.length);
-            updatePalanqueHeights(false);
             restoreSectionColors(item.svg);
             restoreMyRals(item);
             document.getElementById("addToCartBtn").textContent = "Mettre à jour l'article";
 
-            // La barre a une palanque assortie dans le panier : ses options sont reprises.
-            const palanque = savedPalanque;
-            if (palanque) {
-                document.getElementById("addPalanque").checked = true;
-                setSelectValue("palanqueHeight", parseInt(palanque.item.height)); // "145 mm" → "145"
-                document.getElementById("palanqueQuantity").value = palanque.item.quantity || 1;
-                showPalanqueFields();
-            }
+            // La barre a une palanque ou une octo assortie dans le panier : ses options sont reprises.
+            matchingOptions.forEach(option => {
+                updateMatchingChoices(option, false);
+                if (!option.saved) return;
+                document.getElementById(option.checkbox).checked = true;
+                setSelectValue(option.select, parseInt(option.saved.item[option.field])); // "145 mm" → "145"
+                document.getElementById(option.quantity).value = option.saved.item.quantity || 1;
+                showMatchingFields(option);
+            });
         }
 
-        // Ce qu'il faut faire de la palanque assortie à l'enregistrement de la barre `bar` :
-        // { save: true, item } pour l'ajouter ou la remplacer, { save: true, item: null } pour la
-        // retirer, { save: false } pour ne pas y toucher. Quand la barre modifiée a déjà une
-        // palanque au panier, on propose de lui appliquer le changement plutôt que de l'imposer.
-        async function palanqueDecision(bar, wanted) {
-            const existing = editContext ? findLinkedPalanque(readCart(), editContext.item) : null;
-            const item = wanted
-                ? makeMatchingPalanque(bar, barBands(), document.getElementById("palanqueHeight").value,
-                    parseInt(document.getElementById("palanqueQuantity").value))
+        // Ce qu'il faut faire de l'article assorti `option` (palanque ou octo) à l'enregistrement
+        // de la barre `bar` : { save: true, item } pour l'ajouter ou le remplacer,
+        // { save: true, item: null } pour le retirer, { save: false } pour ne pas y toucher.
+        // Quand la barre modifiée a déjà cet article au panier et qu'il changerait, on propose de
+        // lui appliquer le changement plutôt que de l'imposer ; s'il resterait identique, la
+        // question ne se pose pas.
+        async function matchingDecision(option, bar, bands) {
+            const kind = option.kind;
+            const existing = editContext ? kind.find(readCart(), editContext.item) : null;
+            const item = isWanted(option)
+                ? option.make(bar, bands, document.getElementById(option.select).value,
+                    parseInt(document.getElementById(option.quantity).value))
                 : null;
 
             if (!existing) return { save: Boolean(item), item };
             if (item && JSON.stringify(item) === JSON.stringify(existing.item)) return { save: false };
 
             const ok = item
-                ? await confirmDialog("Cette barre a une palanque assortie dans le panier. La mettre à jour elle aussi (couleurs, longueur, hauteur et quantité) ?",
-                    { okLabel: "Mettre à jour la palanque", cancelLabel: "Ne pas la modifier" })
-                : await confirmDialog("Cette barre a une palanque assortie dans le panier. La retirer du panier ?",
-                    { okLabel: "Retirer la palanque", cancelLabel: "Garder la palanque" });
+                ? await confirmDialog(`Cette barre a ${kind.a} dans le panier. La mettre à jour elle aussi (${kind.details}) ?`,
+                    { okLabel: `Mettre à jour ${kind.the}`, cancelLabel: "Ne pas la modifier" })
+                : await confirmDialog(`Cette barre a ${kind.a} dans le panier. La retirer du panier ?`,
+                    { okLabel: `Retirer ${kind.the}`, cancelLabel: `Garder ${kind.the}` });
             return ok ? { save: true, item } : { save: false };
         }
 
@@ -644,9 +736,10 @@
                 return;
             }
 
-            const wantsPalanque = palanqueAllowed && document.getElementById("addPalanque").checked;
-            if (wantsPalanque && !(parseInt(document.getElementById("palanqueQuantity").value) > 0)) {
-                showError("palanqueQuantity", "Indiquez une quantité de palanques d'au moins 1.");
+            const wanted = matchingOptions.filter(isWanted);
+            const badQuantity = wanted.find(option => !(parseInt(document.getElementById(option.quantity).value) > 0));
+            if (badQuantity) {
+                showError(badQuantity.quantity, badQuantity.quantityError);
                 return;
             }
 
@@ -680,9 +773,9 @@
                 return;
             }
 
-            // Une barre reçoit un identifiant quand on lui associe une palanque (champ linkedTo de
-            // la palanque) ; elle le garde quand on la modifie.
-            const id = (editContext && editContext.item.id) || (wantsPalanque ? newItemId() : null);
+            // Une barre reçoit un identifiant quand on lui associe une palanque ou une octo (champ
+            // linkedTo de l'article assorti) ; elle le garde quand on la modifie.
+            const id = (editContext && editContext.item.id) || (wanted.length ? newItemId() : null);
             const bar = {
                 ...(id ? { id } : {}),
                 model: model,
@@ -694,14 +787,25 @@
                 custom_rals: collectCustomRals(colors),
                 sourcePage: "config.html"
             };
-            const palanque = await palanqueDecision(bar, wantsPalanque);
+            const bands = barBands();
+            const decisions = [];
+            for (const option of matchingOptions) {
+                decisions.push({ option, ...await matchingDecision(option, bar, bands) });
+            }
 
             // Ajouter l'article (ou remplacer la ligne en cours de modification), avec le SVG enregistré,
-            // puis sa palanque assortie, sur la ligne suivante du panier.
+            // puis ses articles assortis, sur les lignes suivantes du panier.
             const result = await saveCartItem(bar, editContext);
-            if (result !== "cancelled" && palanque.save) saveLinkedPalanque(bar, palanque.item);
+            const saved = decisions.filter(decision => decision.save);
+            if (result !== "cancelled") {
+                saved.forEach(decision => saveLinkedItem(bar, decision.option.kind.find, decision.item));
+            }
 
-            notifyCartSaved(result, palanque.save && palanque.item ? "Modèle et palanque assortie ajoutés au panier." : "Modèle ajouté au panier.");
+            const added = saved.filter(decision => decision.item).map(decision => decision.option.kind.name);
+            notifyCartSaved(result,
+                added.length === 2 ? "Modèle, palanque et octo assorties ajoutés au panier."
+                    : added.length === 1 ? `Modèle et ${added[0]} ajoutés au panier.`
+                        : "Modèle ajouté au panier.");
         }
     </script>
 

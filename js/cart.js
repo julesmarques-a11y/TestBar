@@ -129,6 +129,7 @@ function getConfigPage(item) {
 // la barre octo sous "BARRE_OCTO_PERSONNALISABLE" : ces identifiants sont conservés pour que les
 // articles déjà au panier restent reconnus et modifiables.
 function getModelLabel(item) {
+    if (isMatchingOcto(item)) return `Octo assortie au modèle ${item.matchedModel}`;
     if (isMatchingPalanque(item)) return `Palanque assortie au modèle ${item.matchedModel}`;
     const page = getConfigPage(item);
     if (page === "config_personnalisee_forme2.html") return "Palanque personnalisée";
@@ -198,16 +199,22 @@ function getEditContext(page, model, gamme) {
 
 // Bandeau en tête du configurateur quand un article du panier est en cours de modification,
 // avec un lien « Annuler » qui revient au panier sans rien changer. Si la barre a une palanque
-// assortie dans le panier, le bandeau le rappelle.
+// ou une octo assortie dans le panier, le bandeau le rappelle.
 function showEditBanner(editContext) {
     if (!editContext) return;
-    const palanque = findLinkedPalanque(readCart(), editContext.item);
+    const cart = readCart();
+    const linked = Object.values(MATCHING_KINDS)
+        .map(kind => ({ kind, found: kind.find(cart, editContext.item) }))
+        .filter(({ found }) => found)
+        .map(({ kind, found }) => `${kind.its} (ligne ${found.index + 1})`);
+    // « … (ligne 1) et sa palanque assortie (ligne 2) », ou « … (ligne 1), sa palanque assortie
+    // (ligne 2) et son octo assortie (ligne 3) ».
+    const linkedText = linked.map((text, i) => (i === linked.length - 1 ? " et " : ", ") + text).join("");
     const banner = document.createElement("div");
     banner.className = "edit-banner";
     banner.setAttribute("role", "status");
     banner.innerHTML = `
-        <span class="edit-banner-text">Vous modifiez un article du panier : <strong></strong> (ligne ${editContext.index + 1})${
-        palanque ? ` et sa palanque assortie (ligne ${palanque.index + 1})` : ""}.
+        <span class="edit-banner-text">Vous modifiez un article du panier : <strong></strong> (ligne ${editContext.index + 1})${linkedText}.
         Vos changements seront enregistrés avec « Mettre à jour l'article ».</span>
         <a class="btn btn-neutral" href="panier.html">Annuler</a>`;
     banner.querySelector("strong").textContent = getModelLabel(editContext.item);
@@ -288,33 +295,73 @@ function buildPalanqueSvg(stripes, totalCm) {
 </svg>`;
 }
 
-// ---- Palanque assortie à une barre du catalogue (option de config.html) ----
-// C'est un article à part du panier, du devis et du PDF. Il porte le modèle de sa barre
+// ---- Palanque et octo assorties à une barre du catalogue (options de config.html) ----
+// Chacune est un article à part du panier, du devis et du PDF. Il porte le modèle de sa barre
 // (matchedModel) et, tant que cette barre est au panier, son identifiant (linkedTo = champ id de
 // la barre) : « Modifier » et « Supprimer » sur la barre proposent alors d'en faire autant sur
-// la palanque. Son dessin est celui de la palanque personnalisée, avec une rayure par bande de la
+// l'article assorti. Le dessin de la palanque est celui de la palanque personnalisée, avec une rayure par bande de la
 // barre : sans barre liée, elle se modifie donc dans config_personnalisee_forme2.html.
 
 function isMatchingPalanque(item) {
-    return Boolean(item) && Boolean(item.matchedModel);
+    return Boolean(item) && Boolean(item.matchedModel) && !isMatchingOcto(item);
 }
 
-// Identifiant donné à une barre quand on lui associe une palanque.
+// Octo assortie à une barre du catalogue (autre option de config.html) : même principe que la
+// palanque assortie, avec le dessin de la barre octo personnalisée ; sans barre liée, elle se
+// modifie dans config_bar_octo.html.
+function isMatchingOcto(item) {
+    return Boolean(item) && Boolean(item.matchedModel) && getConfigPage(item) === "config_bar_octo.html";
+}
+
+// Identifiant donné à une barre quand on lui associe une palanque ou une octo.
 function newItemId() {
     return "a" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
-// Palanque assortie à la barre `bar` dans `cart` : { index, item }, ou null.
-function findLinkedPalanque(cart, bar) {
+// Article assorti à la barre `bar` dans `cart`, parmi ceux que `isKind` reconnaît :
+// { index, item }, ou null.
+function findLinked(cart, bar, isKind) {
     if (!bar || !bar.id) return null;
-    const index = cart.findIndex(item => item && item.linkedTo === bar.id);
+    const index = cart.findIndex(item => item && item.linkedTo === bar.id && isKind(item));
     return index === -1 ? null : { index, item: cart[index] };
 }
 
-// Barre à laquelle la palanque `palanque` est assortie dans `cart` : { index, item }, ou null.
-function findLinkedBar(cart, palanque) {
-    if (!palanque || !palanque.linkedTo) return null;
-    const index = cart.findIndex(item => item && item.id === palanque.linkedTo);
+// Palanque assortie à la barre `bar` dans `cart` : { index, item }, ou null.
+function findLinkedPalanque(cart, bar) {
+    return findLinked(cart, bar, isMatchingPalanque);
+}
+
+// Octo assortie à la barre `bar` dans `cart` : { index, item }, ou null.
+function findLinkedOcto(cart, bar) {
+    return findLinked(cart, bar, isMatchingOcto);
+}
+
+// Les deux articles qu'une barre peut avoir en assorti (ils se cumulent), avec les mots qui les
+// désignent dans les questions et les messages de config.html et panier.html.
+const MATCHING_KINDS = {
+    palanque: {
+        find: findLinkedPalanque,
+        name: "palanque assortie",
+        a: "une palanque assortie",
+        its: "sa palanque assortie",
+        the: "la palanque",
+        details: "couleurs, longueur, hauteur et quantité"
+    },
+    octo: {
+        find: findLinkedOcto,
+        name: "octo assortie",
+        a: "une octo assortie",
+        its: "son octo assortie",
+        the: "l'octo",
+        details: "couleurs, longueur, diamètre et quantité"
+    }
+};
+
+// Barre à laquelle l'article `linked` (palanque ou octo) est assorti dans `cart` :
+// { index, item }, ou null.
+function findLinkedBar(cart, linked) {
+    if (!linked || !linked.linkedTo) return null;
+    const index = cart.findIndex(item => item && item.id === linked.linkedTo);
     return index === -1 ? null : { index, item: cart[index] };
 }
 
@@ -341,19 +388,57 @@ function makeMatchingPalanque(bar, bands, heightMm, quantity) {
     };
 }
 
-// Enregistre la palanque assortie de la barre `bar` : remplace celle du panier, sinon l'ajoute
-// juste après la barre. `palanque` à null : retire celle du panier.
-function saveLinkedPalanque(bar, palanque) {
+// SVG d'une barre octo de `totalCm` de long, dessinée comme dans config_bar_octo.html (generateBar) :
+// un rectangle par rayure. `stripes` : [{ width: largeur en cm, fill: couleur }], de gauche à droite.
+function buildOctoSvg(stripes, totalCm) {
+    const BAR_HEIGHT = 18;
+    let x = 0;
+    const rects = stripes.map((stripe, i) => {
+        const rect = `<rect id="stripe-${i + 1}" x="${x}" y="0" width="${stripe.width}" height="${BAR_HEIGHT}" fill="${stripe.fill}" stroke="#bdc3c7" stroke-width="0.2" shape-rendering="crispEdges"></rect>`;
+        x += stripe.width;
+        return rect;
+    }).join("");
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalCm} ${BAR_HEIGHT}" width="100%">${rects}</svg>`;
+}
+
+// Article « octo assortie » de la barre `bar` (qui doit avoir un id), sur le modèle de
+// makeMatchingPalanque : mêmes bandes, même longueur, mêmes RAL personnalisés.
+function makeMatchingOcto(bar, bands, diameterCm, quantity) {
+    const totalCm = bar.length === "3.5m" ? 350 : 300;
+    const widths = bands.map(band => band.share * totalCm);
+    return {
+        model: "OCTO ASSORTIE",
+        matchedModel: String(bar.model),
+        linkedTo: bar.id,
+        colors: [...new Set(bands.map(band => band.fill))],
+        quantity: quantity,
+        length: bar.length,
+        diameter: diameterCm + " cm",
+        svg: buildOctoSvg(bands.map((band, i) => ({ width: widths[i], fill: band.fill })), totalCm),
+        stripes: bands.length,
+        widths_cm: widths,
+        total_length_cm: totalCm,
+        custom_rals: { ...(bar.custom_rals || {}) },
+        sourcePage: "config_bar_octo.html"
+    };
+}
+
+// Enregistre un article assorti à la barre `bar` (`find` : findLinkedPalanque ou findLinkedOcto) :
+// remplace celui du panier, sinon l'ajoute après la barre et ses autres articles assortis.
+// `linked` à null : retire celui du panier.
+function saveLinkedItem(bar, find, linked) {
     if (!bar.id) return;
     const cart = readCart();
-    const existing = findLinkedPalanque(cart, bar);
-    if (existing && palanque) {
-        cart[existing.index] = palanque;
+    const existing = find(cart, bar);
+    if (existing && linked) {
+        cart[existing.index] = linked;
     } else if (existing) {
         cart.splice(existing.index, 1);
-    } else if (palanque) {
+    } else if (linked) {
         const barIndex = cart.findIndex(item => item && item.id === bar.id);
-        cart.splice(barIndex === -1 ? cart.length : barIndex + 1, 0, palanque);
+        let at = barIndex === -1 ? cart.length : barIndex + 1;
+        while (at < cart.length && cart[at] && cart[at].linkedTo === bar.id) at++;
+        cart.splice(at, 0, linked);
     }
     writeCart(cart);
 }

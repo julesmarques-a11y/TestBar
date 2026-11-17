@@ -404,26 +404,31 @@
             }
         }
 
-        // Supprimer une barre qui a une palanque assortie propose de supprimer aussi la palanque.
-        // Si elle est gardée, elle n'est plus liée à une barre et devient modifiable seule.
+        // Supprimer une barre qui a une palanque ou une octo assortie propose, pour chacune, de la
+        // supprimer aussi. Si elle est gardée, elle n'est plus liée à une barre et devient
+        // modifiable seule.
         async function removeFromCart(index) {
             const ok = await confirmDialog("Supprimer cet article du panier ?", { okLabel: "Supprimer" });
             if (!ok) return;
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const palanque = findLinkedPalanque(cart, cart[index]);
-            const removePalanque = palanque && await confirmDialog(
-                "Cette barre a une palanque assortie dans le panier. La supprimer aussi ?",
-                { okLabel: "Supprimer aussi la palanque", cancelLabel: "Garder la palanque" });
-
-            if (palanque && !removePalanque) delete palanque.item.linkedTo;
-            cart = cart.filter((item, i) => i !== index && !(removePalanque && i === palanque.index));
+            const removed = [index];
+            for (const kind of Object.values(MATCHING_KINDS)) {
+                const linked = kind.find(cart, cart[index]);
+                if (!linked) continue;
+                const remove = await confirmDialog(
+                    `Cette barre a ${kind.a} dans le panier. La supprimer aussi ?`,
+                    { okLabel: `Supprimer aussi ${kind.the}`, cancelLabel: `Garder ${kind.the}` });
+                if (remove) removed.push(linked.index);
+                else delete linked.item.linkedTo;
+            }
+            cart = cart.filter((item, i) => !removed.includes(i));
             writeCart(cart);
             loadCart();
         }
 
-        // « Modifier » rouvre l'article dans son configurateur. Une palanque assortie se modifie
-        // avec sa barre (mêmes couleurs) : on ouvre donc le configurateur de la barre, qui
-        // reprend la hauteur et la quantité de la palanque.
+        // « Modifier » rouvre l'article dans son configurateur. Une palanque ou une octo assortie
+        // se modifie avec sa barre (mêmes couleurs) : on ouvre donc le configurateur de la barre,
+        // qui reprend ses options (hauteur ou diamètre, quantité).
         function redirectToConfig(index) {
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
             const bar = findLinkedBar(cart, cart[index]);
